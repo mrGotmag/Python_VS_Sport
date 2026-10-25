@@ -1,0 +1,54 @@
+[
+  {
+    "id": "3",
+    "title": "Миваныч и плотина: самый прочный пролёт",
+    "status": "ok",
+    "score": 100,
+    "total": 100,
+    "tests": [
+      {
+        "id": 1,
+        "status": "ok",
+        "points": 15,
+        "max_points": 15
+      },
+      {
+        "id": 2,
+        "status": "ok",
+        "points": 10,
+        "max_points": 10
+      },
+      {
+        "id": 3,
+        "status": "ok",
+        "points": 10,
+        "max_points": 10
+      },
+      {
+        "id": 4,
+        "status": "ok",
+        "points": 15,
+        "max_points": 15
+      },
+      {
+        "id": 5,
+        "status": "ok",
+        "points": 15,
+        "max_points": 15
+      },
+      {
+        "id": 6,
+        "status": "ok",
+        "points": 20,
+        "max_points": 20
+      },
+      {
+        "id": 7,
+        "status": "ok",
+        "points": 15,
+        "max_points": 15
+      }
+    ],
+    "error": null
+  }
+]

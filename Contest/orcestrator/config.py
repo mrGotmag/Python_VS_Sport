@@ -8,6 +8,7 @@
 """
 
 from __future__ import annotations
+from pydantic_settings import BaseSettings
 
 import multiprocessing as mp
 from pathlib import Path
@@ -62,7 +63,13 @@ def _get_path(key: str, default: str) -> Path:
     return Path(_get_str(key, default))
 
 
-class Settings:
+class Settings(BaseSettings):
+    app_name: str = "Python vs Спорт"
+    secret_key: str = "super-secret-key-change-me"
+    access_token_expire_minutes: int = 480  # 8 часов
+
+    class Config:
+        env_file = ".env"
     # ---------- пути ----------
     tasks_dir: Path = _get_path("TASKS_DIR", "tasks")
     logs_dir: Path = _get_path("LOGS_DIR", "logs")

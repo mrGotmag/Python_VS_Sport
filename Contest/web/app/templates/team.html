@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Кабинет // Python vs Спорт{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-7xl h-[calc(100vh-10rem)] flex gap-4 fade-in">
+
+    <!-- ЛЕВАЯ ПАНЕЛЬ -->
+    <aside class="w-72 shrink-0 flex flex-col border border-line bg-panel rounded-xl overflow-hidden">
+        <div class="p-4 border-b border-line bg-ink">
+            <div class="text-[10px] text-neon tracking-[0.3em]">// TASKS_LIST</div>
+            <h2 class="font-display font-bold text-lg mt-1" id="team-name">Загрузка...</h2>
+        </div>
+        <div class="flex-1 overflow-y-auto p-2 space-y-2" id="tasks-list"></div>
+        <div class="p-4 border-t border-line">
+            <a href="/logout" class="block text-center text-xs text-magenta hover:text-white transition">[ ВЫЙТИ ]</a>
+        </div>
+    </aside>
+
+    <!-- ПРАВАЯ ПАНЕЛЬ -->
+    <section class="flex-1 flex flex-col border border-line bg-panel rounded-xl overflow-hidden">
+        <div id="workspace-empty" class="flex-1 flex items-center justify-center text-slate-600 text-sm">
+            &gt; выберите задачу из списка слева _
+        </div>
+
+        <div id="workspace" class="hidden flex-1 flex-col h-full overflow-hidden">
+            <div class="p-6 border-b border-line bg-ink max-h-[30vh] overflow-y-auto">
+                <h2 id="task-title" class="font-display text-xl font-bold text-neon"></h2>
+                <div id="task-statement" class="text-sm text-slate-300 mt-3 prose prose-invert max-w-none"></div>
+            </div>
+
+            <div class="flex-1 flex flex-col relative bg-[#0a0e14] min-h-[200px]">
+                <textarea id="code-editor"></textarea>
+            </div>
+
+            <div class="border-t border-line bg-ink flex flex-col">
+                <!-- Блок вывода чекера -->
+                <div id="checker-output" class="hidden border-b border-line p-4 text-sm font-mono whitespace-pre-wrap max-h-48 overflow-y-auto bg-[#05080c] text-slate-300"></div>
+
+                <div class="p-4 flex items-center justify-between">
+                    <div id="submit-status" class="text-sm font-mono"></div>
+                    <button id="btn-submit" class="bg-neon text-ink font-bold text-sm tracking-widest px-6 py-2.5 rounded hover:bg-white transition shadow-neon">
+                        ОТПРАВИТЬ РЕШЕНИЕ &gt;&gt;
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    let editor; let currentTaskId = null;
+
+    async function init() {
+        try {
+            const res = await fetch('/api/team/me');
+            if (res.status === 401) return window.location.href = '/login';
+            const data = await res.json();
+            document.getElementById('team-name').textContent = data.team.name;
+            renderTasks(data.tasks);
+        } catch (e) { console.error(e); }
+    }
+
+    function renderTasks(tasks) {
+        const list = document.getElementById('tasks-list');
+        if (!tasks.length) return list.innerHTML = '<div class="text-xs text-slate-500 p-2">Задач пока нет.</div>';
+        list.innerHTML = tasks.map(t => `
+            <div onclick="openTask(${t.id})" class="p-3 border border-line rounded cursor-pointer hover:border-neon transition group">
+                <div class="flex justify-between items-center text-[10px]">
+                    <span class="text-slate-500 group-hover:text-neon">ЗАДАЧА #${t.order_index}</span>
+                    <span class="text-warn font-mono font-bold">${t.current_score} / ${t.max_points} B</span>
+                </div>
+                <div class="text-sm font-bold mt-1">${t.title}</div>
+            </div>`).join('');
+    }
+
+    async function openTask(id) {
+        currentTaskId = id;
+        document.getElementById('workspace-empty').classList.add('hidden');
+        document.getElementById('workspace').classList.remove('hidden');
+        document.getElementById('workspace').classList.add('flex');
+
+        const res = await fetch(`/api/team/tasks/${id}`);
+        const task = await res.json();
+
+        document.getElementById('task-title').textContent = task.title;
+        document.getElementById('task-statement').innerHTML = marked.parse(task.statement);
+
+        if (!editor) {
+            editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+                mode: 'python', theme: 'dracula', lineNumbers: true, indentUnit: 4, matchBrackets: true, autofocus: true,
+                extraKeys: {"Ctrl-Enter": submitCode}
+            });
+        }
+        // Берем имя команды, чтобы у каждой команды были свои черновики
+        const teamName = document.getElementById('team-name').textContent.trim();
+        editor.setValue(localStorage.getItem('draft_' + teamName + '_' + id) || '');
+    }
+
+    async function submitCode() {
+        if (!currentTaskId) return;
+        const btn = document.getElementById('btn-submit');
+        const status = document.getElementById('submit-status');
+        const outputBox = document.getElementById('checker-output');
+
+        btn.disabled = true;
+        status.textContent = 'Проверка...'; status.className = 'text-cyan text-sm font-mono animate-pulse';
+        outputBox.classList.add('hidden');
+
+        const code = editor.getValue();
+        const teamName = document.getElementById('team-name').textContent.trim();
+        localStorage.setItem('draft_' + teamName + '_' + currentTaskId, code);
+
+        try {
+            const res = await fetch('/api/team/submissions', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ task_id: currentTaskId, code: code })
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                status.textContent = '✔ ГОТОВО'; status.className = 'text-neon text-sm font-mono glow-text';
+
+                if (data.checker_result) {
+                    outputBox.textContent = data.checker_result;
+                    outputBox.classList.remove('hidden');
+                }
+                await init(); // Обновляем баллы слева
+            } else {
+                status.textContent = '✘ Ошибка: ' + (data.detail || '');
+                status.className = 'text-magenta text-sm font-mono';
+            }
+        } catch (e) {
+            status.textContent = '✘ Сеть недоступна';
+            status.className = 'text-magenta text-sm font-mono';
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    document.getElementById('btn-submit').addEventListener('click', submitCode);
+    setInterval(() => {
+        if (editor && currentTaskId) {
+            const teamName = document.getElementById('team-name').textContent.trim();
+            if (teamName !== 'Загрузка...') {
+                localStorage.setItem(`draft_${teamName}_${currentTaskId}`, editor.getValue());
+            }
+        }
+    }, 3000);
+    init();
+</script>
+{% endblock %}
