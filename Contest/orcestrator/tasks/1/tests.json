@@ -1,0 +1,7 @@
+{
+  "task": { "title": "Сумма двух чисел", "time_limit_sec": 2.0 },
+  "tests": [
+    { "id": 1, "input": "3\n5\n", "expected_output": "8\n", "points": 25 },
+    { "id": 2, "input": "0\n0\n", "expected_output": "0\n", "points": 50 }
+  ]
+}
