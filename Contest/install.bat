@@ -2,18 +2,18 @@
 setlocal EnableDelayedExpansion
 
 REM ============================================================
-REM  install.bat — установка проекта Contest/orchestrator
+REM  install.bat — установка проекта Python vs Спорт
 REM ============================================================
 
-REM ---- НАСТРОЙКИ (поменяйте под себя) ----
-set "REPO_URL=https://github.com/USER/REPO.git"
-set "PROJECT_DIR=orchestrator"
+REM ---- НАСТРОЙКИ ----
+set "REPO_URL=https://github.com/mrGotmag/Python_VS_Sport.git"
+set "PROJECT_DIR=Python_VS_Sport"
 set "PYTHON_MIN=3.10"
 REM ----------------------------------------
 
 echo.
 echo ============================================================
-echo   Установка проекта
+echo   Установка проекта Python vs Спорт
 echo   Репозиторий: %REPO_URL%
 echo   Папка:       %PROJECT_DIR%
 echo ============================================================
@@ -32,7 +32,6 @@ if errorlevel 1 (
 for /f "tokens=2 delims= " %%v in ('python --version 2^>^&1') do set "PY_VER=%%v"
 echo   Найден Python !PY_VER!
 
-REM Проверка версии (грубая, по первым двум числам)
 for /f "tokens=1,2 delims=." %%a in ("!PY_VER!") do (
     set "PY_MAJOR=%%a"
     set "PY_MINOR=%%b"
@@ -96,7 +95,6 @@ if exist ".venv\Scripts\python.exe" (
     python -m venv .venv
     if errorlevel 1 (
         echo   [ОШИБКА] Не удалось создать .venv.
-        echo   Попробуйте: python -m venv .venv
         goto :fail_after_pushd
     )
 )
@@ -109,9 +107,6 @@ if not exist "requirements.txt" (
     echo   [ПРЕДУПРЕЖДЕНИЕ] requirements.txt не найден, пропускаем.
 ) else (
     ".venv\Scripts\python.exe" -m pip install --upgrade pip
-    if errorlevel 1 (
-        echo   [ПРЕДУПРЕЖДЕНИЕ] Не удалось обновить pip, продолжаем.
-    )
     ".venv\Scripts\python.exe" -m pip install -r requirements.txt
     if errorlevel 1 (
         echo   [ОШИБКА] Не удалось установить зависимости.
@@ -130,7 +125,6 @@ if exist ".env" (
     echo   Создан .env из .env.example.
 ) else (
     echo   [ПРЕДУПРЕЖДЕНИЕ] Нет ни .env, ни .env.example.
-    echo   Создайте .env вручную.
 )
 
 REM ---- Проверка ----
@@ -140,7 +134,7 @@ echo   Проверка установки
 echo ============================================================
 ".venv\Scripts\python.exe" -c "import sys; print('Python:', sys.version.split()[0])"
 if errorlevel 1 goto :fail_after_pushd
-".venv\Scripts\python.exe" -c "import dotenv; print('python-dotenv: OK')"
+".venv\Scripts\python.exe" -c "import fastapi, uvicorn, sqlalchemy, jwt, bcrypt, markdown; print('Все зависимости успешно установлены!')"
 if errorlevel 1 goto :fail_after_pushd
 
 echo.
@@ -149,9 +143,9 @@ echo   ГОТОВО!
 echo ============================================================
 echo.
 echo   Дальше:
-echo     cd %PROJECT_DIR%
-echo     .venv\Scripts\activate
-echo     python main.py tasks --only 1
+echo     cd %PROJECT_DIR%\web
+echo     ..\.venv\Scripts\activate
+echo     python run.py
 echo.
 
 popd
