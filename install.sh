@@ -57,20 +57,20 @@ info "[3/6] Синхронизация файлов с GitHub..."
 if [ -d "${PROJECT_DIR}/.git" ]; then
     echo "  Папка ${PROJECT_DIR} уже существует. Обновляем..."
     cd "${PROJECT_DIR}"
-    
+
     # Сохраняем локальные изменения (если есть), чтобы не потерять
     git stash >/dev/null 2>&1 || true
-    
+
     # Скачиваем последние данные с сервера
     git fetch --all || fail "Не удалось связаться с GitHub. Проверьте интернет."
-    
+
     # Жестко сбрасываем локальные изменения к последнему коммиту (main/master)
     git reset --hard origin/main >/dev/null 2>&1 || git reset --hard origin/master >/dev/null 2>&1 || warn "Не удалось сделать reset."
-    
+
     # Удаляем новые файлы и папки, которых нет в репозитории (кроме .venv и .env)
     # Флаг -e (exclude) защищает важные файлы от удаления
     git clean -fd -e ".venv" -e ".env" >/dev/null 2>&1 || true
-    
+
     ok "Файлы успешно синхронизированы с репозиторием."
 else
     if [ -e "${PROJECT_DIR}" ]; then

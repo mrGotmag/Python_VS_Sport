@@ -1,0 +1,386 @@
+{% extends "base.html" %}
+{% block title %}Админка // Python vs Спорт{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+    input[type=range].slider { -webkit-appearance: none; width: 100%; background: transparent; }
+    input[type=range].slider:focus { outline: none; }
+    input[type=range].slider::-webkit-slider-runnable-track {
+        width: 100%; height: 6px; cursor: pointer; background: #1f2a3a; border-radius: 3px; border: 1px solid #0a0e14;
+    }
+    input[type=range].slider::-webkit-slider-thumb {
+        height: 20px; width: 20px; border-radius: 50%; background: #00e5ff; cursor: pointer;
+        -webkit-appearance: none; margin-top: -8px; box-shadow: 0 0 10px #00e5ff; transition: transform 0.1s;
+    }
+    input[type=range].slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    .admin-tab { padding: 10px 20px; border-bottom: 2px solid transparent; cursor: pointer; color: #94a3b8; font-weight: bold; transition: all 0.2s; }
+    .admin-tab:hover { color: #00e5ff; }
+    .admin-tab.active { border-bottom-color: #00ff9c; color: #00ff9c; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-7xl mx-auto space-y-4 fade-in relative">
+    <div class="flex justify-between items-center border-b border-line pb-4">
+        <h1 class="text-2xl font-bold text-neon">АДМИН-ПАНЕЛЬ</h1>
+        <a href="/logout" class="text-magenta hover:text-white text-sm">[ ВЫЙТИ ]</a>
+    </div>
+
+    <div class="bg-panel border border-line rounded-xl p-6 flex flex-wrap gap-6 items-center">
+        <div>
+            <div class="text-[10px] text-slate-500 mb-1">// ГЛОБАЛЬНЫЙ ТАЙМЕР</div>
+            <div class="flex items-center gap-4">
+                <div id="admin-timer-display" class="text-3xl font-mono font-bold text-neon glow-text min-w-[120px]">--:--:--</div>
+
+                <!-- Кнопка Старта (появляется до старта) -->
+                <button id="btn-global-start" class="px-4 py-2 rounded font-bold border border-cyan text-cyan hover:bg-cyan/10 transition">▶ СТАРТ</button>
+
+                <!-- Кнопка Паузы (появляется после старта) -->
+                <button id="btn-global-pause" class="hidden px-4 py-2 rounded font-bold border border-line text-slate-400">ЗАГРУЗКА...</button>
+            </div>
+        </div>
+
+        <div class="flex-grow relative group">
+            <div class="flex justify-between text-[10px] text-slate-500 mb-2">
+                <span class="tracking-widest">// ДЛИТЕЛЬНОСТЬ <span id="lock-hint" class="text-magenta hidden">(СНИМИТЕ С ПАУЗЫ, ЧТОБЫ ИЗМЕНИТЬ)</span></span>
+                <span>МАКС: 4 ЧАСА</span>
+            </div>
+            <div class="flex items-center gap-4 opacity-100 transition-opacity" id="duration-control">
+                <input type="range" id="global-duration-slider" min="1" max="240" value="60" class="slider w-full" disabled>
+                <div id="duration-display" class="text-xl font-mono font-bold text-cyan min-w-[60px] text-right">01:00</div>
+            </div>
+        </div>
+
+        <div class="flex gap-2">
+            <button id="btn-add-team" class="bg-cyan text-ink font-bold px-4 py-2 rounded shadow-cyan">+ КОМАНДА</button>
+        </div>
+    </div>
+
+    <div class="flex border-b border-line">
+        <div class="admin-tab active" data-tab="rating">РЕЙТИНГ КОМАНД</div>
+        <div class="admin-tab" data-tab="tasks">ЗАДАЧИ</div>
+    </div>
+
+    <!-- ВКЛАДКА: РЕЙТИНГ -->
+    <div id="tab-rating" class="tab-content active bg-panel border border-line rounded-xl p-6">
+        <table class="w-full text-left text-sm">
+            <thead><tr class="border-b border-line text-slate-500">
+                <th class="pb-2">#</th><th>Команда</th><th>Баллы</th><th>Время</th><th>Статус</th><th>Действия</th>
+            </tr></thead>
+            <tbody id="rating-body">
+                <tr><td colspan="6" class="text-center py-4 text-slate-500">Загрузка...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ВКЛАДКА: ЗАДАЧИ -->
+    <div id="tab-tasks" class="tab-content bg-panel border border-line rounded-xl p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-bold text-neon">СПИСОК ЗАДАЧ</h2>
+            <button id="btn-add-task" class="bg-neon text-ink font-bold px-4 py-2 rounded shadow-neon">+ ДОБАВИТЬ ЗАДАЧУ</button>
+        </div>
+        <table class="w-full text-left text-sm">
+            <thead><tr class="border-b border-line text-slate-500"><th class="pb-2">#</th><th>Название</th><th>Баллы</th><th>Действия</th></tr></thead>
+            <tbody id="tasks-body"><tr><td colspan="4" class="text-center py-4 text-slate-500">Загрузка...</td></tr></tbody>
+        </table>
+    </div>
+
+    <!-- МОДАЛКА: ЗАДАЧА -->
+    <div id="task-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+        <div class="bg-panel border border-neon rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h3 id="task-modal-title" class="text-xl font-bold text-neon mb-4">Задача</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs text-slate-400">Условие (Markdown)</label>
+                    <textarea id="task-statement" class="w-full h-48 bg-ink border border-line rounded p-2 text-sm text-white font-mono"></textarea>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400">Тесты (JSON)</label>
+                    <textarea id="task-tests" class="w-full h-32 bg-ink border border-line rounded p-2 text-sm text-white font-mono"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button id="btn-cancel-task" class="text-slate-400 px-4 py-2 hover:text-white">Отмена</button>
+                <button id="btn-save-task" class="bg-neon text-ink font-bold px-4 py-2 rounded">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА: КОМАНДА -->
+    <div id="team-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+        <div class="bg-panel border border-cyan rounded-xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold text-cyan mb-4">Новая команда</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs text-slate-400">Название команды</label>
+                    <input type="text" id="team-name-input" class="w-full bg-ink border border-line rounded p-2 text-white">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button id="btn-cancel-team" class="text-slate-400 px-4 py-2">Отмена</button>
+                <button id="btn-save-team" class="bg-cyan text-ink font-bold px-4 py-2 rounded">Создать</button>
+            </div>
+            <div id="team-password-result" class="hidden mt-4 p-4 border border-neon bg-neon/10 rounded text-center">
+                <div class="text-xs text-slate-400 mb-1">Пароль для входа:</div>
+                <div id="new-team-password" class="text-2xl font-mono font-bold text-neon tracking-widest"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let globalStarted = false;
+    let globalPaused = false;
+    let totalDuration = 0;
+    let localRemaining = 0;
+    let timerInterval = null;
+
+    const slider = document.getElementById('global-duration-slider');
+    const durationDisplay = document.getElementById('duration-display');
+    const timerDisplay = document.getElementById('admin-timer-display');
+    const startBtn = document.getElementById('btn-global-start');
+    const pauseBtn = document.getElementById('btn-global-pause');
+    const lockHint = document.getElementById('lock-hint');
+
+    function formatDuration(mins) {
+        const h = Math.floor(mins / 60).toString().padStart(2, '0');
+        const m = (mins % 60).toString().padStart(2, '0');
+        return `${h}:${m}`;
+    }
+
+    function formatTime(secs) {
+        if (secs < 0) secs = 0;
+        const h = Math.floor(secs / 3600).toString().padStart(2, '0');
+        const m = Math.floor((secs % 3600) / 60).toString().padStart(2, '0');
+        const s = (secs % 60).toString().padStart(2, '0');
+        return `${h}:${m}:${s}`;
+    }
+
+    // Вкладки
+    document.querySelectorAll('.admin-tab').forEach(tab => {
+        tab.onclick = () => {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+            if (tab.dataset.tab === 'tasks') loadTasksAdmin();
+        };
+    });
+
+    // Ползунок
+    slider.oninput = () => { durationDisplay.textContent = formatDuration(parseInt(slider.value)); };
+    slider.onchange = async () => {
+        const mins = parseInt(slider.value);
+        localRemaining = mins * 60;
+        totalDuration = mins * 60;
+        timerDisplay.textContent = formatTime(localRemaining);
+        await fetch('/api/admin/timer/global', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({duration_seconds: mins * 60}) });
+    };
+
+    function startTicker() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if (globalStarted && !globalPaused && localRemaining > 0) {
+                localRemaining--;
+                timerDisplay.textContent = formatTime(localRemaining);
+            }
+        }, 1000);
+    }
+
+    async function loadStats() {
+        try {
+            const res = await fetch('/api/admin/stats');
+            if (res.status === 401 || res.status === 403) return window.location.href = '/logout';
+            const data = await res.json();
+
+            // 1. ОБНОВЛЯЕМ КНОПКИ И СЛАЙДЕР
+            globalStarted = data.global_is_started;
+            globalPaused = data.global_is_paused;
+
+            // Кнопка Старт / Пауза
+            if (!globalStarted) {
+                startBtn.classList.remove('hidden');
+                pauseBtn.classList.add('hidden');
+                timerDisplay.textContent = formatTime(data.total_duration);
+            } else {
+                startBtn.classList.add('hidden');
+                pauseBtn.classList.remove('hidden');
+                pauseBtn.textContent = globalPaused ? '⏸ ПАУЗА' : '▶ ИДЕТ';
+                pauseBtn.className = `px-4 py-2 rounded font-bold border ${globalPaused ? 'border-magenta text-magenta' : 'border-neon text-neon shadow-neon'}`;
+            }
+
+            // Блокировка слайдера
+            slider.disabled = globalStarted && !globalPaused;
+            const durationControl = document.getElementById('duration-control');
+            if (slider.disabled) {
+                durationControl.classList.add('opacity-50', 'cursor-not-allowed');
+                lockHint.classList.remove('hidden');
+            } else {
+                durationControl.classList.remove('opacity-50', 'cursor-not-allowed');
+                lockHint.classList.add('hidden');
+            }
+
+            // 2. СИНХРОНИЗАЦИЯ ВРЕМЕНИ
+            const serverMins = Math.floor(data.total_duration / 60);
+            if (totalDuration === 0) {
+                totalDuration = data.total_duration;
+                localRemaining = data.total_duration;
+                slider.value = serverMins;
+                durationDisplay.textContent = formatDuration(serverMins);
+                timerDisplay.textContent = formatTime(localRemaining);
+                startTicker();
+            }
+
+            // 3. РЕЙТИНГ
+            const tbody = document.getElementById('rating-body');
+            if (!data.teams || data.teams.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-slate-500">Нет команд</td></tr>';
+            } else {
+                tbody.innerHTML = data.teams.map((t, i) => `
+                    <tr class="border-b border-line/50 hover:bg-ink transition">
+                        <td class="py-3 text-neon font-bold">${i+1}</td>
+                        <td class="font-bold">${t.name} ${t.finished_at ? '<span class="text-magenta text-xs">(ЗАВЕРШЕНО)</span>' : ''}</td>
+                        <td class="text-warn font-mono font-bold text-lg">${t.score}</td>
+                        <td class="font-mono ${t.remaining_seconds < 600 ? 'text-magenta' : 'text-cyan'}">${formatTime(t.remaining_seconds)}</td>
+                        <td>${t.is_paused ? '<span class="text-warn">На паузе</span>' : '<span class="text-cyan">Играет</span>'}</td>
+                        <td class="space-x-2">
+                            <button onclick="toggleTeam(${t.id}, ${!t.is_paused})" class="text-xs border border-line px-2 py-1 rounded hover:border-cyan">${t.is_paused ? 'Продолжить' : 'Пауза'}</button>
+                            <button onclick="finishTeam(${t.id})" class="text-xs border border-magenta text-magenta px-2 py-1 rounded hover:bg-magenta hover:text-white" ${t.finished_at ? 'disabled' : ''}>Завершить</button>
+                            <button onclick="deleteTeam(${t.id})" class="text-xs text-slate-500 hover:text-magenta px-1">🗑</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        } catch (e) { console.error("Ошибка в loadStats:", e); }
+    }
+
+    startBtn.onclick = async () => {
+        await fetch('/api/admin/timer/global', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({is_started: true}) });
+        await loadStats();
+    };
+
+    pauseBtn.onclick = async () => {
+        await fetch('/api/admin/timer/global', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({is_paused: !globalPaused}) });
+        await loadStats();
+    };
+
+    async function toggleTeam(id, pause) {
+        await fetch(`/api/admin/team/${id}/timer`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({is_paused: pause}) });
+        loadStats();
+    }
+    async function finishTeam(id) {
+        if(!confirm('Завершить?')) return;
+        await fetch(`/api/admin/team/${id}/timer`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({force_finish: true}) });
+        loadStats();
+    }
+    async function deleteTeam(id) {
+        if(!confirm('УДАЛИТЬ команду?')) return;
+        await fetch(`/api/admin/teams/${id}/delete`, { method: 'POST' });
+        loadStats();
+    }
+
+    document.getElementById('btn-add-team').onclick = () => {
+        document.getElementById('team-modal').classList.remove('hidden');
+        document.getElementById('team-password-result').classList.add('hidden');
+        document.getElementById('btn-save-team').classList.remove('hidden');
+        document.getElementById('team-name-input').value = '';
+    };
+    document.getElementById('btn-cancel-team').onclick = () => document.getElementById('team-modal').classList.add('hidden');
+    document.getElementById('btn-save-team').onclick = async () => {
+        const name = document.getElementById('team-name-input').value.trim();
+        if (!name) return;
+        const res = await fetch('/api/admin/teams', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name }) });
+        if (res.ok) {
+            const d = await res.json();
+            document.getElementById('new-team-password').textContent = d.password;
+            document.getElementById('team-password-result').classList.remove('hidden');
+            document.getElementById('btn-save-team').classList.add('hidden');
+            loadStats();
+        }
+    };
+
+    let currentTasks = [];
+    async function loadTasksAdmin() {
+        const tbody = document.getElementById('tasks-body');
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500 animate-pulse">Загрузка...</td></tr>';
+        try {
+            const res = await fetch('/api/admin/tasks');
+            if (!res.ok) throw new Error();
+            currentTasks = await res.json();
+
+            if (currentTasks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500">Задач нет</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = currentTasks.map((t, i) => `
+                <tr class="border-b border-line/50 hover:bg-ink transition">
+                    <td class="py-3 text-neon font-bold">${i+1}</td>
+                    <td class="font-bold">${t.title}</td>
+                    <td class="text-warn font-mono font-bold text-lg">${t.points_max}</td>
+                    <td class="space-x-2">
+                        <button onclick="editTask(${t.id})" class="text-xs border border-line px-2 py-1 rounded hover:border-cyan hover:text-cyan">Редактировать</button>
+                        <button onclick="deleteTask(${t.id})" class="text-xs text-slate-500 hover:text-magenta px-1">🗑</button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-magenta">Ошибка загрузки</td></tr>';
+        }
+    }
+
+    document.getElementById('btn-add-task').onclick = () => {
+        document.getElementById('task-modal').classList.remove('hidden');
+        document.getElementById('task-modal-title').textContent = 'Новая задача';
+        document.getElementById('task-statement').value = '';
+        document.getElementById('task-tests').value = '{\n  "tests": [\n    {"id": 1, "input": "1", "expected_output": "1", "points": 100}\n  ]\n}';
+
+        const saveBtn = document.getElementById('btn-save-task');
+        saveBtn.onclick = async () => {
+            const statement = document.getElementById('task-statement').value;
+            const tests_json = document.getElementById('task-tests').value;
+            try { JSON.parse(tests_json); } catch { return alert('Неверный JSON'); }
+
+            const res = await fetch('/api/admin/tasks', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({statement, tests_json}) });
+            if (res.ok) { document.getElementById('task-modal').classList.add('hidden'); loadTasksAdmin(); }
+            else alert('Ошибка');
+        };
+    };
+
+    document.getElementById('btn-cancel-task').onclick = () => document.getElementById('task-modal').classList.add('hidden');
+
+    function editTask(id) {
+        const task = currentTasks.find(t => t.id === id);
+        if (!task) return;
+        document.getElementById('task-modal').classList.remove('hidden');
+        document.getElementById('task-modal-title').textContent = `Редактирование: Задача ${id}`;
+        document.getElementById('task-statement').value = task.statement;
+        document.getElementById('task-tests').value = task.tests_json;
+
+        const saveBtn = document.getElementById('btn-save-task');
+        saveBtn.onclick = async () => {
+            const statement = document.getElementById('task-statement').value;
+            const tests_json = document.getElementById('task-tests').value;
+            try { JSON.parse(tests_json); } catch { return alert('Неверный JSON'); }
+
+            const res = await fetch(`/api/admin/tasks/${id}/edit`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({statement, tests_json}) });
+            if (res.ok) { document.getElementById('task-modal').classList.add('hidden'); loadTasksAdmin(); }
+            else alert('Ошибка');
+        };
+    }
+
+    async function deleteTask(id) {
+        if (!confirm('Удалить задачу?')) return;
+        await fetch(`/api/admin/tasks/${id}/delete`, { method: 'POST' });
+        loadTasksAdmin();
+    }
+
+    const ws = new WebSocket(`ws://${location.host}/ws`);
+    ws.onmessage = (e) => { if (e.data === 'update_rating' || e.data === 'timer_changed') loadStats(); };
+
+    loadStats();
+    setInterval(loadStats, 5000);
+</script>
+{% endblock %}

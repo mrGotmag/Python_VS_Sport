@@ -42,21 +42,21 @@ echo [3/6] Синхронизация файлов с GitHub...
 if exist "%PROJECT_DIR%\.git" (
     echo   Папка %PROJECT_DIR% существует. Обновляем файлы...
     pushd "%PROJECT_DIR%"
-    
+
     git stash >nul 2>&1
     git fetch --all
     if errorlevel 1 (
         echo   [ОШИБКА] Не удалось связаться с GitHub.
         goto :fail_after_pushd
     )
-    
+
     REM Сбрасываем к состоянию репозитория
     git reset --hard origin/main >nul 2>&1
     if errorlevel 1 git reset --hard origin/master >nul 2>&1
-    
+
     REM Удаляем лишние файлы, НО сохраняем .venv и .env
     git clean -fd -e .venv -e .env >nul 2>&1
-    
+
     echo   OK: Файлы синхронизированы.
     popd
 ) else if exist "%PROJECT_DIR%" (

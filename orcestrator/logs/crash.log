@@ -1,0 +1,743 @@
+2026-10-25 20:50:35 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 20:50:35 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 20:50:35 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 20:50:35 [SpawnProcess-1] [INFO] Задача 1: 2 тестов, максимум 75 баллов, лимиты: 2.0s / 256 МБ
+2026-10-25 20:50:35 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 47 символов, 4 строк
+2026-10-25 20:50:35 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 20:50:35 [SpawnProcess-1] [DEBUG] run_batch: 2 тестов, isolated=False, timeout=9.0s, memory=256MB
+2026-10-25 20:50:35 [SpawnProcess-1] [INFO] Задача 1: тест #1 OK (+25)
+2026-10-25 20:50:35 [SpawnProcess-1] [INFO] Задача 1: тест #2 OK (+50)
+2026-10-25 20:50:35 [SpawnProcess-1] [INFO] Задача 1: итог 75/75 (ok)
+2026-10-25 20:50:35 [MainProcess] [INFO] 
+2026-10-25 20:50:35 [MainProcess] [INFO] === Задача 1: Сумма двух чисел ===
+2026-10-25 20:50:35 [MainProcess] [INFO] [ OK ] #1 (+25)
+2026-10-25 20:50:35 [MainProcess] [INFO] [ OK ] #2 (+50)
+2026-10-25 20:50:35 [MainProcess] [INFO] Результат: 75/75
+2026-10-25 20:50:35 [MainProcess] [INFO] 
+2026-10-25 20:50:35 [MainProcess] [INFO] ИТОГО: 75/75 баллов
+2026-10-25 20:50:35 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 20:50:35 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 20:50:47 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 20:50:47 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 20:50:47 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 20:50:47 [SpawnProcess-1] [INFO] Задача 1: 2 тестов, максимум 75 баллов, лимиты: 2.0s / 256 МБ
+2026-10-25 20:50:47 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 47 символов, 4 строк
+2026-10-25 20:50:47 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 20:50:47 [SpawnProcess-1] [DEBUG] run_batch: 2 тестов, isolated=False, timeout=9.0s, memory=256MB
+2026-10-25 20:50:47 [SpawnProcess-1] [INFO] Задача 1: тест #1 OK (+25)
+2026-10-25 20:50:47 [SpawnProcess-1] [INFO] Задача 1: тест #2 OK (+50)
+2026-10-25 20:50:47 [SpawnProcess-1] [INFO] Задача 1: итог 75/75 (ok)
+2026-10-25 20:50:47 [MainProcess] [INFO] 
+2026-10-25 20:50:47 [MainProcess] [INFO] === Задача 1: Сумма двух чисел ===
+2026-10-25 20:50:47 [MainProcess] [INFO] [ OK ] #1 (+25)
+2026-10-25 20:50:47 [MainProcess] [INFO] [ OK ] #2 (+50)
+2026-10-25 20:50:47 [MainProcess] [INFO] Результат: 75/75
+2026-10-25 20:50:47 [MainProcess] [INFO] 
+2026-10-25 20:50:47 [MainProcess] [INFO] ИТОГО: 75/75 баллов
+2026-10-25 20:50:47 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 20:50:47 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 21:28:53 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 21:28:53 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 21:28:54 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 21:28:54 [SpawnProcess-1] [INFO] Задача 1: 2 тестов, максимум 75 баллов, лимиты: 2.0s / 256 МБ
+2026-10-25 21:28:54 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 48 символов, 4 строк
+2026-10-25 21:28:54 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 21:28:54 [SpawnProcess-1] [DEBUG] run_batch: 2 тестов, isolated=False, timeout=9.0s, memory=256MB
+2026-10-25 21:28:54 [SpawnProcess-1] [INFO] Задача 1: тест #1 OK (+25)
+2026-10-25 21:28:54 [SpawnProcess-1] [INFO] Задача 1: тест #2 OK (+50)
+2026-10-25 21:28:54 [SpawnProcess-1] [INFO] Задача 1: итог 75/75 (ok)
+2026-10-25 21:28:54 [MainProcess] [INFO] 
+2026-10-25 21:28:54 [MainProcess] [INFO] === Задача 1: Сумма двух чисел ===
+2026-10-25 21:28:54 [MainProcess] [INFO] [ OK ] #1 (+25)
+2026-10-25 21:28:54 [MainProcess] [INFO] [ OK ] #2 (+50)
+2026-10-25 21:28:54 [MainProcess] [INFO] Результат: 75/75
+2026-10-25 21:28:54 [MainProcess] [INFO] 
+2026-10-25 21:28:54 [MainProcess] [INFO] ИТОГО: 75/75 баллов
+2026-10-25 21:28:54 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 21:28:54 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 21:29:00 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 21:29:00 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 21:29:01 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 21:29:01 [SpawnProcess-1] [INFO] Задача 1: 2 тестов, максимум 75 баллов, лимиты: 2.0s / 256 МБ
+2026-10-25 21:29:01 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 48 символов, 4 строк
+2026-10-25 21:29:01 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 21:29:01 [SpawnProcess-1] [DEBUG] run_batch: 2 тестов, isolated=False, timeout=9.0s, memory=256MB
+2026-10-25 21:29:01 [SpawnProcess-1] [INFO] Задача 1: тест #1 OK (+25)
+2026-10-25 21:29:01 [SpawnProcess-1] [INFO] Задача 1: тест #2 OK (+50)
+2026-10-25 21:29:01 [SpawnProcess-1] [INFO] Задача 1: итог 75/75 (ok)
+2026-10-25 21:29:01 [MainProcess] [INFO] 
+2026-10-25 21:29:01 [MainProcess] [INFO] === Задача 1: Сумма двух чисел ===
+2026-10-25 21:29:01 [MainProcess] [INFO] [ OK ] #1 (+25)
+2026-10-25 21:29:01 [MainProcess] [INFO] [ OK ] #2 (+50)
+2026-10-25 21:29:01 [MainProcess] [INFO] Результат: 75/75
+2026-10-25 21:29:01 [MainProcess] [INFO] 
+2026-10-25 21:29:01 [MainProcess] [INFO] ИТОГО: 75/75 баллов
+2026-10-25 21:29:01 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 21:29:01 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 22:38:13 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 22:38:13 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 22:38:14 [SpawnProcess-1] [INFO] --- Задача 3: начало проверки (tasks\3)
+2026-10-25 22:38:14 [SpawnProcess-1] [INFO] Задача 3: 2 тестов, максимум 75 баллов, лимиты: 2.0s / 256 МБ
+2026-10-25 22:38:14 [SpawnProcess-1] [DEBUG] Задача 3: код решения — 48 символов, 4 строк
+2026-10-25 22:38:14 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 22:38:14 [SpawnProcess-1] [DEBUG] run_batch: 2 тестов, isolated=False, timeout=9.0s, memory=256MB
+2026-10-25 22:38:14 [SpawnProcess-1] [INFO] Задача 3: тест #1 OK (+25)
+2026-10-25 22:38:14 [SpawnProcess-1] [INFO] Задача 3: тест #2 OK (+50)
+2026-10-25 22:38:14 [SpawnProcess-1] [INFO] Задача 3: итог 75/75 (ok)
+2026-10-25 22:38:14 [MainProcess] [INFO] 
+2026-10-25 22:38:14 [MainProcess] [INFO] === Задача 3: Сумма двух чисел ===
+2026-10-25 22:38:14 [MainProcess] [INFO] [ OK ] #1 (+25)
+2026-10-25 22:38:14 [MainProcess] [INFO] [ OK ] #2 (+50)
+2026-10-25 22:38:14 [MainProcess] [INFO] Результат: 75/75
+2026-10-25 22:38:14 [MainProcess] [INFO] 
+2026-10-25 22:38:14 [MainProcess] [INFO] ИТОГО: 75/75 баллов
+2026-10-25 22:38:14 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 22:38:14 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 22:41:33 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 22:41:33 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 22:41:34 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 22:41:34 [SpawnProcess-1] [INFO] Задача 1: 2 тестов, максимум 75 баллов, лимиты: 2.0s / 256 МБ
+2026-10-25 22:41:34 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 48 символов, 4 строк
+2026-10-25 22:41:34 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 22:41:34 [SpawnProcess-1] [DEBUG] run_batch: 2 тестов, isolated=False, timeout=9.0s, memory=256MB
+2026-10-25 22:41:34 [SpawnProcess-1] [INFO] Задача 1: тест #1 OK (+25)
+2026-10-25 22:41:34 [SpawnProcess-1] [INFO] Задача 1: тест #2 OK (+50)
+2026-10-25 22:41:34 [SpawnProcess-1] [INFO] Задача 1: итог 75/75 (ok)
+2026-10-25 22:41:34 [MainProcess] [INFO] 
+2026-10-25 22:41:34 [MainProcess] [INFO] === Задача 1: Сумма двух чисел ===
+2026-10-25 22:41:34 [MainProcess] [INFO] [ OK ] #1 (+25)
+2026-10-25 22:41:34 [MainProcess] [INFO] [ OK ] #2 (+50)
+2026-10-25 22:41:34 [MainProcess] [INFO] Результат: 75/75
+2026-10-25 22:41:34 [MainProcess] [INFO] 
+2026-10-25 22:41:34 [MainProcess] [INFO] ИТОГО: 75/75 баллов
+2026-10-25 22:41:34 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 22:41:34 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 22:44:39 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 22:44:39 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 22:44:39 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 22:44:39 [SpawnProcess-1] [INFO] Задача 1: 2 тестов, максимум 75 баллов, лимиты: 2.0s / 256 МБ
+2026-10-25 22:44:39 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 48 символов, 4 строк
+2026-10-25 22:44:39 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 22:44:39 [SpawnProcess-1] [DEBUG] run_batch: 2 тестов, isolated=False, timeout=9.0s, memory=256MB
+2026-10-25 22:44:39 [SpawnProcess-1] [INFO] Задача 1: тест #1 OK (+25)
+2026-10-25 22:44:39 [SpawnProcess-1] [INFO] Задача 1: тест #2 OK (+50)
+2026-10-25 22:44:39 [SpawnProcess-1] [INFO] Задача 1: итог 75/75 (ok)
+2026-10-25 22:44:39 [MainProcess] [INFO] 
+2026-10-25 22:44:39 [MainProcess] [INFO] === Задача 1: Сумма двух чисел ===
+2026-10-25 22:44:39 [MainProcess] [INFO] [ OK ] #1 (+25)
+2026-10-25 22:44:39 [MainProcess] [INFO] [ OK ] #2 (+50)
+2026-10-25 22:44:39 [MainProcess] [INFO] Результат: 75/75
+2026-10-25 22:44:39 [MainProcess] [INFO] 
+2026-10-25 22:44:39 [MainProcess] [INFO] ИТОГО: 75/75 баллов
+2026-10-25 22:44:39 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 22:44:39 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 22:44:44 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 22:44:44 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 22:44:44 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 22:44:44 [SpawnProcess-1] [INFO] Задача 1: 2 тестов, максимум 75 баллов, лимиты: 2.0s / 256 МБ
+2026-10-25 22:44:44 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 48 символов, 4 строк
+2026-10-25 22:44:44 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 22:44:44 [SpawnProcess-1] [DEBUG] run_batch: 2 тестов, isolated=False, timeout=9.0s, memory=256MB
+2026-10-25 22:44:44 [SpawnProcess-1] [INFO] Задача 1: тест #1 OK (+25)
+2026-10-25 22:44:44 [SpawnProcess-1] [INFO] Задача 1: тест #2 OK (+50)
+2026-10-25 22:44:44 [SpawnProcess-1] [INFO] Задача 1: итог 75/75 (ok)
+2026-10-25 22:44:45 [MainProcess] [INFO] 
+2026-10-25 22:44:45 [MainProcess] [INFO] === Задача 1: Сумма двух чисел ===
+2026-10-25 22:44:45 [MainProcess] [INFO] [ OK ] #1 (+25)
+2026-10-25 22:44:45 [MainProcess] [INFO] [ OK ] #2 (+50)
+2026-10-25 22:44:45 [MainProcess] [INFO] Результат: 75/75
+2026-10-25 22:44:45 [MainProcess] [INFO] 
+2026-10-25 22:44:45 [MainProcess] [INFO] ИТОГО: 75/75 баллов
+2026-10-25 22:44:45 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 22:44:45 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 22:47:32 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 22:47:32 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 22:47:33 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 22:47:33 [SpawnProcess-1] [INFO] Задача 1: 2 тестов, максимум 75 баллов, лимиты: 2.0s / 256 МБ
+2026-10-25 22:47:33 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 48 символов, 4 строк
+2026-10-25 22:47:33 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 22:47:33 [SpawnProcess-1] [DEBUG] run_batch: 2 тестов, isolated=False, timeout=9.0s, memory=256MB
+2026-10-25 22:47:33 [SpawnProcess-1] [INFO] Задача 1: тест #1 OK (+25)
+2026-10-25 22:47:33 [SpawnProcess-1] [INFO] Задача 1: тест #2 OK (+50)
+2026-10-25 22:47:33 [SpawnProcess-1] [INFO] Задача 1: итог 75/75 (ok)
+2026-10-25 22:47:33 [MainProcess] [INFO] 
+2026-10-25 22:47:33 [MainProcess] [INFO] === Задача 1: Сумма двух чисел ===
+2026-10-25 22:47:33 [MainProcess] [INFO] [ OK ] #1 (+25)
+2026-10-25 22:47:33 [MainProcess] [INFO] [ OK ] #2 (+50)
+2026-10-25 22:47:33 [MainProcess] [INFO] Результат: 75/75
+2026-10-25 22:47:33 [MainProcess] [INFO] 
+2026-10-25 22:47:33 [MainProcess] [INFO] ИТОГО: 75/75 баллов
+2026-10-25 22:47:33 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 22:47:33 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 22:49:47 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 22:49:47 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 22:49:47 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 22:49:47 [SpawnProcess-1] [INFO] Задача 1: 2 тестов, максимум 75 баллов, лимиты: 2.0s / 256 МБ
+2026-10-25 22:49:47 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 48 символов, 4 строк
+2026-10-25 22:49:47 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 22:49:47 [SpawnProcess-1] [DEBUG] run_batch: 2 тестов, isolated=False, timeout=9.0s, memory=256MB
+2026-10-25 22:49:47 [SpawnProcess-1] [INFO] Задача 1: тест #1 OK (+25)
+2026-10-25 22:49:47 [SpawnProcess-1] [INFO] Задача 1: тест #2 OK (+50)
+2026-10-25 22:49:47 [SpawnProcess-1] [INFO] Задача 1: итог 75/75 (ok)
+2026-10-25 22:49:47 [MainProcess] [INFO] 
+2026-10-25 22:49:47 [MainProcess] [INFO] === Задача 1: Сумма двух чисел ===
+2026-10-25 22:49:47 [MainProcess] [INFO] [ OK ] #1 (+25)
+2026-10-25 22:49:47 [MainProcess] [INFO] [ OK ] #2 (+50)
+2026-10-25 22:49:47 [MainProcess] [INFO] Результат: 75/75
+2026-10-25 22:49:47 [MainProcess] [INFO] 
+2026-10-25 22:49:47 [MainProcess] [INFO] ИТОГО: 75/75 баллов
+2026-10-25 22:49:47 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 22:49:47 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 22:50:25 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 22:50:25 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 22:50:25 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 22:50:25 [SpawnProcess-1] [INFO] Задача 1: 2 тестов, максимум 75 баллов, лимиты: 2.0s / 256 МБ
+2026-10-25 22:50:25 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 48 символов, 4 строк
+2026-10-25 22:50:25 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 22:50:25 [SpawnProcess-1] [DEBUG] run_batch: 2 тестов, isolated=False, timeout=9.0s, memory=256MB
+2026-10-25 22:50:25 [SpawnProcess-1] [INFO] Задача 1: тест #1 FAIL (wrong output)
+2026-10-25 22:50:25 [SpawnProcess-1] [DEBUG]   expected='8\n' got='-2\n'
+2026-10-25 22:50:25 [SpawnProcess-1] [INFO] Задача 1: тест #2 OK (+50)
+2026-10-25 22:50:25 [SpawnProcess-1] [INFO] Задача 1: итог 50/75 (partial)
+2026-10-25 22:50:25 [MainProcess] [INFO] 
+2026-10-25 22:50:25 [MainProcess] [INFO] === Задача 1: Сумма двух чисел ===
+2026-10-25 22:50:25 [MainProcess] [INFO] [FAIL] #1: wrong output expected '8\n', got '-2\n'
+2026-10-25 22:50:25 [MainProcess] [INFO] [ OK ] #2 (+50)
+2026-10-25 22:50:25 [MainProcess] [INFO] Результат: 50/75
+2026-10-25 22:50:25 [MainProcess] [INFO] 
+2026-10-25 22:50:25 [MainProcess] [INFO] ИТОГО: 50/75 баллов
+2026-10-25 22:50:25 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-25 22:50:25 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 22:50:43 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 22:50:43 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 22:50:43 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 22:50:43 [SpawnProcess-1] [INFO] Задача 1: 2 тестов, максимум 75 баллов, лимиты: 2.0s / 256 МБ
+2026-10-25 22:50:43 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 48 символов, 4 строк
+2026-10-25 22:50:43 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 22:50:43 [SpawnProcess-1] [DEBUG] run_batch: 2 тестов, isolated=False, timeout=9.0s, memory=256MB
+2026-10-25 22:50:43 [SpawnProcess-1] [INFO] Задача 1: тест #1 OK (+25)
+2026-10-25 22:50:43 [SpawnProcess-1] [INFO] Задача 1: тест #2 OK (+50)
+2026-10-25 22:50:43 [SpawnProcess-1] [INFO] Задача 1: итог 75/75 (ok)
+2026-10-25 22:50:43 [MainProcess] [INFO] 
+2026-10-25 22:50:43 [MainProcess] [INFO] === Задача 1: Сумма двух чисел ===
+2026-10-25 22:50:43 [MainProcess] [INFO] [ OK ] #1 (+25)
+2026-10-25 22:50:43 [MainProcess] [INFO] [ OK ] #2 (+50)
+2026-10-25 22:50:43 [MainProcess] [INFO] Результат: 75/75
+2026-10-25 22:50:43 [MainProcess] [INFO] 
+2026-10-25 22:50:43 [MainProcess] [INFO] ИТОГО: 75/75 баллов
+2026-10-25 22:50:43 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 22:50:43 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 22:55:10 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 22:55:10 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 22:55:10 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 22:55:10 [SpawnProcess-1] [INFO] Задача 1: 2 тестов, максимум 75 баллов, лимиты: 2.0s / 256 МБ
+2026-10-25 22:55:10 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 48 символов, 4 строк
+2026-10-25 22:55:10 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 22:55:10 [SpawnProcess-1] [DEBUG] run_batch: 2 тестов, isolated=False, timeout=9.0s, memory=256MB
+2026-10-25 22:55:10 [SpawnProcess-1] [INFO] Задача 1: тест #1 OK (+25)
+2026-10-25 22:55:10 [SpawnProcess-1] [INFO] Задача 1: тест #2 OK (+50)
+2026-10-25 22:55:10 [SpawnProcess-1] [INFO] Задача 1: итог 75/75 (ok)
+2026-10-25 22:55:10 [MainProcess] [INFO] 
+2026-10-25 22:55:10 [MainProcess] [INFO] === Задача 1: Сумма двух чисел ===
+2026-10-25 22:55:10 [MainProcess] [INFO] [ OK ] #1 (+25)
+2026-10-25 22:55:10 [MainProcess] [INFO] [ OK ] #2 (+50)
+2026-10-25 22:55:10 [MainProcess] [INFO] Результат: 75/75
+2026-10-25 22:55:10 [MainProcess] [INFO] 
+2026-10-25 22:55:10 [MainProcess] [INFO] ИТОГО: 75/75 баллов
+2026-10-25 22:55:10 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 22:55:10 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 22:55:33 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 22:55:33 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 22:55:33 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 22:55:33 [SpawnProcess-1] [INFO] Задача 1: 2 тестов, максимум 75 баллов, лимиты: 2.0s / 256 МБ
+2026-10-25 22:55:33 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 48 символов, 4 строк
+2026-10-25 22:55:33 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 22:55:33 [SpawnProcess-1] [DEBUG] run_batch: 2 тестов, isolated=False, timeout=9.0s, memory=256MB
+2026-10-25 22:55:33 [SpawnProcess-1] [INFO] Задача 1: тест #1 OK (+25)
+2026-10-25 22:55:33 [SpawnProcess-1] [INFO] Задача 1: тест #2 OK (+50)
+2026-10-25 22:55:33 [SpawnProcess-1] [INFO] Задача 1: итог 75/75 (ok)
+2026-10-25 22:55:33 [MainProcess] [INFO] 
+2026-10-25 22:55:33 [MainProcess] [INFO] === Задача 1: Сумма двух чисел ===
+2026-10-25 22:55:33 [MainProcess] [INFO] [ OK ] #1 (+25)
+2026-10-25 22:55:33 [MainProcess] [INFO] [ OK ] #2 (+50)
+2026-10-25 22:55:33 [MainProcess] [INFO] Результат: 75/75
+2026-10-25 22:55:33 [MainProcess] [INFO] 
+2026-10-25 22:55:33 [MainProcess] [INFO] ИТОГО: 75/75 баллов
+2026-10-25 22:55:33 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 22:55:33 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 22:55:38 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 22:55:38 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 22:55:39 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 22:55:39 [SpawnProcess-1] [INFO] Задача 1: 2 тестов, максимум 75 баллов, лимиты: 2.0s / 256 МБ
+2026-10-25 22:55:39 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 48 символов, 4 строк
+2026-10-25 22:55:39 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 22:55:39 [SpawnProcess-1] [DEBUG] run_batch: 2 тестов, isolated=False, timeout=9.0s, memory=256MB
+2026-10-25 22:55:39 [SpawnProcess-1] [INFO] Задача 1: тест #1 OK (+25)
+2026-10-25 22:55:39 [SpawnProcess-1] [INFO] Задача 1: тест #2 OK (+50)
+2026-10-25 22:55:39 [SpawnProcess-1] [INFO] Задача 1: итог 75/75 (ok)
+2026-10-25 22:55:39 [MainProcess] [INFO] 
+2026-10-25 22:55:39 [MainProcess] [INFO] === Задача 1: Сумма двух чисел ===
+2026-10-25 22:55:39 [MainProcess] [INFO] [ OK ] #1 (+25)
+2026-10-25 22:55:39 [MainProcess] [INFO] [ OK ] #2 (+50)
+2026-10-25 22:55:39 [MainProcess] [INFO] Результат: 75/75
+2026-10-25 22:55:39 [MainProcess] [INFO] 
+2026-10-25 22:55:39 [MainProcess] [INFO] ИТОГО: 75/75 баллов
+2026-10-25 22:55:39 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 22:55:39 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 23:02:08 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 23:02:08 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 23:02:08 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 23:02:08 [SpawnProcess-1] [INFO] Задача 1: 2 тестов, максимум 75 баллов, лимиты: 2.0s / 256 МБ
+2026-10-25 23:02:08 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 10 символов, 2 строк
+2026-10-25 23:02:08 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 23:02:08 [SpawnProcess-1] [DEBUG] run_batch: 2 тестов, isolated=False, timeout=9.0s, memory=256MB
+2026-10-25 23:02:08 [SpawnProcess-1] [INFO] Задача 1: тест #1 FAIL (NameError: name 'Tx9fPV0F' is not defined)
+2026-10-25 23:02:08 [SpawnProcess-1] [INFO] Задача 1: тест #2 FAIL (NameError: name 'Tx9fPV0F' is not defined)
+2026-10-25 23:02:08 [SpawnProcess-1] [INFO] Задача 1: итог 0/75 (partial)
+2026-10-25 23:02:08 [MainProcess] [INFO] 
+2026-10-25 23:02:08 [MainProcess] [INFO] === Задача 1: Сумма двух чисел ===
+2026-10-25 23:02:08 [MainProcess] [INFO] [FAIL] #1: NameError: name 'Tx9fPV0F' is not defined
+2026-10-25 23:02:08 [MainProcess] [INFO] [FAIL] #2: NameError: name 'Tx9fPV0F' is not defined
+2026-10-25 23:02:08 [MainProcess] [INFO] Результат: 0/75
+2026-10-25 23:02:08 [MainProcess] [INFO] 
+2026-10-25 23:02:08 [MainProcess] [INFO] ИТОГО: 0/75 баллов
+2026-10-25 23:02:08 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-25 23:02:08 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 23:02:35 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 23:02:35 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 23:02:36 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 23:02:36 [SpawnProcess-1] [INFO] Задача 1: 2 тестов, максимум 75 баллов, лимиты: 2.0s / 256 МБ
+2026-10-25 23:02:36 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 140 символов, 12 строк
+2026-10-25 23:02:36 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 23:02:36 [SpawnProcess-1] [DEBUG] run_batch: 2 тестов, isolated=False, timeout=9.0s, memory=256MB
+2026-10-25 23:02:36 [SpawnProcess-1] [INFO] Задача 1: тест #1 FAIL (wrong output)
+2026-10-25 23:02:36 [SpawnProcess-1] [DEBUG]   expected='8\n' got='2 1 синяя\n'
+2026-10-25 23:02:36 [SpawnProcess-1] [INFO] Задача 1: тест #2 FAIL (wrong output)
+2026-10-25 23:02:36 [SpawnProcess-1] [DEBUG]   expected='0\n' got='0 0 белая\n'
+2026-10-25 23:02:36 [SpawnProcess-1] [INFO] Задача 1: итог 0/75 (partial)
+2026-10-25 23:02:36 [MainProcess] [INFO] 
+2026-10-25 23:02:36 [MainProcess] [INFO] === Задача 1: Сумма двух чисел ===
+2026-10-25 23:02:36 [MainProcess] [INFO] [FAIL] #1: wrong output expected '8\n', got '2 1 синяя\n'
+2026-10-25 23:02:36 [MainProcess] [INFO] [FAIL] #2: wrong output expected '0\n', got '0 0 белая\n'
+2026-10-25 23:02:36 [MainProcess] [INFO] Результат: 0/75
+2026-10-25 23:02:36 [MainProcess] [INFO] 
+2026-10-25 23:02:36 [MainProcess] [INFO] ИТОГО: 0/75 баллов
+2026-10-25 23:02:36 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-25 23:02:36 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 23:02:47 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 23:02:47 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 23:02:47 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 23:02:47 [SpawnProcess-1] [INFO] Задача 1: 2 тестов, максимум 75 баллов, лимиты: 2.0s / 256 МБ
+2026-10-25 23:02:47 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 140 символов, 12 строк
+2026-10-25 23:02:47 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 23:02:47 [SpawnProcess-1] [DEBUG] run_batch: 2 тестов, isolated=False, timeout=9.0s, memory=256MB
+2026-10-25 23:02:47 [SpawnProcess-1] [INFO] Задача 1: тест #1 FAIL (wrong output)
+2026-10-25 23:02:47 [SpawnProcess-1] [DEBUG]   expected='8\n' got='2 1 синяя\n'
+2026-10-25 23:02:47 [SpawnProcess-1] [INFO] Задача 1: тест #2 FAIL (wrong output)
+2026-10-25 23:02:47 [SpawnProcess-1] [DEBUG]   expected='0\n' got='0 0 белая\n'
+2026-10-25 23:02:47 [SpawnProcess-1] [INFO] Задача 1: итог 0/75 (partial)
+2026-10-25 23:02:47 [MainProcess] [INFO] 
+2026-10-25 23:02:47 [MainProcess] [INFO] === Задача 1: Сумма двух чисел ===
+2026-10-25 23:02:47 [MainProcess] [INFO] [FAIL] #1: wrong output expected '8\n', got '2 1 синяя\n'
+2026-10-25 23:02:47 [MainProcess] [INFO] [FAIL] #2: wrong output expected '0\n', got '0 0 белая\n'
+2026-10-25 23:02:47 [MainProcess] [INFO] Результат: 0/75
+2026-10-25 23:02:47 [MainProcess] [INFO] 
+2026-10-25 23:02:47 [MainProcess] [INFO] ИТОГО: 0/75 баллов
+2026-10-25 23:02:47 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-25 23:02:47 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 23:06:39 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 23:06:39 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 23:06:40 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 23:06:40 [SpawnProcess-1] [INFO] Задача 1: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-25 23:06:40 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 140 символов, 12 строк
+2026-10-25 23:06:40 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 23:06:40 [SpawnProcess-1] [DEBUG] run_batch: 6 тестов, isolated=False, timeout=11.0s, memory=256MB
+2026-10-25 23:06:40 [SpawnProcess-1] [INFO] Задача 1: тест #1 FAIL (wrong output)
+2026-10-25 23:06:40 [SpawnProcess-1] [DEBUG]   expected='2 1\n' got='5 5 белая\n'
+2026-10-25 23:06:40 [SpawnProcess-1] [INFO] Задача 1: тест #2 FAIL (wrong output)
+2026-10-25 23:06:40 [SpawnProcess-1] [DEBUG]   expected='1 1\n' got='1 0 синяя\n'
+2026-10-25 23:06:40 [SpawnProcess-1] [INFO] Задача 1: тест #3 FAIL (wrong output)
+2026-10-25 23:06:40 [SpawnProcess-1] [DEBUG]   expected='1 3\n' got='5 5 белая\n'
+2026-10-25 23:06:40 [SpawnProcess-1] [INFO] Задача 1: тест #4 FAIL (wrong output)
+2026-10-25 23:06:40 [SpawnProcess-1] [DEBUG]   expected='4 1\n' got='5 5 белая\n'
+2026-10-25 23:06:40 [SpawnProcess-1] [INFO] Задача 1: тест #5 FAIL (wrong output)
+2026-10-25 23:06:40 [SpawnProcess-1] [DEBUG]   expected='1000000000 1\n' got='500000000 500000000 белая\n'
+2026-10-25 23:06:40 [SpawnProcess-1] [INFO] Задача 1: тест #6 FAIL (wrong output)
+2026-10-25 23:06:40 [SpawnProcess-1] [DEBUG]   expected='1 1000000000\n' got='500000000 500000000 белая\n'
+2026-10-25 23:06:40 [SpawnProcess-1] [INFO] Задача 1: итог 0/100 (partial)
+2026-10-25 23:06:40 [MainProcess] [INFO] 
+2026-10-25 23:06:40 [MainProcess] [INFO] === Задача 1: Главный корпус: расстановка бейджей по стеллажам ===
+2026-10-25 23:06:40 [MainProcess] [INFO] [FAIL] #1: wrong output expected '2 1\n', got '5 5 белая\n'
+2026-10-25 23:06:40 [MainProcess] [INFO] [FAIL] #2: wrong output expected '1 1\n', got '1 0 синяя\n'
+2026-10-25 23:06:40 [MainProcess] [INFO] [FAIL] #3: wrong output expected '1 3\n', got '5 5 белая\n'
+2026-10-25 23:06:40 [MainProcess] [INFO] [FAIL] #4: wrong output expected '4 1\n', got '5 5 белая\n'
+2026-10-25 23:06:40 [MainProcess] [INFO] [FAIL] #5: wrong output expected '1000000000 1\n', got '500000000 500000000 белая\n'
+2026-10-25 23:06:40 [MainProcess] [INFO] [FAIL] #6: wrong output expected '1 1000000000\n', got '500000000 500000000 белая\n'
+2026-10-25 23:06:40 [MainProcess] [INFO] Результат: 0/100
+2026-10-25 23:06:40 [MainProcess] [INFO] 
+2026-10-25 23:06:40 [MainProcess] [INFO] ИТОГО: 0/100 баллов
+2026-10-25 23:06:40 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-25 23:06:40 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 23:08:16 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 23:08:16 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 23:08:17 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 23:08:17 [SpawnProcess-1] [INFO] Задача 1: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-25 23:08:17 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 263 символов, 11 строк
+2026-10-25 23:08:17 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 23:08:17 [SpawnProcess-1] [DEBUG] run_batch: 6 тестов, isolated=False, timeout=11.0s, memory=256MB
+2026-10-25 23:08:17 [SpawnProcess-1] [INFO] Задача 1: тест #1 OK (+15)
+2026-10-25 23:08:17 [SpawnProcess-1] [INFO] Задача 1: тест #2 OK (+10)
+2026-10-25 23:08:17 [SpawnProcess-1] [INFO] Задача 1: тест #3 OK (+15)
+2026-10-25 23:08:17 [SpawnProcess-1] [INFO] Задача 1: тест #4 OK (+15)
+2026-10-25 23:08:17 [SpawnProcess-1] [INFO] Задача 1: тест #5 OK (+20)
+2026-10-25 23:08:17 [SpawnProcess-1] [INFO] Задача 1: тест #6 OK (+25)
+2026-10-25 23:08:17 [SpawnProcess-1] [INFO] Задача 1: итог 100/100 (ok)
+2026-10-25 23:08:17 [MainProcess] [INFO] 
+2026-10-25 23:08:17 [MainProcess] [INFO] === Задача 1: Главный корпус: расстановка бейджей по стеллажам ===
+2026-10-25 23:08:17 [MainProcess] [INFO] [ OK ] #1 (+15)
+2026-10-25 23:08:17 [MainProcess] [INFO] [ OK ] #2 (+10)
+2026-10-25 23:08:17 [MainProcess] [INFO] [ OK ] #3 (+15)
+2026-10-25 23:08:17 [MainProcess] [INFO] [ OK ] #4 (+15)
+2026-10-25 23:08:17 [MainProcess] [INFO] [ OK ] #5 (+20)
+2026-10-25 23:08:17 [MainProcess] [INFO] [ OK ] #6 (+25)
+2026-10-25 23:08:17 [MainProcess] [INFO] Результат: 100/100
+2026-10-25 23:08:17 [MainProcess] [INFO] 
+2026-10-25 23:08:17 [MainProcess] [INFO] ИТОГО: 100/100 баллов
+2026-10-25 23:08:17 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 23:08:17 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 23:10:57 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 23:10:57 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 23:10:58 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 23:10:58 [SpawnProcess-1] [INFO] Задача 1: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-25 23:10:58 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 263 символов, 11 строк
+2026-10-25 23:10:58 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 23:10:58 [SpawnProcess-1] [DEBUG] run_batch: 6 тестов, isolated=False, timeout=11.0s, memory=256MB
+2026-10-25 23:10:58 [SpawnProcess-1] [INFO] Задача 1: тест #1 FAIL (EOFError: EOF when reading a line)
+2026-10-25 23:10:58 [SpawnProcess-1] [INFO] Задача 1: тест #2 FAIL (EOFError: EOF when reading a line)
+2026-10-25 23:10:58 [SpawnProcess-1] [INFO] Задача 1: тест #3 FAIL (EOFError: EOF when reading a line)
+2026-10-25 23:10:58 [SpawnProcess-1] [INFO] Задача 1: тест #4 FAIL (EOFError: EOF when reading a line)
+2026-10-25 23:10:58 [SpawnProcess-1] [INFO] Задача 1: тест #5 FAIL (EOFError: EOF when reading a line)
+2026-10-25 23:10:58 [SpawnProcess-1] [INFO] Задача 1: тест #6 FAIL (EOFError: EOF when reading a line)
+2026-10-25 23:10:58 [SpawnProcess-1] [INFO] Задача 1: итог 0/100 (partial)
+2026-10-25 23:10:58 [MainProcess] [INFO] 
+2026-10-25 23:10:58 [MainProcess] [INFO] === Задача 1: Посвящение в МИВЛГУ: сине-белые браслеты ===
+2026-10-25 23:10:58 [MainProcess] [INFO] [FAIL] #1: EOFError: EOF when reading a line
+2026-10-25 23:10:58 [MainProcess] [INFO] [FAIL] #2: EOFError: EOF when reading a line
+2026-10-25 23:10:58 [MainProcess] [INFO] [FAIL] #3: EOFError: EOF when reading a line
+2026-10-25 23:10:58 [MainProcess] [INFO] [FAIL] #4: EOFError: EOF when reading a line
+2026-10-25 23:10:58 [MainProcess] [INFO] [FAIL] #5: EOFError: EOF when reading a line
+2026-10-25 23:10:58 [MainProcess] [INFO] [FAIL] #6: EOFError: EOF when reading a line
+2026-10-25 23:10:58 [MainProcess] [INFO] Результат: 0/100
+2026-10-25 23:10:58 [MainProcess] [INFO] 
+2026-10-25 23:10:58 [MainProcess] [INFO] ИТОГО: 0/100 баллов
+2026-10-25 23:10:58 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-25 23:10:58 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 23:12:02 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 23:12:02 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 23:12:02 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 23:12:02 [SpawnProcess-1] [INFO] Задача 1: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-25 23:12:02 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 8 символов, 1 строк
+2026-10-25 23:12:02 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 23:12:02 [SpawnProcess-1] [DEBUG] run_batch: 6 тестов, isolated=False, timeout=11.0s, memory=256MB
+2026-10-25 23:12:02 [SpawnProcess-1] [INFO] Задача 1: тест #1 FAIL (NameError: name 'c2AXCPCA' is not defined)
+2026-10-25 23:12:02 [SpawnProcess-1] [INFO] Задача 1: тест #2 FAIL (NameError: name 'c2AXCPCA' is not defined)
+2026-10-25 23:12:02 [SpawnProcess-1] [INFO] Задача 1: тест #3 FAIL (NameError: name 'c2AXCPCA' is not defined)
+2026-10-25 23:12:02 [SpawnProcess-1] [INFO] Задача 1: тест #4 FAIL (NameError: name 'c2AXCPCA' is not defined)
+2026-10-25 23:12:02 [SpawnProcess-1] [INFO] Задача 1: тест #5 FAIL (NameError: name 'c2AXCPCA' is not defined)
+2026-10-25 23:12:02 [SpawnProcess-1] [INFO] Задача 1: тест #6 FAIL (NameError: name 'c2AXCPCA' is not defined)
+2026-10-25 23:12:02 [SpawnProcess-1] [INFO] Задача 1: итог 0/100 (partial)
+2026-10-25 23:12:02 [MainProcess] [INFO] 
+2026-10-25 23:12:02 [MainProcess] [INFO] === Задача 1: Посвящение в МИВЛГУ: сине-белые браслеты ===
+2026-10-25 23:12:02 [MainProcess] [INFO] [FAIL] #1: NameError: name 'c2AXCPCA' is not defined
+2026-10-25 23:12:02 [MainProcess] [INFO] [FAIL] #2: NameError: name 'c2AXCPCA' is not defined
+2026-10-25 23:12:02 [MainProcess] [INFO] [FAIL] #3: NameError: name 'c2AXCPCA' is not defined
+2026-10-25 23:12:02 [MainProcess] [INFO] [FAIL] #4: NameError: name 'c2AXCPCA' is not defined
+2026-10-25 23:12:02 [MainProcess] [INFO] [FAIL] #5: NameError: name 'c2AXCPCA' is not defined
+2026-10-25 23:12:02 [MainProcess] [INFO] [FAIL] #6: NameError: name 'c2AXCPCA' is not defined
+2026-10-25 23:12:02 [MainProcess] [INFO] Результат: 0/100
+2026-10-25 23:12:02 [MainProcess] [INFO] 
+2026-10-25 23:12:02 [MainProcess] [INFO] ИТОГО: 0/100 баллов
+2026-10-25 23:12:02 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-25 23:12:02 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 23:12:22 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 23:12:22 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 23:12:23 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 23:12:23 [SpawnProcess-1] [INFO] Задача 1: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-25 23:12:23 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 138 символов, 11 строк
+2026-10-25 23:12:23 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 23:12:23 [SpawnProcess-1] [DEBUG] run_batch: 6 тестов, isolated=False, timeout=11.0s, memory=256MB
+2026-10-25 23:12:23 [SpawnProcess-1] [INFO] Задача 1: тест #1 FAIL (wrong output)
+2026-10-25 23:12:23 [SpawnProcess-1] [DEBUG]   expected='3 2 blue\n' got='3 2 синяя\n'
+2026-10-25 23:12:23 [SpawnProcess-1] [INFO] Задача 1: тест #2 FAIL (wrong output)
+2026-10-25 23:12:23 [SpawnProcess-1] [DEBUG]   expected='1 0 blue\n' got='1 0 синяя\n'
+2026-10-25 23:12:23 [SpawnProcess-1] [INFO] Задача 1: тест #3 FAIL (wrong output)
+2026-10-25 23:12:23 [SpawnProcess-1] [DEBUG]   expected='1 1 white\n' got='1 1 белая\n'
+2026-10-25 23:12:23 [SpawnProcess-1] [INFO] Задача 1: тест #4 FAIL (wrong output)
+2026-10-25 23:12:23 [SpawnProcess-1] [DEBUG]   expected='2 2 white\n' got='2 2 белая\n'
+2026-10-25 23:12:23 [SpawnProcess-1] [INFO] Задача 1: тест #5 FAIL (wrong output)
+2026-10-25 23:12:23 [SpawnProcess-1] [DEBUG]   expected='500000000 500000000 white\n' got='500000000 500000000 белая\n'
+2026-10-25 23:12:23 [SpawnProcess-1] [INFO] Задача 1: тест #6 FAIL (wrong output)
+2026-10-25 23:12:23 [SpawnProcess-1] [DEBUG]   expected='500000000 499999999 blue\n' got='500000000 499999999 синяя\n'
+2026-10-25 23:12:23 [SpawnProcess-1] [INFO] Задача 1: итог 0/100 (partial)
+2026-10-25 23:12:23 [MainProcess] [INFO] 
+2026-10-25 23:12:23 [MainProcess] [INFO] === Задача 1: Посвящение в МИВЛГУ: сине-белые браслеты ===
+2026-10-25 23:12:23 [MainProcess] [INFO] [FAIL] #1: wrong output expected '3 2 blue\n', got '3 2 синяя\n'
+2026-10-25 23:12:23 [MainProcess] [INFO] [FAIL] #2: wrong output expected '1 0 blue\n', got '1 0 синяя\n'
+2026-10-25 23:12:23 [MainProcess] [INFO] [FAIL] #3: wrong output expected '1 1 white\n', got '1 1 белая\n'
+2026-10-25 23:12:23 [MainProcess] [INFO] [FAIL] #4: wrong output expected '2 2 white\n', got '2 2 белая\n'
+2026-10-25 23:12:23 [MainProcess] [INFO] [FAIL] #5: wrong output expected '500000000 500000000 white\n', got '500000000 500000000 белая\n'
+2026-10-25 23:12:23 [MainProcess] [INFO] [FAIL] #6: wrong output expected '500000000 499999999 blue\n', got '500000000 499999999 синяя\n'
+2026-10-25 23:12:23 [MainProcess] [INFO] Результат: 0/100
+2026-10-25 23:12:23 [MainProcess] [INFO] 
+2026-10-25 23:12:23 [MainProcess] [INFO] ИТОГО: 0/100 баллов
+2026-10-25 23:12:23 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-25 23:12:23 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 23:14:25 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 23:14:25 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 23:14:25 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-25 23:14:25 [SpawnProcess-1] [INFO] Задача 1: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-25 23:14:25 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 137 символов, 11 строк
+2026-10-25 23:14:25 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 23:14:25 [SpawnProcess-1] [DEBUG] run_batch: 6 тестов, isolated=False, timeout=11.0s, memory=256MB
+2026-10-25 23:14:25 [SpawnProcess-1] [INFO] Задача 1: тест #1 OK (+15)
+2026-10-25 23:14:25 [SpawnProcess-1] [INFO] Задача 1: тест #2 OK (+15)
+2026-10-25 23:14:25 [SpawnProcess-1] [INFO] Задача 1: тест #3 OK (+15)
+2026-10-25 23:14:25 [SpawnProcess-1] [INFO] Задача 1: тест #4 OK (+15)
+2026-10-25 23:14:25 [SpawnProcess-1] [INFO] Задача 1: тест #5 OK (+20)
+2026-10-25 23:14:25 [SpawnProcess-1] [INFO] Задача 1: тест #6 OK (+20)
+2026-10-25 23:14:25 [SpawnProcess-1] [INFO] Задача 1: итог 100/100 (ok)
+2026-10-25 23:14:25 [MainProcess] [INFO] 
+2026-10-25 23:14:25 [MainProcess] [INFO] === Задача 1: Посвящение в МИВЛГУ: сине-белые браслеты ===
+2026-10-25 23:14:25 [MainProcess] [INFO] [ OK ] #1 (+15)
+2026-10-25 23:14:25 [MainProcess] [INFO] [ OK ] #2 (+15)
+2026-10-25 23:14:25 [MainProcess] [INFO] [ OK ] #3 (+15)
+2026-10-25 23:14:25 [MainProcess] [INFO] [ OK ] #4 (+15)
+2026-10-25 23:14:25 [MainProcess] [INFO] [ OK ] #5 (+20)
+2026-10-25 23:14:25 [MainProcess] [INFO] [ OK ] #6 (+20)
+2026-10-25 23:14:25 [MainProcess] [INFO] Результат: 100/100
+2026-10-25 23:14:25 [MainProcess] [INFO] 
+2026-10-25 23:14:25 [MainProcess] [INFO] ИТОГО: 100/100 баллов
+2026-10-25 23:14:25 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 23:14:25 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 23:15:38 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 23:15:38 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 23:15:38 [SpawnProcess-1] [INFO] --- Задача 2: начало проверки (tasks\2)
+2026-10-25 23:15:38 [SpawnProcess-1] [INFO] Задача 2: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-25 23:15:38 [SpawnProcess-1] [DEBUG] Задача 2: код решения — 215 символов, 8 строк
+2026-10-25 23:15:38 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 23:15:38 [SpawnProcess-1] [DEBUG] run_batch: 6 тестов, isolated=False, timeout=11.0s, memory=256MB
+2026-10-25 23:15:38 [SpawnProcess-1] [INFO] Задача 2: тест #1 OK (+15)
+2026-10-25 23:15:38 [SpawnProcess-1] [INFO] Задача 2: тест #2 OK (+10)
+2026-10-25 23:15:38 [SpawnProcess-1] [INFO] Задача 2: тест #3 OK (+15)
+2026-10-25 23:15:38 [SpawnProcess-1] [INFO] Задача 2: тест #4 OK (+15)
+2026-10-25 23:15:38 [SpawnProcess-1] [INFO] Задача 2: тест #5 OK (+20)
+2026-10-25 23:15:38 [SpawnProcess-1] [INFO] Задача 2: тест #6 OK (+25)
+2026-10-25 23:15:38 [SpawnProcess-1] [INFO] Задача 2: итог 100/100 (ok)
+2026-10-25 23:15:38 [MainProcess] [INFO] 
+2026-10-25 23:15:38 [MainProcess] [INFO] === Задача 2: Главный корпус: расстановка бейджей по стеллажам ===
+2026-10-25 23:15:38 [MainProcess] [INFO] [ OK ] #1 (+15)
+2026-10-25 23:15:38 [MainProcess] [INFO] [ OK ] #2 (+10)
+2026-10-25 23:15:38 [MainProcess] [INFO] [ OK ] #3 (+15)
+2026-10-25 23:15:38 [MainProcess] [INFO] [ OK ] #4 (+15)
+2026-10-25 23:15:38 [MainProcess] [INFO] [ OK ] #5 (+20)
+2026-10-25 23:15:38 [MainProcess] [INFO] [ OK ] #6 (+25)
+2026-10-25 23:15:38 [MainProcess] [INFO] Результат: 100/100
+2026-10-25 23:15:38 [MainProcess] [INFO] 
+2026-10-25 23:15:38 [MainProcess] [INFO] ИТОГО: 100/100 баллов
+2026-10-25 23:15:38 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 23:15:38 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 23:15:49 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 23:15:49 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 23:15:49 [SpawnProcess-1] [INFO] --- Задача 3: начало проверки (tasks\3)
+2026-10-25 23:15:49 [SpawnProcess-1] [INFO] Задача 3: 7 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-25 23:15:49 [SpawnProcess-1] [DEBUG] Задача 3: код решения — 278 символов, 15 строк
+2026-10-25 23:15:49 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 23:15:49 [SpawnProcess-1] [DEBUG] run_batch: 7 тестов, isolated=False, timeout=12.0s, memory=256MB
+2026-10-25 23:15:49 [SpawnProcess-1] [INFO] Задача 3: тест #1 OK (+15)
+2026-10-25 23:15:49 [SpawnProcess-1] [INFO] Задача 3: тест #2 OK (+10)
+2026-10-25 23:15:49 [SpawnProcess-1] [INFO] Задача 3: тест #3 OK (+10)
+2026-10-25 23:15:49 [SpawnProcess-1] [INFO] Задача 3: тест #4 OK (+15)
+2026-10-25 23:15:49 [SpawnProcess-1] [INFO] Задача 3: тест #5 OK (+15)
+2026-10-25 23:15:49 [SpawnProcess-1] [INFO] Задача 3: тест #6 OK (+20)
+2026-10-25 23:15:49 [SpawnProcess-1] [INFO] Задача 3: тест #7 OK (+15)
+2026-10-25 23:15:49 [SpawnProcess-1] [INFO] Задача 3: итог 100/100 (ok)
+2026-10-25 23:15:49 [MainProcess] [INFO] 
+2026-10-25 23:15:49 [MainProcess] [INFO] === Задача 3: Миваныч и плотина: самый прочный пролёт ===
+2026-10-25 23:15:49 [MainProcess] [INFO] [ OK ] #1 (+15)
+2026-10-25 23:15:49 [MainProcess] [INFO] [ OK ] #2 (+10)
+2026-10-25 23:15:49 [MainProcess] [INFO] [ OK ] #3 (+10)
+2026-10-25 23:15:49 [MainProcess] [INFO] [ OK ] #4 (+15)
+2026-10-25 23:15:49 [MainProcess] [INFO] [ OK ] #5 (+15)
+2026-10-25 23:15:49 [MainProcess] [INFO] [ OK ] #6 (+20)
+2026-10-25 23:15:49 [MainProcess] [INFO] [ OK ] #7 (+15)
+2026-10-25 23:15:49 [MainProcess] [INFO] Результат: 100/100
+2026-10-25 23:15:49 [MainProcess] [INFO] 
+2026-10-25 23:15:49 [MainProcess] [INFO] ИТОГО: 100/100 баллов
+2026-10-25 23:15:49 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 23:15:49 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 23:15:57 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 23:15:57 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 23:15:58 [SpawnProcess-1] [INFO] --- Задача 4: начало проверки (tasks\4)
+2026-10-25 23:15:58 [SpawnProcess-1] [INFO] Задача 4: 8 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-25 23:15:58 [SpawnProcess-1] [DEBUG] Задача 4: код решения — 425 символов, 26 строк
+2026-10-25 23:15:58 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 23:15:58 [SpawnProcess-1] [DEBUG] run_batch: 8 тестов, isolated=False, timeout=13.0s, memory=256MB
+2026-10-25 23:15:58 [SpawnProcess-1] [INFO] Задача 4: тест #1 OK (+15)
+2026-10-25 23:15:58 [SpawnProcess-1] [INFO] Задача 4: тест #2 OK (+10)
+2026-10-25 23:15:58 [SpawnProcess-1] [INFO] Задача 4: тест #3 OK (+15)
+2026-10-25 23:15:58 [SpawnProcess-1] [INFO] Задача 4: тест #4 OK (+15)
+2026-10-25 23:15:58 [SpawnProcess-1] [INFO] Задача 4: тест #5 OK (+10)
+2026-10-25 23:15:58 [SpawnProcess-1] [INFO] Задача 4: тест #6 OK (+15)
+2026-10-25 23:15:58 [SpawnProcess-1] [INFO] Задача 4: тест #7 OK (+10)
+2026-10-25 23:15:58 [SpawnProcess-1] [INFO] Задача 4: тест #8 OK (+10)
+2026-10-25 23:15:58 [SpawnProcess-1] [INFO] Задача 4: итог 100/100 (ok)
+2026-10-25 23:15:58 [MainProcess] [INFO] 
+2026-10-25 23:15:58 [MainProcess] [INFO] === Задача 4: Олимпиада «Бобровая плотина»: пары участников ===
+2026-10-25 23:15:58 [MainProcess] [INFO] [ OK ] #1 (+15)
+2026-10-25 23:15:58 [MainProcess] [INFO] [ OK ] #2 (+10)
+2026-10-25 23:15:58 [MainProcess] [INFO] [ OK ] #3 (+15)
+2026-10-25 23:15:58 [MainProcess] [INFO] [ OK ] #4 (+15)
+2026-10-25 23:15:58 [MainProcess] [INFO] [ OK ] #5 (+10)
+2026-10-25 23:15:58 [MainProcess] [INFO] [ OK ] #6 (+15)
+2026-10-25 23:15:58 [MainProcess] [INFO] [ OK ] #7 (+10)
+2026-10-25 23:15:58 [MainProcess] [INFO] [ OK ] #8 (+10)
+2026-10-25 23:15:58 [MainProcess] [INFO] Результат: 100/100
+2026-10-25 23:15:58 [MainProcess] [INFO] 
+2026-10-25 23:15:58 [MainProcess] [INFO] ИТОГО: 100/100 баллов
+2026-10-25 23:15:58 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 23:15:58 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 23:16:05 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 23:16:05 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 23:16:05 [SpawnProcess-1] [INFO] --- Задача 5: начало проверки (tasks\5)
+2026-10-25 23:16:05 [SpawnProcess-1] [INFO] Задача 5: 8 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-25 23:16:05 [SpawnProcess-1] [DEBUG] Задача 5: код решения — 301 символов, 17 строк
+2026-10-25 23:16:05 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 23:16:05 [SpawnProcess-1] [DEBUG] run_batch: 8 тестов, isolated=False, timeout=13.0s, memory=256MB
+2026-10-25 23:16:05 [SpawnProcess-1] [INFO] Задача 5: тест #1 OK (+15)
+2026-10-25 23:16:05 [SpawnProcess-1] [INFO] Задача 5: тест #2 OK (+10)
+2026-10-25 23:16:05 [SpawnProcess-1] [INFO] Задача 5: тест #3 OK (+15)
+2026-10-25 23:16:05 [SpawnProcess-1] [INFO] Задача 5: тест #4 OK (+15)
+2026-10-25 23:16:05 [SpawnProcess-1] [INFO] Задача 5: тест #5 OK (+10)
+2026-10-25 23:16:05 [SpawnProcess-1] [INFO] Задача 5: тест #6 OK (+15)
+2026-10-25 23:16:05 [SpawnProcess-1] [INFO] Задача 5: тест #7 OK (+10)
+2026-10-25 23:16:05 [SpawnProcess-1] [INFO] Задача 5: тест #8 OK (+10)
+2026-10-25 23:16:05 [SpawnProcess-1] [INFO] Задача 5: итог 100/100 (ok)
+2026-10-25 23:16:05 [MainProcess] [INFO] 
+2026-10-25 23:16:05 [MainProcess] [INFO] === Задача 5: Хакатон «МИВЛГУ-Код»: расписание секций ===
+2026-10-25 23:16:05 [MainProcess] [INFO] [ OK ] #1 (+15)
+2026-10-25 23:16:05 [MainProcess] [INFO] [ OK ] #2 (+10)
+2026-10-25 23:16:05 [MainProcess] [INFO] [ OK ] #3 (+15)
+2026-10-25 23:16:05 [MainProcess] [INFO] [ OK ] #4 (+15)
+2026-10-25 23:16:05 [MainProcess] [INFO] [ OK ] #5 (+10)
+2026-10-25 23:16:05 [MainProcess] [INFO] [ OK ] #6 (+15)
+2026-10-25 23:16:05 [MainProcess] [INFO] [ OK ] #7 (+10)
+2026-10-25 23:16:05 [MainProcess] [INFO] [ OK ] #8 (+10)
+2026-10-25 23:16:05 [MainProcess] [INFO] Результат: 100/100
+2026-10-25 23:16:05 [MainProcess] [INFO] 
+2026-10-25 23:16:05 [MainProcess] [INFO] ИТОГО: 100/100 баллов
+2026-10-25 23:16:05 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 23:16:05 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 23:18:04 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 23:18:04 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 23:18:04 [SpawnProcess-1] [INFO] --- Задача 2: начало проверки (tasks\2)
+2026-10-25 23:18:04 [SpawnProcess-1] [INFO] Задача 2: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-25 23:18:04 [SpawnProcess-1] [DEBUG] Задача 2: код решения — 125 символов, 8 строк
+2026-10-25 23:18:04 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 23:18:04 [SpawnProcess-1] [DEBUG] run_batch: 6 тестов, isolated=False, timeout=11.0s, memory=256MB
+2026-10-25 23:18:04 [SpawnProcess-1] [INFO] Задача 2: тест #1 OK (+15)
+2026-10-25 23:18:04 [SpawnProcess-1] [INFO] Задача 2: тест #2 OK (+10)
+2026-10-25 23:18:04 [SpawnProcess-1] [INFO] Задача 2: тест #3 OK (+15)
+2026-10-25 23:18:04 [SpawnProcess-1] [INFO] Задача 2: тест #4 OK (+15)
+2026-10-25 23:18:04 [SpawnProcess-1] [INFO] Задача 2: тест #5 OK (+20)
+2026-10-25 23:18:04 [SpawnProcess-1] [INFO] Задача 2: тест #6 OK (+25)
+2026-10-25 23:18:04 [SpawnProcess-1] [INFO] Задача 2: итог 100/100 (ok)
+2026-10-25 23:18:04 [MainProcess] [INFO] 
+2026-10-25 23:18:04 [MainProcess] [INFO] === Задача 2: Главный корпус: расстановка бейджей по стеллажам ===
+2026-10-25 23:18:04 [MainProcess] [INFO] [ OK ] #1 (+15)
+2026-10-25 23:18:04 [MainProcess] [INFO] [ OK ] #2 (+10)
+2026-10-25 23:18:04 [MainProcess] [INFO] [ OK ] #3 (+15)
+2026-10-25 23:18:04 [MainProcess] [INFO] [ OK ] #4 (+15)
+2026-10-25 23:18:04 [MainProcess] [INFO] [ OK ] #5 (+20)
+2026-10-25 23:18:04 [MainProcess] [INFO] [ OK ] #6 (+25)
+2026-10-25 23:18:04 [MainProcess] [INFO] Результат: 100/100
+2026-10-25 23:18:04 [MainProcess] [INFO] 
+2026-10-25 23:18:04 [MainProcess] [INFO] ИТОГО: 100/100 баллов
+2026-10-25 23:18:04 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 23:18:04 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-25 23:19:40 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-25 23:19:40 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-25 23:19:40 [SpawnProcess-1] [INFO] --- Задача 3: начало проверки (tasks\3)
+2026-10-25 23:19:40 [SpawnProcess-1] [INFO] Задача 3: 7 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-25 23:19:40 [SpawnProcess-1] [DEBUG] Задача 3: код решения — 183 символов, 12 строк
+2026-10-25 23:19:40 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-25 23:19:40 [SpawnProcess-1] [DEBUG] run_batch: 7 тестов, isolated=False, timeout=12.0s, memory=256MB
+2026-10-25 23:19:41 [SpawnProcess-1] [INFO] Задача 3: тест #1 OK (+15)
+2026-10-25 23:19:41 [SpawnProcess-1] [INFO] Задача 3: тест #2 OK (+10)
+2026-10-25 23:19:41 [SpawnProcess-1] [INFO] Задача 3: тест #3 OK (+10)
+2026-10-25 23:19:41 [SpawnProcess-1] [INFO] Задача 3: тест #4 OK (+15)
+2026-10-25 23:19:41 [SpawnProcess-1] [INFO] Задача 3: тест #5 OK (+15)
+2026-10-25 23:19:41 [SpawnProcess-1] [INFO] Задача 3: тест #6 OK (+20)
+2026-10-25 23:19:41 [SpawnProcess-1] [INFO] Задача 3: тест #7 OK (+15)
+2026-10-25 23:19:41 [SpawnProcess-1] [INFO] Задача 3: итог 100/100 (ok)
+2026-10-25 23:19:41 [MainProcess] [INFO] 
+2026-10-25 23:19:41 [MainProcess] [INFO] === Задача 3: Миваныч и плотина: самый прочный пролёт ===
+2026-10-25 23:19:41 [MainProcess] [INFO] [ OK ] #1 (+15)
+2026-10-25 23:19:41 [MainProcess] [INFO] [ OK ] #2 (+10)
+2026-10-25 23:19:41 [MainProcess] [INFO] [ OK ] #3 (+10)
+2026-10-25 23:19:41 [MainProcess] [INFO] [ OK ] #4 (+15)
+2026-10-25 23:19:41 [MainProcess] [INFO] [ OK ] #5 (+15)
+2026-10-25 23:19:41 [MainProcess] [INFO] [ OK ] #6 (+20)
+2026-10-25 23:19:41 [MainProcess] [INFO] [ OK ] #7 (+15)
+2026-10-25 23:19:41 [MainProcess] [INFO] Результат: 100/100
+2026-10-25 23:19:41 [MainProcess] [INFO] 
+2026-10-25 23:19:41 [MainProcess] [INFO] ИТОГО: 100/100 баллов
+2026-10-25 23:19:41 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-25 23:19:41 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-26 22:26:50 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-26 22:26:50 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-26 22:26:51 [SpawnProcess-1] [INFO] --- Задача 5: начало проверки (tasks\5)
+2026-10-26 22:26:51 [SpawnProcess-1] [INFO] Задача 5: 8 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-26 22:26:51 [SpawnProcess-1] [ERROR] Задача 5: Файл пустой: tasks\5\solution.py
+2026-10-26 22:26:51 [MainProcess] [INFO] 
+2026-10-26 22:26:51 [MainProcess] [INFO] === Задача 5: Хакатон «МИВЛГУ-Код»: расписание секций ===
+2026-10-26 22:26:51 [MainProcess] [WARNING] [ZERO] Файл пустой: tasks\5\solution.py — 0/100 баллов
+2026-10-26 22:26:51 [MainProcess] [INFO]        #1: пропущен (0/15)
+2026-10-26 22:26:51 [MainProcess] [INFO]        #2: пропущен (0/10)
+2026-10-26 22:26:51 [MainProcess] [INFO]        #3: пропущен (0/15)
+2026-10-26 22:26:51 [MainProcess] [INFO]        #4: пропущен (0/15)
+2026-10-26 22:26:51 [MainProcess] [INFO]        #5: пропущен (0/10)
+2026-10-26 22:26:51 [MainProcess] [INFO]        #6: пропущен (0/15)
+2026-10-26 22:26:51 [MainProcess] [INFO]        #7: пропущен (0/10)
+2026-10-26 22:26:51 [MainProcess] [INFO]        #8: пропущен (0/10)
+2026-10-26 22:26:51 [MainProcess] [INFO] 
+2026-10-26 22:26:51 [MainProcess] [INFO] ИТОГО: 0/100 баллов
+2026-10-26 22:26:51 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-26 22:26:51 [MainProcess] [INFO] Задач без решения (0 баллов): 1
+2026-10-26 22:26:51 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-26 22:27:06 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-26 22:27:06 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-26 22:27:07 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-26 22:27:07 [SpawnProcess-1] [INFO] Задача 1: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-26 22:27:07 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 180 символов, 11 строк
+2026-10-26 22:27:07 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-26 22:27:07 [SpawnProcess-1] [DEBUG] run_batch: 6 тестов, isolated=False, timeout=11.0s, memory=256MB
+2026-10-26 22:27:07 [SpawnProcess-1] [INFO] Задача 1: тест #1 OK (+15)
+2026-10-26 22:27:07 [SpawnProcess-1] [INFO] Задача 1: тест #2 OK (+15)
+2026-10-26 22:27:07 [SpawnProcess-1] [INFO] Задача 1: тест #3 OK (+15)
+2026-10-26 22:27:07 [SpawnProcess-1] [INFO] Задача 1: тест #4 OK (+15)
+2026-10-26 22:27:07 [SpawnProcess-1] [INFO] Задача 1: тест #5 OK (+20)
+2026-10-26 22:27:07 [SpawnProcess-1] [INFO] Задача 1: тест #6 OK (+20)
+2026-10-26 22:27:07 [SpawnProcess-1] [INFO] Задача 1: итог 100/100 (ok)
+2026-10-26 22:27:07 [MainProcess] [INFO] 
+2026-10-26 22:27:07 [MainProcess] [INFO] === Задача 1: Посвящение в МИВЛГУ: сине-белые браслеты ===
+2026-10-26 22:27:07 [MainProcess] [INFO] [ OK ] #1 (+15)
+2026-10-26 22:27:07 [MainProcess] [INFO] [ OK ] #2 (+15)
+2026-10-26 22:27:07 [MainProcess] [INFO] [ OK ] #3 (+15)
+2026-10-26 22:27:07 [MainProcess] [INFO] [ OK ] #4 (+15)
+2026-10-26 22:27:07 [MainProcess] [INFO] [ OK ] #5 (+20)
+2026-10-26 22:27:07 [MainProcess] [INFO] [ OK ] #6 (+20)
+2026-10-26 22:27:07 [MainProcess] [INFO] Результат: 100/100
+2026-10-26 22:27:07 [MainProcess] [INFO] 
+2026-10-26 22:27:07 [MainProcess] [INFO] ИТОГО: 100/100 баллов
+2026-10-26 22:27:07 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-26 22:27:07 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
