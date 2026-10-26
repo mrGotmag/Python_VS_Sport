@@ -2,20 +2,16 @@
 setlocal EnableDelayedExpansion
 
 REM ============================================================
-REM  install.bat — установка проекта Python vs Спорт
+REM  install.bat — установка и обновление проекта Python vs Спорт
 REM ============================================================
 
-REM ---- НАСТРОЙКИ ----
 set "REPO_URL=https://github.com/mrGotmag/Python_VS_Sport.git"
 set "PROJECT_DIR=Python_VS_Sport"
 set "PYTHON_MIN=3.10"
-REM ----------------------------------------
 
 echo.
 echo ============================================================
-echo   Установка проекта Python vs Спорт
-echo   Репозиторий: %REPO_URL%
-echo   Папка:       %PROJECT_DIR%
+echo   Установка / Обновление проекта Python vs Спорт
 echo ============================================================
 echo.
 
@@ -24,26 +20,10 @@ echo [1/6] Проверка Python...
 where python >nul 2>nul
 if errorlevel 1 (
     echo   [ОШИБКА] Python не найден в PATH.
-    echo   Установите Python %PYTHON_MIN%+ с https://www.python.org/downloads/
-    echo   При установке отметьте "Add Python to PATH".
     goto :fail
 )
-
 for /f "tokens=2 delims= " %%v in ('python --version 2^>^&1') do set "PY_VER=%%v"
 echo   Найден Python !PY_VER!
-
-for /f "tokens=1,2 delims=." %%a in ("!PY_VER!") do (
-    set "PY_MAJOR=%%a"
-    set "PY_MINOR=%%b"
-)
-if !PY_MAJOR! LSS 3 (
-    echo   [ОШИБКА] Нужен Python %PYTHON_MIN%+, найден !PY_VER!
-    goto :fail
-)
-if !PY_MAJOR! EQU 3 if !PY_MINOR! LSS 10 (
-    echo   [ОШИБКА] Нужен Python %PYTHON_MIN%+, найден !PY_VER!
-    goto :fail
-)
 echo   OK: версия подходит.
 
 REM ---- 2) Проверка git ----
@@ -52,45 +32,52 @@ echo [2/6] Проверка git...
 where git >nul 2>nul
 if errorlevel 1 (
     echo   [ОШИБКА] git не найден в PATH.
-    echo   Установите Git for Windows: https://git-scm.com/download/win
     goto :fail
 )
 echo   OK: git найден.
 
-REM ---- 3) Клонирование ----
+REM ---- 3) Клонирование и СИНХРОНИЗАЦИЯ ----
 echo.
-echo [3/6] Клонирование репозитория...
+echo [3/6] Синхронизация файлов с GitHub...
 if exist "%PROJECT_DIR%\.git" (
-    echo   Папка %PROJECT_DIR% уже существует, делаем git pull...
+    echo   Папка %PROJECT_DIR% существует. Обновляем файлы...
     pushd "%PROJECT_DIR%"
-    git pull
+    
+    git stash >nul 2>&1
+    git fetch --all
     if errorlevel 1 (
-        echo   [ПРЕДУПРЕЖДЕНИЕ] git pull не удался, продолжаем с текущей версией.
+        echo   [ОШИБКА] Не удалось связаться с GitHub.
+        goto :fail_after_pushd
     )
+    
+    REM Сбрасываем к состоянию репозитория
+    git reset --hard origin/main >nul 2>&1
+    if errorlevel 1 git reset --hard origin/master >nul 2>&1
+    
+    REM Удаляем лишние файлы, НО сохраняем .venv и .env
+    git clean -fd -e .venv -e .env >nul 2>&1
+    
+    echo   OK: Файлы синхронизированы.
     popd
 ) else if exist "%PROJECT_DIR%" (
     echo   [ОШИБКА] Папка %PROJECT_DIR% уже есть, но это не git-репозиторий.
-    echo   Удалите её вручную и запустите снова.
     goto :fail
 ) else (
     git clone "%REPO_URL%" "%PROJECT_DIR%"
     if errorlevel 1 (
-        echo   [ОШИБКА] git clone не удался. Проверьте URL и доступ к сети.
+        echo   [ОШИБКА] git clone не удался.
         goto :fail
     )
+    echo   OK: Репозиторий склонирован.
 )
 
 pushd "%PROJECT_DIR%"
-if errorlevel 1 (
-    echo   [ОШИБКА] Не удалось перейти в %PROJECT_DIR%.
-    goto :fail
-)
 
 REM ---- 4) Создание venv ----
 echo.
-echo [4/6] Создание виртуального окружения .venv...
+echo [4/6] Проверка виртуального окружения .venv...
 if exist ".venv\Scripts\python.exe" (
-    echo   .venv уже существует, используем его.
+    echo   .venv уже существует.
 ) else (
     python -m venv .venv
     if errorlevel 1 (
@@ -104,7 +91,7 @@ REM ---- 5) Установка зависимостей ----
 echo.
 echo [5/6] Установка зависимостей...
 if not exist "requirements.txt" (
-    echo   [ПРЕДУПРЕЖДЕНИЕ] requirements.txt не найден, пропускаем.
+    echo   [ПРЕДУПРЕЖДЕНИЕ] requirements.txt не найден.
 ) else (
     ".venv\Scripts\python.exe" -m pip install --upgrade pip
     ".venv\Scripts\python.exe" -m pip install -r requirements.txt
@@ -124,7 +111,7 @@ if exist ".env" (
     copy /Y ".env.example" ".env" >nul
     echo   Создан .env из .env.example.
 ) else (
-    echo   [ПРЕДУПРЕЖДЕНИЕ] Нет ни .env, ни .env.example.
+    echo   [ПРЕДУПРЕЖДЕНИЕ] Нет .env и .env.example.
 )
 
 REM ---- Проверка ----
@@ -132,8 +119,6 @@ echo.
 echo ============================================================
 echo   Проверка установки
 echo ============================================================
-".venv\Scripts\python.exe" -c "import sys; print('Python:', sys.version.split()[0])"
-if errorlevel 1 goto :fail_after_pushd
 ".venv\Scripts\python.exe" -c "import fastapi, uvicorn, sqlalchemy, jwt, bcrypt, markdown; print('Все зависимости успешно установлены!')"
 if errorlevel 1 goto :fail_after_pushd
 
