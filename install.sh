@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-#  install.sh — установка проекта Python vs Спорт
+#  install.sh — установка и обновление проекта Python vs Спорт
 # ============================================================
 set -euo pipefail
 
@@ -25,7 +25,7 @@ fail()  { echo "${C_RED}  [ОШИБКА] $*${C_RST}" >&2; exit 1; }
 
 echo
 info "============================================================"
-info "  Установка проекта Python vs Спорт"
+info "  Установка / Обновление проекта Python vs Спорт"
 echo "  Репозиторий: ${REPO_URL}"
 echo "  Папка:       ${PROJECT_DIR}"
 info "============================================================"
@@ -39,13 +39,9 @@ for candidate in python3.12 python3.11 python3.10 python3 python; do
         PYTHON_BIN="$candidate"; break
     fi
 done
-
-[ -n "$PYTHON_BIN" ] || fail "Python не найден. Установите Python ${PYTHON_MIN_MAJOR}.${PYTHON_MIN_MINOR}+"
-
+[ -n "$PYTHON_BIN" ] || fail "Python не найден."
 PY_VER="$("$PYTHON_BIN" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
-PY_MAJOR="${PY_VER%%.*}"
-PY_MINOR="${PY_VER##*.}"
-
+PY_MAJOR="${PY_VER%%.*}"; PY_MINOR="${PY_VER##*.}"
 if [ "$PY_MAJOR" -lt "$PYTHON_MIN_MAJOR" ] || { [ "$PY_MAJOR" -eq "$PYTHON_MIN_MAJOR" ] && [ "$PY_MINOR" -lt "$PYTHON_MIN_MINOR" ]; }; then
     fail "Нужен Python ${PYTHON_MIN_MAJOR}.${PYTHON_MIN_MINOR}+, найден ${PY_VER}"
 fi
@@ -56,23 +52,40 @@ info "[2/6] Проверка git..."
 command -v git >/dev/null 2>&1 || fail "git не найден. Установите git."
 ok "git найден"
 
-# ---- 3) Клонирование ----
-info "[3/6] Клонирование репозитория..."
+# ---- 3) Клонирование и СИНХРОНИЗАЦИЯ ----
+info "[3/6] Синхронизация файлов с GitHub..."
 if [ -d "${PROJECT_DIR}/.git" ]; then
-    echo "  Папка ${PROJECT_DIR} уже существует, делаем git pull..."
-    ( cd "${PROJECT_DIR}" && git pull --ff-only ) || warn "git pull не удался, продолжаем"
-elif [ -e "${PROJECT_DIR}" ]; then
-    fail "Папка ${PROJECT_DIR} уже есть, но это не git-репозиторий. Удалите её."
+    echo "  Папка ${PROJECT_DIR} уже существует. Обновляем..."
+    cd "${PROJECT_DIR}"
+    
+    # Сохраняем локальные изменения (если есть), чтобы не потерять
+    git stash >/dev/null 2>&1 || true
+    
+    # Скачиваем последние данные с сервера
+    git fetch --all || fail "Не удалось связаться с GitHub. Проверьте интернет."
+    
+    # Жестко сбрасываем локальные изменения к последнему коммиту (main/master)
+    git reset --hard origin/main >/dev/null 2>&1 || git reset --hard origin/master >/dev/null 2>&1 || warn "Не удалось сделать reset."
+    
+    # Удаляем новые файлы и папки, которых нет в репозитории (кроме .venv и .env)
+    # Флаг -e (exclude) защищает важные файлы от удаления
+    git clean -fd -e ".venv" -e ".env" >/dev/null 2>&1 || true
+    
+    ok "Файлы успешно синхронизированы с репозиторием."
 else
+    if [ -e "${PROJECT_DIR}" ]; then
+        fail "Папка ${PROJECT_DIR} уже есть, но это не git-репозиторий. Удалите её."
+    fi
+    echo "  Клонируем репозиторий..."
     git clone "${REPO_URL}" "${PROJECT_DIR}" || fail "git clone не удался"
+    cd "${PROJECT_DIR}"
+    ok "Репозиторий склонирован."
 fi
 
-cd "${PROJECT_DIR}"
-
 # ---- 4) venv ----
-info "[4/6] Создание виртуального окружения .venv..."
+info "[4/6] Проверка виртуального окружения .venv..."
 if [ -x ".venv/bin/python" ]; then
-    echo "  .venv уже существует."
+    echo "  .venv уже существует, используем его."
 else
     "$PYTHON_BIN" -m venv .venv || fail "Не удалось создать .venv"
 fi
@@ -82,8 +95,8 @@ ok "venv готов"
 # ---- 5) зависимости ----
 info "[5/6] Установка зависимостей..."
 if [ -f "requirements.txt" ]; then
-    "$VENV_PY" -m pip install --upgrade pip || warn "не удалось обновить pip"
-    "$VENV_PY" -m pip install -r requirements.txt || fail "Не удалось установить зависимости"
+    "$VENV_PY" -m pip install --upgrade pip -i https://mirror.yandex.ru/mirrors/pypi/simple/ || warn "не удалось обновить pip"
+    "$VENV_PY" -m pip install -r requirements.txt -i https://mirror.yandex.ru/mirrors/pypi/simple/ || fail "Не удалось установить зависимости"
     ok "зависимости установлены"
 else
     warn "requirements.txt не найден!"
@@ -92,10 +105,10 @@ fi
 # ---- 6) .env ----
 info "[6/6] Подготовка .env..."
 if [ -f ".env" ]; then
-    echo "  .env уже существует."
+    echo "  .env уже существует, не трогаем."
 elif [ -f ".env.example" ]; then
     cp .env.example .env
-    ok "создан .env"
+    ok "создан .env из .env.example"
 else
     warn "Нет .env и .env.example"
 fi
@@ -112,7 +125,6 @@ echo
 info "============================================================"
 info "  ГОТОВО!"
 info "============================================================"
-echo
 echo "  Дальше:"
 echo "    cd ${PROJECT_DIR}/web"
 echo "    source ../.venv/bin/activate"
