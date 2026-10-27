@@ -23,10 +23,7 @@ from app.security import get_password_hash, verify_password, create_access_token
 
 # --- УМНЫЙ ПОИСК ПУТЕЙ ---
 def find_orcestrator_dir():
-    # Пытаемся найти папку orcestrator в разных местах
     current = Path(__file__).resolve()
-    # Вариант 1: /Contest/web/app/main.py -> /Contest/orcestrator
-    # Вариант 2: /Contest/app/main.py -> /Contest/orcestrator
     for parent in current.parents:
         if (parent / "orcestrator").exists() and (parent / "orcestrator").is_dir():
             return parent / "orcestrator"
@@ -34,7 +31,6 @@ def find_orcestrator_dir():
             return parent / "orcestrator"
         if (parent / "tasks").exists() and parent.name == "orcestrator":
             return parent
-    # Дефолтный fallback
     return current.parent.parent.parent / "orcestrator"
 
 
@@ -122,7 +118,25 @@ def sync_tasks_from_disk():
         db.commit()
 
 
+def cleanup_temp_folders():
+    """Удаляет все временные папки проверок при старте сервера."""
+    if not TASKS_DIR.exists():
+        return
+    count = 0
+    for task_dir in TASKS_DIR.iterdir():
+        if task_dir.is_dir() and (task_dir / "temp").exists():
+            try:
+                shutil.rmtree(task_dir / "temp")
+                count += 1
+            except Exception as e:
+                print(f"[WARN] Не удалось очистить {task_dir}/temp: {e}")
+    if count > 0:
+        print(f"[CLEANUP] Очищено {count} временных папок от старых проверок.")
+
+
+# Инициализация при старте
 sync_tasks_from_disk()
+cleanup_temp_folders()
 
 with Session(engine) as db:
     if not db.query(GlobalSettings).first():
@@ -216,8 +230,8 @@ async def login(request: Request):
         team = db.query(Team).filter(Team.organization_id == matched_org.id).first()
         if not team:
             team = Team(name=f"Команда {matched_org.name}", organization_id=matched_org.id)
-            db.add(team);
-            db.commit();
+            db.add(team)
+            db.commit()
             db.refresh(team)
 
         token = create_access_token({"sub": team.id, "role": "team"})
@@ -226,9 +240,44 @@ async def login(request: Request):
         return res
 
 
+@app.get("/api/rating")
+async def get_rating():
+    """Эндпоинт для таблицы лидеров."""
+    with Session(engine) as db:
+        teams = db.query(Team).all()
+
+        rating = []
+        for team in teams:
+            best_subs = db.query(Submission).filter_by(team_id=team.id).all()
+            team_scores = {}
+            last_submit = None
+
+            for s in best_subs:
+                # Обновляем лучший балл по задаче
+                if s.task_id not in team_scores or s.score > team_scores[s.task_id]:
+                    team_scores[s.task_id] = s.score
+                # Ищем время последней сдачи
+                if last_submit is None or s.created_at > last_submit:
+                    last_submit = s.created_at
+
+            total_score = sum(team_scores.values())
+            solved_count = sum(1 for score in team_scores.values() if score > 0)
+
+            rating.append({
+                "team_name": team.name,
+                "total_score": total_score,
+                "solved_count": solved_count,
+                "last_submit": last_submit.isoformat() if last_submit else None
+            })
+
+        # Сортируем: сначала по очкам (убывание), потом по времени последней сдачи (возрастание)
+        rating.sort(key=lambda x: (-x["total_score"], x["last_submit"] or "9999-12-31T23:59:59"))
+        return rating
+
+
 @app.get("/api/team/me")
 async def get_me(request: Request):
-    sync_tasks_from_disk()  # <--- СИНХРОНИЗИРУЕМ ЗАДАЧИ КАЖДЫЙ РАЗ
+    sync_tasks_from_disk()
     with Session(engine) as db:
         team = get_current_team(request, db)
         gs = db.query(GlobalSettings).first()
@@ -264,7 +313,6 @@ async def get_me(request: Request):
         }
 
 
-# ... ОСТАЛЬНЫЕ ЭНДПОИНТЫ БЕЗ ИЗМЕНЕНИЙ (tasks/detail, submissions и т.д.) ...
 @app.get("/api/team/tasks/{task_id}")
 async def get_task_detail(task_id: int, request: Request):
     with Session(engine) as db:
@@ -326,6 +374,16 @@ async def submit_code(request: Request):
         if match: score = int(match.group(1))
 
         time_spent = int((datetime.utcnow() - team.started_at).total_seconds()) if team.started_at else 0
+
+        # --- ОЧИСТКА СТАРЫХ ПОПЫТОК В БД ---
+        # Сохраняем полный код только для лучшего решения, чтобы база не разрасталась
+        old_subs = db.query(Submission).filter_by(team_id=team.id, task_id=tid).all()
+        for old_sub in old_subs:
+            if old_sub.score <= score:
+                db.delete(old_sub)  # Новая попытка лучше, старую удаляем
+            else:
+                old_sub.code = "# Код удален для экономии места (сохранен лучший результат)"
+
         db.add(Submission(team_id=team.id, task_id=tid, code=code, score=score, time_spent=time_spent))
         db.commit()
         await manager.broadcast("update_rating")
@@ -408,10 +466,10 @@ async def admin_create_team(request: Request):
         if not team_name: raise HTTPException(400, "Укажите название")
         new_password = secrets.token_urlsafe(6)
         org = Organization(name=team_name, password_hash=get_password_hash(new_password))
-        db.add(org);
+        db.add(org)
         db.flush()
         team = Team(name=team_name, organization_id=org.id, is_active=True)
-        db.add(team);
+        db.add(team)
         db.commit()
         return {"status": "ok", "password": new_password, "team_name": team_name}
 
@@ -423,6 +481,10 @@ async def admin_delete_team(team_id: int, request: Request):
         team = db.get(Team, team_id)
         if not team: raise HTTPException(404, "Команда не найдена")
         org = db.get(Organization, team.organization_id)
+
+        # Каскадное удаление решений
+        db.query(Submission).filter_by(team_id=team.id).delete()
+
         db.delete(team)
         if org: db.delete(org)
         db.commit()
@@ -487,10 +549,55 @@ async def admin_delete_task(task_id: int, request: Request):
         get_current_admin(request, db)
         tf = TASKS_DIR / str(task_id)
         if tf.exists(): shutil.rmtree(tf)
+
+        # Удаляем все решения, связанные с этой задачей
+        db.query(Submission).filter_by(task_id=task_id).delete()
+
         sync_tasks_from_disk()
         await manager.broadcast("tasks_changed")
         return {"status": "ok"}
 
+
+# --- ВИРТУАЛЬНЫЙ ЗАПУСК ---
+@app.post("/api/team/run")
+async def run_virtual(request: Request):
+    with Session(engine) as db:
+        team = get_current_team(request, db)
+        gs = db.query(GlobalSettings).first()
+        if gs.is_paused or team.is_paused or team.finished_at:
+            raise HTTPException(403, "Таймер остановлен или время вышло.")
+
+        data = await request.json()
+        code = data.get("code", "")
+        test_input = data.get("input", "")
+
+        # Создаем временную папку
+        temp = TASKS_DIR / "temp" / f"run_{team.id}"
+        if temp.exists(): shutil.rmtree(temp)
+        temp.mkdir(parents=True)
+
+        sol_file = temp / "solution.py"
+        sol_file.write_text(code, encoding="utf-8")
+
+        # Запускаем код в изолированном процессе (таймаут 3 секунды)
+        try:
+            # Используем sys.executable -I для изоляции
+            res = subprocess.run(
+                [sys.executable, "-I", str(sol_file)],
+                input=test_input,
+                capture_output=True,
+                text=True,
+                timeout=3.0
+            )
+            output = res.stdout
+            error = res.stderr
+            return {"status": "ok", "output": output, "error": error}
+        except subprocess.TimeoutExpired:
+            return {"status": "error", "error": "Time Limit Exceeded (3.0s)"}
+        except Exception as e:
+            return {"status": "error", "error": str(e)}
+        finally:
+            if temp.exists(): shutil.rmtree(temp)
 
 @app.post("/api/public/register")
 async def public_register(request: Request):
@@ -504,9 +611,9 @@ async def public_register(request: Request):
 
         new_password = secrets.token_urlsafe(6)
         org = Organization(name=team_name, password_hash=get_password_hash(new_password))
-        db.add(org);
+        db.add(org)
         db.flush()
         team = Team(name=team_name, organization_id=org.id, is_active=True)
-        db.add(team);
+        db.add(team)
         db.commit()
         return {"status": "ok", "password": new_password}

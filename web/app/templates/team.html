@@ -2,15 +2,49 @@
 {% block title %}Кабинет // Python vs Спорт{% endblock %}
 {% block head %}
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<!-- CodeMirror CSS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/show-hint.min.css">
+<!-- CodeMirror JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/show-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/closebrackets.min.js"></script>
+
+<style>
+    /* Стилизация подсказок CodeMirror под неоновую тему */
+    .CodeMirror-hints {
+        background: #0d1117 !important;
+        border: 1px solid #00ffcc !important;
+        border-radius: 6px !important;
+        box-shadow: 0 0 15px rgba(0, 255, 204, 0.2) !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 13px !important;
+        z-index: 1000 !important;
+    }
+    .CodeMirror-hint {
+        color: #e6edf3 !important;
+        padding: 4px 8px !important;
+        border-radius: 4px !important;
+    }
+    .CodeMirror-hint-active {
+        background: #00ffcc !important;
+        color: #0a0e14 !important;
+        font-weight: bold !important;
+    }
+
+    /* Стили для вкладок запуска */
+    .tab-btn.active {
+        border-bottom: 2px solid #00ffcc;
+        color: #00ffcc;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="w-full max-w-7xl flex gap-6 fade-in mx-auto">
-    <!-- ЛЕВАЯ ПАНЕЛЬ (Фиксированная) -->
+    <!-- ЛЕВАЯ ПАНЕЛЬ -->
     <aside class="w-72 shrink-0 hidden md:flex flex-col border border-line bg-panel rounded-xl overflow-hidden sticky top-20 h-[calc(100vh-7rem)]">
         <div class="p-4 border-b border-line bg-ink shrink-0">
             <div class="text-[10px] text-neon tracking-[0.3em]">// TASKS_LIST</div>
@@ -24,9 +58,18 @@
         </div>
     </aside>
 
-    <!-- ПРАВАЯ ПАНЕЛЬ (Скроллится целиком) -->
+    <!-- ПРАВАЯ ПАНЕЛЬ -->
     <section class="flex-1 flex flex-col min-w-0 border border-line bg-panel rounded-xl relative">
-        <div id="status-banner" class="hidden p-3 text-center border-b border-line bg-ink text-sm font-bold tracking-widest rounded-t-xl"></div>
+
+        <!-- БЛОК ТАЙМЕРА (Добавлен сюда) -->
+        <div class="flex items-center justify-between p-3 border-b border-line bg-ink rounded-t-xl">
+            <div class="text-xs text-slate-500 tracking-widest font-bold">// TIME_LEFT</div>
+            <div id="global-timer" class="hidden flex items-center gap-2 border px-3 py-1.5 rounded font-mono font-bold">
+                <span id="timer-text">00:00:00</span>
+            </div>
+        </div>
+
+        <div id="status-banner" class="hidden p-3 text-center border-b border-line bg-ink text-sm font-bold tracking-widest"></div>
 
         <div id="workspace-empty" class="p-12 flex flex-col items-center justify-center text-slate-600 text-sm min-h-[400px]">
             <div class="text-4xl mb-4">👈</div>
@@ -39,15 +82,36 @@
                 <h2 id="ws-overlay-title" class="text-2xl font-bold mb-2"></h2>
             </div>
 
-            <!-- Условие (Без скролла, растягивается) -->
+            <!-- Условие -->
             <div class="p-6 border-b border-line bg-ink">
                 <h2 id="task-title" class="font-display text-xl font-bold text-neon"></h2>
                 <div id="task-statement" class="text-sm text-slate-300 mt-3 prose prose-invert max-w-none"></div>
             </div>
 
-            <!-- Редактор кода (Фиксированной высоты, чтобы было удобно писать) -->
-            <div class="h-[400px] border-b border-line relative bg-[#0a0e14]">
+            <!-- Вкладки -->
+            <div class="flex border-b border-line bg-[#0a0e14]">
+                <button id="tab-code" class="tab-btn active px-4 py-2 text-sm font-bold text-slate-400 hover:text-white transition" onclick="switchTab('code')">КОД</button>
+                <button id="tab-test" class="tab-btn px-4 py-2 text-sm font-bold text-slate-400 hover:text-white transition" onclick="switchTab('test')">ТЕСТИРОВАНИЕ</button>
+            </div>
+
+            <!-- Редактор кода -->
+            <div id="pane-code" class="h-[400px] border-b border-line relative bg-[#0a0e14]">
                 <textarea id="code-editor"></textarea>
+            </div>
+
+            <!-- Панель тестирования -->
+            <div id="pane-test" class="hidden h-[400px] flex-col border-b border-line bg-[#0a0e14] p-4 gap-2">
+                <div class="flex-1 flex gap-2">
+                    <div class="flex-1 flex flex-col">
+                        <label class="text-xs text-slate-500 mb-1">Ввод (Input):</label>
+                        <textarea id="test-input" class="flex-1 bg-[#05080c] border border-line rounded p-2 text-sm font-mono text-slate-300 focus:outline-none focus:border-neon resize-none" placeholder="Введите тестовые данные..."></textarea>
+                    </div>
+                    <div class="flex-1 flex flex-col">
+                        <label class="text-xs text-slate-500 mb-1">Вывод (Output):</label>
+                        <pre id="test-output" class="flex-1 bg-[#05080c] border border-line rounded p-2 text-sm font-mono text-slate-300 overflow-auto whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+                <button id="btn-run-test" class="self-end bg-cyan text-ink font-bold text-xs tracking-widest px-4 py-2 rounded hover:bg-white transition" onclick="runTest()">ЗАПУСТИТЬ ▶</button>
             </div>
 
             <!-- Панель управления -->
@@ -70,12 +134,52 @@
     let teamPaused = false;
     let teamFinished = false;
 
+    let timerInterval = null;
+    let localRemainingSeconds = 0;
+
+    function switchTab(tab) {
+        document.getElementById('pane-code').classList.add('hidden');
+        document.getElementById('pane-test').classList.add('hidden');
+        document.getElementById('tab-code').classList.remove('active');
+        document.getElementById('tab-test').classList.remove('active');
+
+        if (tab === 'code') {
+            document.getElementById('pane-code').classList.remove('hidden');
+            document.getElementById('tab-code').classList.add('active');
+            if(editor) editor.refresh();
+        } else {
+            document.getElementById('pane-test').classList.remove('hidden');
+            document.getElementById('pane-test').classList.add('flex');
+            document.getElementById('tab-test').classList.add('active');
+        }
+    }
+
     function formatTime(s) {
         if (s < 0) s = 0;
         const h = Math.floor(s/3600).toString().padStart(2,'0');
         const m = Math.floor((s%3600)/60).toString().padStart(2,'0');
         const sec = (s%60).toString().padStart(2,'0');
         return `${h}:${m}:${sec}`;
+    }
+
+    function startLocalTimer(seconds) {
+        localRemainingSeconds = seconds;
+        if (timerInterval) clearInterval(timerInterval);
+        const timerText = document.getElementById('timer-text');
+
+        if (!globalStarted || globalPaused || teamPaused || teamFinished) {
+            timerText.textContent = formatTime(localRemainingSeconds);
+            return;
+        }
+
+        timerInterval = setInterval(() => {
+            if (localRemainingSeconds > 0) {
+                localRemainingSeconds--;
+                timerText.textContent = formatTime(localRemainingSeconds);
+            } else {
+                clearInterval(timerInterval);
+            }
+        }, 1000);
     }
 
     function renderTasks(tasks) {
@@ -118,7 +222,6 @@
 
             renderTasks(data.tasks);
 
-            // Индикатор ONLINE/OFFLINE
             const netIndicator = document.getElementById('net-status');
             const isLocked = (!globalStarted || globalPaused || teamPaused || teamFinished);
 
@@ -132,10 +235,8 @@
                 }
             }
 
-            // Баннер
             const banner = document.getElementById('status-banner');
             const timerBox = document.getElementById('global-timer');
-            const timerText = document.getElementById('timer-text');
 
             banner.classList.remove('hidden');
             timerBox.classList.remove('hidden');
@@ -143,26 +244,28 @@
             if (teamFinished) {
                 banner.textContent = "ЗАВЕРШЕНО";
                 banner.className = "p-3 text-center border-b border-magenta bg-magenta/10 text-magenta font-bold tracking-widest";
-                timerText.textContent = "FINISHED";
+                document.getElementById('timer-text').textContent = "FINISHED";
                 timerBox.className = "flex items-center gap-2 border border-magenta px-3 py-1.5 rounded text-magenta font-mono font-bold";
+                if(timerInterval) clearInterval(timerInterval);
             } else if (!globalStarted) {
                 banner.textContent = "ОЖИДАНИЕ СТАРТА";
                 banner.className = "p-3 text-center border-b border-cyan bg-cyan/10 text-cyan font-bold tracking-widest";
-                timerText.textContent = "WAITING";
+                document.getElementById('timer-text').textContent = "WAITING";
                 timerBox.className = "flex items-center gap-2 border border-cyan px-3 py-1.5 rounded text-cyan font-mono font-bold";
+                if(timerInterval) clearInterval(timerInterval);
             } else if (globalPaused || teamPaused) {
                 banner.textContent = "НА ПАУЗЕ";
                 banner.className = "p-3 text-center border-b border-warn bg-warn/10 text-warn font-bold tracking-widest";
-                timerText.textContent = "PAUSED";
+                document.getElementById('timer-text').textContent = "PAUSED";
                 timerBox.className = "flex items-center gap-2 border border-warn px-3 py-1.5 rounded text-warn font-mono font-bold";
+                if(timerInterval) clearInterval(timerInterval);
             } else {
                 banner.textContent = "ИДЕТ СОРЕВНОВАНИЕ";
                 banner.className = "p-3 text-center border-b border-neon bg-neon/10 text-neon font-bold tracking-widest";
-                timerText.textContent = formatTime(data.contest.remaining_seconds);
                 timerBox.className = "flex items-center gap-2 border border-neon/30 bg-neon/10 px-3 py-1.5 rounded text-neon font-mono font-bold glow-text";
+                startLocalTimer(data.contest.remaining_seconds);
             }
 
-            // Оверлей в задаче
             const wsOverlay = document.getElementById('workspace-overlay');
             if (isLocked) {
                 wsOverlay.classList.remove('hidden');
@@ -172,7 +275,6 @@
                 wsOverlay.classList.add('hidden');
             }
 
-            // Кнопка отправки
             const btn = document.getElementById('btn-submit');
             if (btn) {
                 if (isLocked) {
@@ -183,7 +285,6 @@
                     btn.textContent = "ОТПРАВИТЬ РЕШЕНИЕ >>";
                 }
             }
-
         } catch (e) { console.error("Ошибка:", e); }
     }
 
@@ -194,22 +295,39 @@
         document.getElementById('workspace').classList.remove('hidden');
         document.getElementById('workspace').classList.add('flex');
 
-        // Перерисовываем список, чтобы подсветить активную задачу
-        init();
+        switchTab('code');
 
-        const res = await fetch(`/api/team/tasks/${id}`);
-        const task = await res.json();
+        const res = await fetch('/api/team/me');
+        if(res.ok) {
+            const data = await res.json();
+            renderTasks(data.tasks);
+        }
+
+        const taskRes = await fetch(`/api/team/tasks/${id}`);
+        const task = await taskRes.json();
         document.getElementById('task-title').textContent = task.title;
         document.getElementById('task-statement').innerHTML = marked.parse(task.statement);
 
         if (!editor) {
             editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
-                mode: 'python', theme: 'dracula', lineNumbers: true, indentUnit: 4, matchBrackets: true, autofocus: true
+                mode: 'python',
+                theme: 'dracula',
+                lineNumbers: true,
+                indentUnit: 4,
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                autofocus: true,
+                extraKeys: { "Ctrl-Space": "autocomplete" }
+            });
+
+            editor.on("inputRead", function(instance, changeObj) {
+                if (changeObj.text[0].match(/[a-zA-Z_]/)) {
+                    instance.showHint({ completeSingle: false });
+                }
             });
         }
         editor.setValue(localStorage.getItem(`draft_${document.getElementById('team-name').textContent}_${id}`) || '');
 
-        // Прокручиваем страницу к началу задачи при выборе
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -244,11 +362,64 @@
         }
     }
 
-    document.getElementById('btn-submit').addEventListener('click', submitCode);
-    setInterval(() => { if (editor && currentTaskId) localStorage.setItem(`draft_${document.getElementById('team-name').textContent}_${currentTaskId}`, editor.getValue()); }, 3000);
+    async function runTest() {
+        if (!currentTaskId) return;
+        const btn = document.getElementById('btn-run-test');
+        const outputBox = document.getElementById('test-output');
+        const testInput = document.getElementById('test-input').value;
+        const code = editor.getValue();
 
-    const ws = new WebSocket(`ws://${location.host}/ws`);
-    ws.onmessage = (e) => { if (e.data === 'timer_changed' || e.data === 'tasks_changed' || e.data === 'update_rating') init(); };
+        if (!code.trim()) {
+            outputBox.textContent = "Введите код!";
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = "ЗАПУСК...";
+        outputBox.textContent = "Выполнение...";
+        outputBox.className = "flex-1 bg-[#05080c] border border-line rounded p-2 text-sm font-mono text-cyan overflow-auto whitespace-pre-wrap";
+
+        try {
+            const res = await fetch('/api/team/run', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ task_id: currentTaskId, code: code, input: testInput })
+            });
+            const data = await res.json();
+
+            if (data.status === "ok") {
+                outputBox.textContent = data.output || "(Программа ничего не вывела)";
+                outputBox.className = "flex-1 bg-[#05080c] border border-line rounded p-2 text-sm font-mono text-slate-300 overflow-auto whitespace-pre-wrap";
+                if (data.error) {
+                    outputBox.textContent += "\n\n[STDERR]:\n" + data.error;
+                    outputBox.className = "flex-1 bg-[#05080c] border border-line rounded p-2 text-sm font-mono text-magenta overflow-auto whitespace-pre-wrap";
+                }
+            } else {
+                outputBox.textContent = "ОШИБКА:\n" + data.error;
+                outputBox.className = "flex-1 bg-[#05080c] border border-line rounded p-2 text-sm font-mono text-magenta overflow-auto whitespace-pre-wrap";
+            }
+        } catch (e) {
+            outputBox.textContent = "Ошибка сети: " + e.message;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "ЗАПУСТИТЬ ▶";
+        }
+    }
+
+    document.getElementById('btn-submit').addEventListener('click', submitCode);
+
+    setInterval(() => {
+        if (editor && currentTaskId) {
+            localStorage.setItem(`draft_${document.getElementById('team-name').textContent}_${currentTaskId}`, editor.getValue());
+        }
+    }, 3000);
+
+    const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
+    ws.onmessage = (e) => {
+        if (e.data === 'timer_changed' || e.data === 'tasks_changed' || e.data === 'update_rating') {
+            init();
+        }
+    };
 
     init();
     setInterval(init, 10000);

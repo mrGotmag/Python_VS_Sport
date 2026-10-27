@@ -37,10 +37,12 @@ def _level(name: str, default: int) -> int:
 
 
 def _make_file_handler(path: Path, level: int) -> logging.Handler:
-    h = logging.handlers.RotatingFileHandler(
+    # Храним логи 1 день (when='D', interval=1, backupCount=1)
+    h = logging.handlers.TimedRotatingFileHandler(
         path,
-        maxBytes=settings.log_max_bytes,
-        backupCount=settings.log_backup_count,
+        when="D",
+        interval=1,
+        backupCount=1,  # Оставляем только сегодняшний лог (и вчерашний)
         encoding="utf-8",
     )
     h.setLevel(level)

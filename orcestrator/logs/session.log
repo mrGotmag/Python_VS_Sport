@@ -741,3 +741,349 @@
 2026-10-26 22:27:07 [MainProcess] [INFO] ИТОГО: 100/100 баллов
 2026-10-26 22:27:07 [MainProcess] [INFO] Задач решено полностью: 1/1
 2026-10-26 22:27:07 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-27 14:08:16 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-27 14:08:16 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-27 14:08:16 [SpawnProcess-1] [INFO] --- Задача 2: начало проверки (tasks\2)
+2026-10-27 14:08:16 [SpawnProcess-1] [INFO] Задача 2: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-27 14:08:16 [SpawnProcess-1] [DEBUG] Задача 2: код решения — 6 символов, 1 строк
+2026-10-27 14:08:16 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-27 14:08:16 [SpawnProcess-1] [DEBUG] run_batch: 6 тестов, isolated=False, timeout=11.0s, memory=256MB
+2026-10-27 14:08:16 [SpawnProcess-1] [INFO] Задача 2: тест #1 FAIL (NameError: name 'фывфыв' is not defined)
+2026-10-27 14:08:16 [SpawnProcess-1] [INFO] Задача 2: тест #2 FAIL (NameError: name 'фывфыв' is not defined)
+2026-10-27 14:08:16 [SpawnProcess-1] [INFO] Задача 2: тест #3 FAIL (NameError: name 'фывфыв' is not defined)
+2026-10-27 14:08:16 [SpawnProcess-1] [INFO] Задача 2: тест #4 FAIL (NameError: name 'фывфыв' is not defined)
+2026-10-27 14:08:16 [SpawnProcess-1] [INFO] Задача 2: тест #5 FAIL (NameError: name 'фывфыв' is not defined)
+2026-10-27 14:08:16 [SpawnProcess-1] [INFO] Задача 2: тест #6 FAIL (NameError: name 'фывфыв' is not defined)
+2026-10-27 14:08:16 [SpawnProcess-1] [INFO] Задача 2: итог 0/100 (partial)
+2026-10-27 14:08:16 [MainProcess] [INFO] 
+2026-10-27 14:08:16 [MainProcess] [INFO] === Задача 2: Главный корпус: расстановка бейджей по стеллажам ===
+2026-10-27 14:08:16 [MainProcess] [INFO] [FAIL] #1: NameError: name 'фывфыв' is not defined
+2026-10-27 14:08:16 [MainProcess] [INFO] [FAIL] #2: NameError: name 'фывфыв' is not defined
+2026-10-27 14:08:16 [MainProcess] [INFO] [FAIL] #3: NameError: name 'фывфыв' is not defined
+2026-10-27 14:08:16 [MainProcess] [INFO] [FAIL] #4: NameError: name 'фывфыв' is not defined
+2026-10-27 14:08:16 [MainProcess] [INFO] [FAIL] #5: NameError: name 'фывфыв' is not defined
+2026-10-27 14:08:16 [MainProcess] [INFO] [FAIL] #6: NameError: name 'фывфыв' is not defined
+2026-10-27 14:08:16 [MainProcess] [INFO] Результат: 0/100
+2026-10-27 14:08:16 [MainProcess] [INFO] 
+2026-10-27 14:08:16 [MainProcess] [INFO] ИТОГО: 0/100 баллов
+2026-10-27 14:08:16 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-27 14:08:16 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-27 14:11:21 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-27 14:11:21 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-27 14:11:21 [SpawnProcess-1] [INFO] --- Задача 4: начало проверки (tasks\4)
+2026-10-27 14:11:21 [SpawnProcess-1] [INFO] Задача 4: 8 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-27 14:11:21 [SpawnProcess-1] [DEBUG] Задача 4: код решения — 6 символов, 1 строк
+2026-10-27 14:11:21 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-27 14:11:21 [SpawnProcess-1] [DEBUG] run_batch: 8 тестов, isolated=False, timeout=13.0s, memory=256MB
+2026-10-27 14:11:21 [SpawnProcess-1] [INFO] Задача 4: тест #1 FAIL (NameError: name 'фцвфцв' is not defined)
+2026-10-27 14:11:21 [SpawnProcess-1] [INFO] Задача 4: тест #2 FAIL (NameError: name 'фцвфцв' is not defined)
+2026-10-27 14:11:21 [SpawnProcess-1] [INFO] Задача 4: тест #3 FAIL (NameError: name 'фцвфцв' is not defined)
+2026-10-27 14:11:21 [SpawnProcess-1] [INFO] Задача 4: тест #4 FAIL (NameError: name 'фцвфцв' is not defined)
+2026-10-27 14:11:21 [SpawnProcess-1] [INFO] Задача 4: тест #5 FAIL (NameError: name 'фцвфцв' is not defined)
+2026-10-27 14:11:21 [SpawnProcess-1] [INFO] Задача 4: тест #6 FAIL (NameError: name 'фцвфцв' is not defined)
+2026-10-27 14:11:21 [SpawnProcess-1] [INFO] Задача 4: тест #7 FAIL (NameError: name 'фцвфцв' is not defined)
+2026-10-27 14:11:21 [SpawnProcess-1] [INFO] Задача 4: тест #8 FAIL (NameError: name 'фцвфцв' is not defined)
+2026-10-27 14:11:21 [SpawnProcess-1] [INFO] Задача 4: итог 0/100 (partial)
+2026-10-27 14:11:22 [MainProcess] [INFO] 
+2026-10-27 14:11:22 [MainProcess] [INFO] === Задача 4: Олимпиада «Бобровая плотина»: пары участников ===
+2026-10-27 14:11:22 [MainProcess] [INFO] [FAIL] #1: NameError: name 'фцвфцв' is not defined
+2026-10-27 14:11:22 [MainProcess] [INFO] [FAIL] #2: NameError: name 'фцвфцв' is not defined
+2026-10-27 14:11:22 [MainProcess] [INFO] [FAIL] #3: NameError: name 'фцвфцв' is not defined
+2026-10-27 14:11:22 [MainProcess] [INFO] [FAIL] #4: NameError: name 'фцвфцв' is not defined
+2026-10-27 14:11:22 [MainProcess] [INFO] [FAIL] #5: NameError: name 'фцвфцв' is not defined
+2026-10-27 14:11:22 [MainProcess] [INFO] [FAIL] #6: NameError: name 'фцвфцв' is not defined
+2026-10-27 14:11:22 [MainProcess] [INFO] [FAIL] #7: NameError: name 'фцвфцв' is not defined
+2026-10-27 14:11:22 [MainProcess] [INFO] [FAIL] #8: NameError: name 'фцвфцв' is not defined
+2026-10-27 14:11:22 [MainProcess] [INFO] Результат: 0/100
+2026-10-27 14:11:22 [MainProcess] [INFO] 
+2026-10-27 14:11:22 [MainProcess] [INFO] ИТОГО: 0/100 баллов
+2026-10-27 14:11:22 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-27 14:11:22 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-27 14:11:27 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-27 14:11:27 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-27 14:11:28 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-27 14:11:28 [SpawnProcess-1] [INFO] Задача 1: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-27 14:11:28 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 6 символов, 1 строк
+2026-10-27 14:11:28 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-27 14:11:28 [SpawnProcess-1] [DEBUG] run_batch: 6 тестов, isolated=False, timeout=11.0s, memory=256MB
+2026-10-27 14:11:28 [SpawnProcess-1] [INFO] Задача 1: тест #1 FAIL (NameError: name 'йцвйцв' is not defined)
+2026-10-27 14:11:28 [SpawnProcess-1] [INFO] Задача 1: тест #2 FAIL (NameError: name 'йцвйцв' is not defined)
+2026-10-27 14:11:28 [SpawnProcess-1] [INFO] Задача 1: тест #3 FAIL (NameError: name 'йцвйцв' is not defined)
+2026-10-27 14:11:28 [SpawnProcess-1] [INFO] Задача 1: тест #4 FAIL (NameError: name 'йцвйцв' is not defined)
+2026-10-27 14:11:28 [SpawnProcess-1] [INFO] Задача 1: тест #5 FAIL (NameError: name 'йцвйцв' is not defined)
+2026-10-27 14:11:28 [SpawnProcess-1] [INFO] Задача 1: тест #6 FAIL (NameError: name 'йцвйцв' is not defined)
+2026-10-27 14:11:28 [SpawnProcess-1] [INFO] Задача 1: итог 0/100 (partial)
+2026-10-27 14:11:28 [MainProcess] [INFO] 
+2026-10-27 14:11:28 [MainProcess] [INFO] === Задача 1: Посвящение в МИВЛГУ: сине-белые браслеты ===
+2026-10-27 14:11:28 [MainProcess] [INFO] [FAIL] #1: NameError: name 'йцвйцв' is not defined
+2026-10-27 14:11:28 [MainProcess] [INFO] [FAIL] #2: NameError: name 'йцвйцв' is not defined
+2026-10-27 14:11:28 [MainProcess] [INFO] [FAIL] #3: NameError: name 'йцвйцв' is not defined
+2026-10-27 14:11:28 [MainProcess] [INFO] [FAIL] #4: NameError: name 'йцвйцв' is not defined
+2026-10-27 14:11:28 [MainProcess] [INFO] [FAIL] #5: NameError: name 'йцвйцв' is not defined
+2026-10-27 14:11:28 [MainProcess] [INFO] [FAIL] #6: NameError: name 'йцвйцв' is not defined
+2026-10-27 14:11:28 [MainProcess] [INFO] Результат: 0/100
+2026-10-27 14:11:28 [MainProcess] [INFO] 
+2026-10-27 14:11:28 [MainProcess] [INFO] ИТОГО: 0/100 баллов
+2026-10-27 14:11:28 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-27 14:11:28 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-27 14:15:54 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-27 14:15:54 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-27 14:15:54 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-27 14:15:54 [SpawnProcess-1] [INFO] Задача 1: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-27 14:15:54 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 20 символов, 2 строк
+2026-10-27 14:15:54 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-27 14:15:54 [SpawnProcess-1] [DEBUG] run_batch: 6 тестов, isolated=False, timeout=11.0s, memory=256MB
+2026-10-27 14:16:05 [SpawnProcess-1] [WARNING] BATCH TIMEOUT (11.0s) на 6 тестов, isolated=False
+2026-10-27 14:16:05 [SpawnProcess-1] [INFO] Задача 1: тест #1 FAIL (TIMEOUT)
+2026-10-27 14:16:05 [SpawnProcess-1] [INFO] Задача 1: тест #2 FAIL (TIMEOUT)
+2026-10-27 14:16:05 [SpawnProcess-1] [INFO] Задача 1: тест #3 FAIL (TIMEOUT)
+2026-10-27 14:16:05 [SpawnProcess-1] [INFO] Задача 1: тест #4 FAIL (TIMEOUT)
+2026-10-27 14:16:05 [SpawnProcess-1] [INFO] Задача 1: тест #5 FAIL (TIMEOUT)
+2026-10-27 14:16:05 [SpawnProcess-1] [INFO] Задача 1: тест #6 FAIL (TIMEOUT)
+2026-10-27 14:16:05 [SpawnProcess-1] [INFO] Задача 1: итог 0/100 (partial)
+2026-10-27 14:16:05 [MainProcess] [INFO] 
+2026-10-27 14:16:05 [MainProcess] [INFO] === Задача 1: Посвящение в МИВЛГУ: сине-белые браслеты ===
+2026-10-27 14:16:05 [MainProcess] [INFO] [FAIL] #1: TIMEOUT
+2026-10-27 14:16:05 [MainProcess] [INFO] [FAIL] #2: TIMEOUT
+2026-10-27 14:16:05 [MainProcess] [INFO] [FAIL] #3: TIMEOUT
+2026-10-27 14:16:05 [MainProcess] [INFO] [FAIL] #4: TIMEOUT
+2026-10-27 14:16:05 [MainProcess] [INFO] [FAIL] #5: TIMEOUT
+2026-10-27 14:16:05 [MainProcess] [INFO] [FAIL] #6: TIMEOUT
+2026-10-27 14:16:05 [MainProcess] [INFO] Результат: 0/100
+2026-10-27 14:16:05 [MainProcess] [INFO] 
+2026-10-27 14:16:05 [MainProcess] [INFO] ИТОГО: 0/100 баллов
+2026-10-27 14:16:05 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-27 14:16:05 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-27 14:16:46 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-27 14:16:46 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-27 14:16:46 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-27 14:16:46 [SpawnProcess-1] [INFO] Задача 1: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-27 14:16:46 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 35 символов, 1 строк
+2026-10-27 14:16:46 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-27 14:16:46 [SpawnProcess-1] [DEBUG] run_batch: 6 тестов, isolated=False, timeout=11.0s, memory=256MB
+2026-10-27 14:16:58 [SpawnProcess-1] [WARNING] BATCH TIMEOUT (11.0s) на 6 тестов, isolated=False
+2026-10-27 14:16:58 [SpawnProcess-1] [INFO] Задача 1: тест #1 FAIL (TIMEOUT)
+2026-10-27 14:16:58 [SpawnProcess-1] [INFO] Задача 1: тест #2 FAIL (TIMEOUT)
+2026-10-27 14:16:58 [SpawnProcess-1] [INFO] Задача 1: тест #3 FAIL (TIMEOUT)
+2026-10-27 14:16:58 [SpawnProcess-1] [INFO] Задача 1: тест #4 FAIL (TIMEOUT)
+2026-10-27 14:16:58 [SpawnProcess-1] [INFO] Задача 1: тест #5 FAIL (TIMEOUT)
+2026-10-27 14:16:58 [SpawnProcess-1] [INFO] Задача 1: тест #6 FAIL (TIMEOUT)
+2026-10-27 14:16:58 [SpawnProcess-1] [INFO] Задача 1: итог 0/100 (partial)
+2026-10-27 14:16:58 [MainProcess] [INFO] 
+2026-10-27 14:16:58 [MainProcess] [INFO] === Задача 1: Посвящение в МИВЛГУ: сине-белые браслеты ===
+2026-10-27 14:16:58 [MainProcess] [INFO] [FAIL] #1: TIMEOUT
+2026-10-27 14:16:58 [MainProcess] [INFO] [FAIL] #2: TIMEOUT
+2026-10-27 14:16:58 [MainProcess] [INFO] [FAIL] #3: TIMEOUT
+2026-10-27 14:16:58 [MainProcess] [INFO] [FAIL] #4: TIMEOUT
+2026-10-27 14:16:58 [MainProcess] [INFO] [FAIL] #5: TIMEOUT
+2026-10-27 14:16:58 [MainProcess] [INFO] [FAIL] #6: TIMEOUT
+2026-10-27 14:16:58 [MainProcess] [INFO] Результат: 0/100
+2026-10-27 14:16:58 [MainProcess] [INFO] 
+2026-10-27 14:16:58 [MainProcess] [INFO] ИТОГО: 0/100 баллов
+2026-10-27 14:16:58 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-27 14:16:58 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-27 14:17:41 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-27 14:17:41 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-27 14:17:41 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-27 14:17:41 [SpawnProcess-1] [INFO] Задача 1: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-27 14:17:41 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 44 символов, 2 строк
+2026-10-27 14:17:41 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-27 14:17:41 [SpawnProcess-1] [DEBUG] run_batch: 6 тестов, isolated=False, timeout=11.0s, memory=256MB
+2026-10-27 14:17:52 [SpawnProcess-1] [WARNING] BATCH TIMEOUT (11.0s) на 6 тестов, isolated=False
+2026-10-27 14:17:52 [SpawnProcess-1] [INFO] Задача 1: тест #1 FAIL (TIMEOUT)
+2026-10-27 14:17:52 [SpawnProcess-1] [INFO] Задача 1: тест #2 FAIL (TIMEOUT)
+2026-10-27 14:17:52 [SpawnProcess-1] [INFO] Задача 1: тест #3 FAIL (TIMEOUT)
+2026-10-27 14:17:52 [SpawnProcess-1] [INFO] Задача 1: тест #4 FAIL (TIMEOUT)
+2026-10-27 14:17:52 [SpawnProcess-1] [INFO] Задача 1: тест #5 FAIL (TIMEOUT)
+2026-10-27 14:17:52 [SpawnProcess-1] [INFO] Задача 1: тест #6 FAIL (TIMEOUT)
+2026-10-27 14:17:52 [SpawnProcess-1] [INFO] Задача 1: итог 0/100 (partial)
+2026-10-27 14:17:52 [MainProcess] [INFO] 
+2026-10-27 14:17:52 [MainProcess] [INFO] === Задача 1: Посвящение в МИВЛГУ: сине-белые браслеты ===
+2026-10-27 14:17:52 [MainProcess] [INFO] [FAIL] #1: TIMEOUT
+2026-10-27 14:17:52 [MainProcess] [INFO] [FAIL] #2: TIMEOUT
+2026-10-27 14:17:52 [MainProcess] [INFO] [FAIL] #3: TIMEOUT
+2026-10-27 14:17:52 [MainProcess] [INFO] [FAIL] #4: TIMEOUT
+2026-10-27 14:17:52 [MainProcess] [INFO] [FAIL] #5: TIMEOUT
+2026-10-27 14:17:52 [MainProcess] [INFO] [FAIL] #6: TIMEOUT
+2026-10-27 14:17:52 [MainProcess] [INFO] Результат: 0/100
+2026-10-27 14:17:52 [MainProcess] [INFO] 
+2026-10-27 14:17:52 [MainProcess] [INFO] ИТОГО: 0/100 баллов
+2026-10-27 14:17:52 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-27 14:17:52 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-27 14:27:51 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-27 14:27:51 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-27 14:27:52 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-27 14:27:52 [SpawnProcess-1] [INFO] Задача 1: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-27 14:27:52 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 42 символов, 2 строк
+2026-10-27 14:27:52 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-27 14:27:52 [SpawnProcess-1] [DEBUG] run_batch: 6 тестов, isolated=False, timeout=11.0s, memory=256MB
+2026-10-27 14:27:52 [SpawnProcess-1] [INFO] Задача 1: тест #1 FAIL (wrong output)
+2026-10-27 14:27:52 [SpawnProcess-1] [DEBUG]   expected='3 2 blue\n' got="Взлом! ['.env', '.env.example', '.git', 'batch_runner.py', 'checker.py', 'code_reader.py', 'config.py', 'logger_setup.py', 'logs', 'main.py', 'pool.py', 'reporter.py', 'tasks', '__pycache__']\n"
+2026-10-27 14:27:52 [SpawnProcess-1] [INFO] Задача 1: тест #2 FAIL (wrong output)
+2026-10-27 14:27:52 [SpawnProcess-1] [DEBUG]   expected='1 0 blue\n' got="Взлом! ['.env', '.env.example', '.git', 'batch_runner.py', 'checker.py', 'code_reader.py', 'config.py', 'logger_setup.py', 'logs', 'main.py', 'pool.py', 'reporter.py', 'tasks', '__pycache__']\n"
+2026-10-27 14:27:52 [SpawnProcess-1] [INFO] Задача 1: тест #3 FAIL (wrong output)
+2026-10-27 14:27:52 [SpawnProcess-1] [DEBUG]   expected='1 1 white\n' got="Взлом! ['.env', '.env.example', '.git', 'batch_runner.py', 'checker.py', 'code_reader.py', 'config.py', 'logger_setup.py', 'logs', 'main.py', 'pool.py', 'reporter.py', 'tasks', '__pycache__']\n"
+2026-10-27 14:27:52 [SpawnProcess-1] [INFO] Задача 1: тест #4 FAIL (wrong output)
+2026-10-27 14:27:52 [SpawnProcess-1] [DEBUG]   expected='2 2 white\n' got="Взлом! ['.env', '.env.example', '.git', 'batch_runner.py', 'checker.py', 'code_reader.py', 'config.py', 'logger_setup.py', 'logs', 'main.py', 'pool.py', 'reporter.py', 'tasks', '__pycache__']\n"
+2026-10-27 14:27:52 [SpawnProcess-1] [INFO] Задача 1: тест #5 FAIL (wrong output)
+2026-10-27 14:27:52 [SpawnProcess-1] [DEBUG]   expected='500000000 500000000 white\n' got="Взлом! ['.env', '.env.example', '.git', 'batch_runner.py', 'checker.py', 'code_reader.py', 'config.py', 'logger_setup.py', 'logs', 'main.py', 'pool.py', 'reporter.py', 'tasks', '__pycache__']\n"
+2026-10-27 14:27:52 [SpawnProcess-1] [INFO] Задача 1: тест #6 FAIL (wrong output)
+2026-10-27 14:27:52 [SpawnProcess-1] [DEBUG]   expected='500000000 499999999 blue\n' got="Взлом! ['.env', '.env.example', '.git', 'batch_runner.py', 'checker.py', 'code_reader.py', 'config.py', 'logger_setup.py', 'logs', 'main.py', 'pool.py', 'reporter.py', 'tasks', '__pycache__']\n"
+2026-10-27 14:27:52 [SpawnProcess-1] [INFO] Задача 1: итог 0/100 (partial)
+2026-10-27 14:27:52 [MainProcess] [INFO] 
+2026-10-27 14:27:52 [MainProcess] [INFO] === Задача 1: Посвящение в МИВЛГУ: сине-белые браслеты ===
+2026-10-27 14:27:52 [MainProcess] [INFO] [FAIL] #1: wrong output expected '3 2 blue\n', got "Взлом! ['.env', '.env.example', '.git', 'batch_runner.py', 'checker.py', 'code_reader.py', 'config.py', 'logger_setup.py', 'logs', 'main.py', 'pool.py', 'reporter.py', 'tasks', '__pycache__']\n"
+2026-10-27 14:27:52 [MainProcess] [INFO] [FAIL] #2: wrong output expected '1 0 blue\n', got "Взлом! ['.env', '.env.example', '.git', 'batch_runner.py', 'checker.py', 'code_reader.py', 'config.py', 'logger_setup.py', 'logs', 'main.py', 'pool.py', 'reporter.py', 'tasks', '__pycache__']\n"
+2026-10-27 14:27:52 [MainProcess] [INFO] [FAIL] #3: wrong output expected '1 1 white\n', got "Взлом! ['.env', '.env.example', '.git', 'batch_runner.py', 'checker.py', 'code_reader.py', 'config.py', 'logger_setup.py', 'logs', 'main.py', 'pool.py', 'reporter.py', 'tasks', '__pycache__']\n"
+2026-10-27 14:27:52 [MainProcess] [INFO] [FAIL] #4: wrong output expected '2 2 white\n', got "Взлом! ['.env', '.env.example', '.git', 'batch_runner.py', 'checker.py', 'code_reader.py', 'config.py', 'logger_setup.py', 'logs', 'main.py', 'pool.py', 'reporter.py', 'tasks', '__pycache__']\n"
+2026-10-27 14:27:52 [MainProcess] [INFO] [FAIL] #5: wrong output expected '500000000 500000000 white\n', got "Взлом! ['.env', '.env.example', '.git', 'batch_runner.py', 'checker.py', 'code_reader.py', 'config.py', 'logger_setup.py', 'logs', 'main.py', 'pool.py', 'reporter.py', 'tasks', '__pycache__']\n"
+2026-10-27 14:27:52 [MainProcess] [INFO] [FAIL] #6: wrong output expected '500000000 499999999 blue\n', got "Взлом! ['.env', '.env.example', '.git', 'batch_runner.py', 'checker.py', 'code_reader.py', 'config.py', 'logger_setup.py', 'logs', 'main.py', 'pool.py', 'reporter.py', 'tasks', '__pycache__']\n"
+2026-10-27 14:27:52 [MainProcess] [INFO] Результат: 0/100
+2026-10-27 14:27:52 [MainProcess] [INFO] 
+2026-10-27 14:27:52 [MainProcess] [INFO] ИТОГО: 0/100 баллов
+2026-10-27 14:27:52 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-27 14:27:52 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-27 14:43:54 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-27 14:43:54 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-27 14:43:55 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-27 14:43:55 [SpawnProcess-1] [INFO] Задача 1: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-27 14:43:55 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 32 символов, 2 строк
+2026-10-27 14:43:55 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-27 14:43:55 [SpawnProcess-1] [WARNING] BATCH: раннер упал rc=1: Traceback (most recent call last):
+  File "<string>", line 7, in <module>
+TypeError: unhashable type: 'set'
+
+2026-10-27 14:43:55 [SpawnProcess-1] [INFO] Задача 1: тест #1 FAIL (RUNNER_ERROR)
+2026-10-27 14:43:55 [SpawnProcess-1] [INFO] Задача 1: тест #2 FAIL (RUNNER_ERROR)
+2026-10-27 14:43:55 [SpawnProcess-1] [INFO] Задача 1: тест #3 FAIL (RUNNER_ERROR)
+2026-10-27 14:43:55 [SpawnProcess-1] [INFO] Задача 1: тест #4 FAIL (RUNNER_ERROR)
+2026-10-27 14:43:55 [SpawnProcess-1] [INFO] Задача 1: тест #5 FAIL (RUNNER_ERROR)
+2026-10-27 14:43:55 [SpawnProcess-1] [INFO] Задача 1: тест #6 FAIL (RUNNER_ERROR)
+2026-10-27 14:43:55 [SpawnProcess-1] [INFO] Задача 1: итог 0/100 (partial)
+2026-10-27 14:43:55 [MainProcess] [INFO] 
+2026-10-27 14:43:55 [MainProcess] [INFO] === Задача 1: Посвящение в МИВЛГУ: сине-белые браслеты ===
+2026-10-27 14:43:55 [MainProcess] [INFO] [FAIL] #1: RUNNER_ERROR
+2026-10-27 14:43:55 [MainProcess] [INFO] [FAIL] #2: RUNNER_ERROR
+2026-10-27 14:43:55 [MainProcess] [INFO] [FAIL] #3: RUNNER_ERROR
+2026-10-27 14:43:55 [MainProcess] [INFO] [FAIL] #4: RUNNER_ERROR
+2026-10-27 14:43:55 [MainProcess] [INFO] [FAIL] #5: RUNNER_ERROR
+2026-10-27 14:43:55 [MainProcess] [INFO] [FAIL] #6: RUNNER_ERROR
+2026-10-27 14:43:55 [MainProcess] [INFO] Результат: 0/100
+2026-10-27 14:43:55 [MainProcess] [INFO] 
+2026-10-27 14:43:55 [MainProcess] [INFO] ИТОГО: 0/100 баллов
+2026-10-27 14:43:55 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-27 14:43:55 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-27 14:44:38 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-27 14:44:38 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-27 14:44:38 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-27 14:44:38 [SpawnProcess-1] [INFO] Задача 1: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-27 14:44:38 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 24 символов, 2 строк
+2026-10-27 14:44:38 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-27 14:44:38 [SpawnProcess-1] [WARNING] BATCH: раннер упал rc=1: Traceback (most recent call last):
+  File "<string>", line 7, in <module>
+TypeError: unhashable type: 'set'
+
+2026-10-27 14:44:38 [SpawnProcess-1] [INFO] Задача 1: тест #1 FAIL (RUNNER_ERROR)
+2026-10-27 14:44:38 [SpawnProcess-1] [INFO] Задача 1: тест #2 FAIL (RUNNER_ERROR)
+2026-10-27 14:44:38 [SpawnProcess-1] [INFO] Задача 1: тест #3 FAIL (RUNNER_ERROR)
+2026-10-27 14:44:38 [SpawnProcess-1] [INFO] Задача 1: тест #4 FAIL (RUNNER_ERROR)
+2026-10-27 14:44:38 [SpawnProcess-1] [INFO] Задача 1: тест #5 FAIL (RUNNER_ERROR)
+2026-10-27 14:44:38 [SpawnProcess-1] [INFO] Задача 1: тест #6 FAIL (RUNNER_ERROR)
+2026-10-27 14:44:38 [SpawnProcess-1] [INFO] Задача 1: итог 0/100 (partial)
+2026-10-27 14:44:38 [MainProcess] [INFO] 
+2026-10-27 14:44:38 [MainProcess] [INFO] === Задача 1: Посвящение в МИВЛГУ: сине-белые браслеты ===
+2026-10-27 14:44:38 [MainProcess] [INFO] [FAIL] #1: RUNNER_ERROR
+2026-10-27 14:44:38 [MainProcess] [INFO] [FAIL] #2: RUNNER_ERROR
+2026-10-27 14:44:38 [MainProcess] [INFO] [FAIL] #3: RUNNER_ERROR
+2026-10-27 14:44:38 [MainProcess] [INFO] [FAIL] #4: RUNNER_ERROR
+2026-10-27 14:44:38 [MainProcess] [INFO] [FAIL] #5: RUNNER_ERROR
+2026-10-27 14:44:38 [MainProcess] [INFO] [FAIL] #6: RUNNER_ERROR
+2026-10-27 14:44:38 [MainProcess] [INFO] Результат: 0/100
+2026-10-27 14:44:38 [MainProcess] [INFO] 
+2026-10-27 14:44:38 [MainProcess] [INFO] ИТОГО: 0/100 баллов
+2026-10-27 14:44:38 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-27 14:44:38 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-27 14:46:58 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-27 14:46:58 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-27 14:46:58 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-27 14:46:58 [SpawnProcess-1] [INFO] Задача 1: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-27 14:46:58 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 24 символов, 2 строк
+2026-10-27 14:46:58 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-27 14:46:58 [SpawnProcess-1] [INFO] Задача 1: тест #1 FAIL (SecurityError: Импорт модуля 'os' запрещен правилами олимпиады.)
+2026-10-27 14:46:58 [SpawnProcess-1] [INFO] Задача 1: тест #2 FAIL (SecurityError: Импорт модуля 'os' запрещен правилами олимпиады.)
+2026-10-27 14:46:58 [SpawnProcess-1] [INFO] Задача 1: тест #3 FAIL (SecurityError: Импорт модуля 'os' запрещен правилами олимпиады.)
+2026-10-27 14:46:58 [SpawnProcess-1] [INFO] Задача 1: тест #4 FAIL (SecurityError: Импорт модуля 'os' запрещен правилами олимпиады.)
+2026-10-27 14:46:58 [SpawnProcess-1] [INFO] Задача 1: тест #5 FAIL (SecurityError: Импорт модуля 'os' запрещен правилами олимпиады.)
+2026-10-27 14:46:58 [SpawnProcess-1] [INFO] Задача 1: тест #6 FAIL (SecurityError: Импорт модуля 'os' запрещен правилами олимпиады.)
+2026-10-27 14:46:58 [SpawnProcess-1] [INFO] Задача 1: итог 0/100 (partial)
+2026-10-27 14:46:58 [MainProcess] [INFO] 
+2026-10-27 14:46:58 [MainProcess] [INFO] === Задача 1: Посвящение в МИВЛГУ: сине-белые браслеты ===
+2026-10-27 14:46:58 [MainProcess] [INFO] [FAIL] #1: SecurityError: Импорт модуля 'os' запрещен правилами олимпиады.
+2026-10-27 14:46:58 [MainProcess] [INFO] [FAIL] #2: SecurityError: Импорт модуля 'os' запрещен правилами олимпиады.
+2026-10-27 14:46:58 [MainProcess] [INFO] [FAIL] #3: SecurityError: Импорт модуля 'os' запрещен правилами олимпиады.
+2026-10-27 14:46:58 [MainProcess] [INFO] [FAIL] #4: SecurityError: Импорт модуля 'os' запрещен правилами олимпиады.
+2026-10-27 14:46:58 [MainProcess] [INFO] [FAIL] #5: SecurityError: Импорт модуля 'os' запрещен правилами олимпиады.
+2026-10-27 14:46:58 [MainProcess] [INFO] [FAIL] #6: SecurityError: Импорт модуля 'os' запрещен правилами олимпиады.
+2026-10-27 14:46:58 [MainProcess] [INFO] Результат: 0/100
+2026-10-27 14:46:58 [MainProcess] [INFO] 
+2026-10-27 14:46:58 [MainProcess] [INFO] ИТОГО: 0/100 баллов
+2026-10-27 14:46:58 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-27 14:46:58 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-27 14:47:15 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-27 14:47:15 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-27 14:47:16 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-27 14:47:16 [SpawnProcess-1] [INFO] Задача 1: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-27 14:47:16 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 15 символов, 2 строк
+2026-10-27 14:47:16 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-27 14:47:16 [SpawnProcess-1] [INFO] Задача 1: тест #1 FAIL (wrong output)
+2026-10-27 14:47:16 [SpawnProcess-1] [DEBUG]   expected='3 2 blue\n' got='Hello\n'
+2026-10-27 14:47:16 [SpawnProcess-1] [INFO] Задача 1: тест #2 FAIL (wrong output)
+2026-10-27 14:47:16 [SpawnProcess-1] [DEBUG]   expected='1 0 blue\n' got='Hello\n'
+2026-10-27 14:47:16 [SpawnProcess-1] [INFO] Задача 1: тест #3 FAIL (wrong output)
+2026-10-27 14:47:16 [SpawnProcess-1] [DEBUG]   expected='1 1 white\n' got='Hello\n'
+2026-10-27 14:47:16 [SpawnProcess-1] [INFO] Задача 1: тест #4 FAIL (wrong output)
+2026-10-27 14:47:16 [SpawnProcess-1] [DEBUG]   expected='2 2 white\n' got='Hello\n'
+2026-10-27 14:47:16 [SpawnProcess-1] [INFO] Задача 1: тест #5 FAIL (wrong output)
+2026-10-27 14:47:16 [SpawnProcess-1] [DEBUG]   expected='500000000 500000000 white\n' got='Hello\n'
+2026-10-27 14:47:16 [SpawnProcess-1] [INFO] Задача 1: тест #6 FAIL (wrong output)
+2026-10-27 14:47:16 [SpawnProcess-1] [DEBUG]   expected='500000000 499999999 blue\n' got='Hello\n'
+2026-10-27 14:47:16 [SpawnProcess-1] [INFO] Задача 1: итог 0/100 (partial)
+2026-10-27 14:47:16 [MainProcess] [INFO] 
+2026-10-27 14:47:16 [MainProcess] [INFO] === Задача 1: Посвящение в МИВЛГУ: сине-белые браслеты ===
+2026-10-27 14:47:16 [MainProcess] [INFO] [FAIL] #1: wrong output expected '3 2 blue\n', got 'Hello\n'
+2026-10-27 14:47:16 [MainProcess] [INFO] [FAIL] #2: wrong output expected '1 0 blue\n', got 'Hello\n'
+2026-10-27 14:47:16 [MainProcess] [INFO] [FAIL] #3: wrong output expected '1 1 white\n', got 'Hello\n'
+2026-10-27 14:47:16 [MainProcess] [INFO] [FAIL] #4: wrong output expected '2 2 white\n', got 'Hello\n'
+2026-10-27 14:47:16 [MainProcess] [INFO] [FAIL] #5: wrong output expected '500000000 500000000 white\n', got 'Hello\n'
+2026-10-27 14:47:16 [MainProcess] [INFO] [FAIL] #6: wrong output expected '500000000 499999999 blue\n', got 'Hello\n'
+2026-10-27 14:47:16 [MainProcess] [INFO] Результат: 0/100
+2026-10-27 14:47:16 [MainProcess] [INFO] 
+2026-10-27 14:47:16 [MainProcess] [INFO] ИТОГО: 0/100 баллов
+2026-10-27 14:47:16 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-27 14:47:16 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-27 14:49:07 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-27 14:49:07 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-27 14:49:07 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-27 14:49:07 [SpawnProcess-1] [INFO] Задача 1: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-27 14:49:07 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 180 символов, 11 строк
+2026-10-27 14:49:07 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-27 14:49:08 [SpawnProcess-1] [INFO] Задача 1: тест #1 OK (+15)
+2026-10-27 14:49:08 [SpawnProcess-1] [INFO] Задача 1: тест #2 OK (+15)
+2026-10-27 14:49:08 [SpawnProcess-1] [INFO] Задача 1: тест #3 OK (+15)
+2026-10-27 14:49:08 [SpawnProcess-1] [INFO] Задача 1: тест #4 OK (+15)
+2026-10-27 14:49:08 [SpawnProcess-1] [INFO] Задача 1: тест #5 OK (+20)
+2026-10-27 14:49:08 [SpawnProcess-1] [INFO] Задача 1: тест #6 OK (+20)
+2026-10-27 14:49:08 [SpawnProcess-1] [INFO] Задача 1: итог 100/100 (ok)
+2026-10-27 14:49:08 [MainProcess] [INFO] 
+2026-10-27 14:49:08 [MainProcess] [INFO] === Задача 1: Посвящение в МИВЛГУ: сине-белые браслеты ===
+2026-10-27 14:49:08 [MainProcess] [INFO] [ OK ] #1 (+15)
+2026-10-27 14:49:08 [MainProcess] [INFO] [ OK ] #2 (+15)
+2026-10-27 14:49:08 [MainProcess] [INFO] [ OK ] #3 (+15)
+2026-10-27 14:49:08 [MainProcess] [INFO] [ OK ] #4 (+15)
+2026-10-27 14:49:08 [MainProcess] [INFO] [ OK ] #5 (+20)
+2026-10-27 14:49:08 [MainProcess] [INFO] [ OK ] #6 (+20)
+2026-10-27 14:49:08 [MainProcess] [INFO] Результат: 100/100
+2026-10-27 14:49:08 [MainProcess] [INFO] 
+2026-10-27 14:49:08 [MainProcess] [INFO] ИТОГО: 100/100 баллов
+2026-10-27 14:49:08 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-27 14:49:08 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
