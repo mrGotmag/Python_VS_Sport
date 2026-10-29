@@ -434,3 +434,52 @@
 2026-10-30 00:11:36 [MainProcess] [INFO] ИТОГО: 10/10 баллов
 2026-10-30 00:11:36 [MainProcess] [INFO] Задач решено полностью: 1/1
 2026-10-30 00:11:36 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-30 01:04:18 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-30 01:04:18 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-30 01:04:18 [SpawnProcess-1] [INFO] --- Задача 1: начало проверки (tasks\1)
+2026-10-30 01:04:18 [SpawnProcess-1] [INFO] Задача 1: 1 тестов, максимум 10 баллов, лимиты: 1.0s / 256 МБ
+2026-10-30 01:04:18 [SpawnProcess-1] [DEBUG] Задача 1: код решения — 180 символов, 11 строк
+2026-10-30 01:04:18 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-30 01:04:18 [SpawnProcess-1] [INFO] Тест #1: rc=0, time=83.3ms, mem=3.4MB
+2026-10-30 01:04:18 [SpawnProcess-1] [INFO] Задача 1: тест #1 FAIL (wrong output)
+2026-10-30 01:04:18 [SpawnProcess-1] [INFO] Задача 1: итог 0/10 (partial)
+2026-10-30 01:04:18 [MainProcess] [INFO] 
+2026-10-30 01:04:18 [MainProcess] [INFO] === Задача 1: Тест ===
+2026-10-30 01:04:18 [MainProcess] [INFO] [FAIL] #1: wrong output expected '2\n', got '1 0 blue\n'
+2026-10-30 01:04:18 [MainProcess] [INFO] Результат: 0/10
+2026-10-30 01:04:18 [MainProcess] [INFO] 
+2026-10-30 01:04:18 [MainProcess] [INFO] ИТОГО: 0/10 баллов
+2026-10-30 01:04:18 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-10-30 01:04:18 [MainProcess] [INFO] Отчёт сохранён в logs\report.json
+2026-10-30 01:06:50 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
+2026-10-30 01:06:50 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
+2026-10-30 01:06:50 [SpawnProcess-1] [INFO] --- Задача 2: начало проверки (tasks\2)
+2026-10-30 01:06:50 [SpawnProcess-1] [INFO] Задача 2: 6 тестов, максимум 100 баллов, лимиты: 1.0s / 256 МБ
+2026-10-30 01:06:50 [SpawnProcess-1] [DEBUG] Задача 2: код решения — 119 символов, 8 строк
+2026-10-30 01:06:50 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-10-30 01:06:50 [SpawnProcess-1] [INFO] Тест #1: rc=0, time=12.8ms, mem=3.4MB
+2026-10-30 01:06:50 [SpawnProcess-1] [INFO] Тест #2: rc=0, time=12.8ms, mem=3.4MB
+2026-10-30 01:06:50 [SpawnProcess-1] [INFO] Тест #3: rc=0, time=12.8ms, mem=3.4MB
+2026-10-30 01:06:50 [SpawnProcess-1] [INFO] Тест #4: rc=0, time=12.8ms, mem=3.4MB
+2026-10-30 01:06:50 [SpawnProcess-1] [INFO] Тест #5: rc=0, time=12.8ms, mem=3.4MB
+2026-10-30 01:06:50 [SpawnProcess-1] [INFO] Тест #6: rc=0, time=12.8ms, mem=3.4MB
+2026-10-30 01:06:50 [SpawnProcess-1] [INFO] Задача 2: тест #1 OK (+15)
+2026-10-30 01:06:50 [SpawnProcess-1] [INFO] Задача 2: тест #2 OK (+10)
+2026-10-30 01:06:50 [SpawnProcess-1] [INFO] Задача 2: тест #3 OK (+15)
+2026-10-30 01:06:50 [SpawnProcess-1] [INFO] Задача 2: тест #4 OK (+15)
+2026-10-30 01:06:50 [SpawnProcess-1] [INFO] Задача 2: тест #5 OK (+20)
+2026-10-30 01:06:50 [SpawnProcess-1] [INFO] Задача 2: тест #6 OK (+25)
+2026-10-30 01:06:50 [SpawnProcess-1] [INFO] Задача 2: итог 100/100 (ok)
+2026-10-30 01:06:50 [MainProcess] [INFO] 
+2026-10-30 01:06:50 [MainProcess] [INFO] === Задача 2: Главный корпус: расстановка бейджей по стеллажам ===
+2026-10-30 01:06:50 [MainProcess] [INFO] [ OK ] #1 (+15) time=12.8ms mem=3.4MB
+2026-10-30 01:06:50 [MainProcess] [INFO] [ OK ] #2 (+10) time=12.8ms mem=3.4MB
+2026-10-30 01:06:50 [MainProcess] [INFO] [ OK ] #3 (+15) time=12.8ms mem=3.4MB
+2026-10-30 01:06:50 [MainProcess] [INFO] [ OK ] #4 (+15) time=12.8ms mem=3.4MB
+2026-10-30 01:06:50 [MainProcess] [INFO] [ OK ] #5 (+20) time=12.8ms mem=3.4MB
+2026-10-30 01:06:50 [MainProcess] [INFO] [ OK ] #6 (+25) time=12.8ms mem=3.4MB
+2026-10-30 01:06:50 [MainProcess] [INFO] Результат: 100/100
+2026-10-30 01:06:50 [MainProcess] [INFO] 
+2026-10-30 01:06:50 [MainProcess] [INFO] ИТОГО: 100/100 баллов
+2026-10-30 01:06:50 [MainProcess] [INFO] Задач решено полностью: 1/1
+2026-10-30 01:06:50 [MainProcess] [INFO] Отчёт сохранён в logs\report.json

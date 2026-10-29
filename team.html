@@ -1,0 +1,492 @@
+{% extends "base.html" %}
+{% block title %}Кабинет // Python vs Спорт{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<!-- CodeMirror CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/show-hint.min.css">
+<!-- CodeMirror JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/show-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/closebrackets.min.js"></script>
+
+<style>
+    /* Стилизация подсказок CodeMirror под неоновую тему */
+    .CodeMirror-hints {
+        background: #0d1117 !important;
+        border: 1px solid #00ffcc !important;
+        border-radius: 6px !important;
+        box-shadow: 0 0 15px rgba(0, 255, 204, 0.2) !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 13px !important;
+        z-index: 1000 !important;
+    }
+    .CodeMirror-hint {
+        color: #e6edf3 !important;
+        padding: 4px 8px !important;
+        border-radius: 4px !important;
+    }
+    .CodeMirror-hint-active {
+        background: #00ffcc !important;
+        color: #0a0e14 !important;
+        font-weight: bold !important;
+    }
+
+    /* Стили для вкладок запуска */
+    .tab-btn.active {
+        border-bottom: 2px solid #00ffcc;
+        color: #00ffcc;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-7xl flex gap-6 fade-in mx-auto">
+    <!-- ЛЕВАЯ ПАНЕЛЬ -->
+    <aside class="w-72 shrink-0 hidden md:flex flex-col border border-line bg-panel rounded-xl overflow-hidden sticky top-20 h-[calc(100vh-7rem)]">
+        <div class="p-4 border-b border-line bg-ink shrink-0">
+            <div class="text-[10px] text-neon tracking-[0.3em]">// TASKS_LIST</div>
+            <h2 class="font-display font-bold text-lg mt-1" id="team-name">Загрузка...</h2>
+        </div>
+        <div class="flex-1 overflow-y-auto p-2 space-y-2" id="tasks-list">
+            <div class="text-xs text-slate-500 p-2 text-center">Загрузка задач...</div>
+        </div>
+        <div class="p-4 border-t border-line text-center shrink-0">
+            <a href="/logout" class="block text-xs text-magenta hover:text-white transition">[ ВЫЙТИ ]</a>
+        </div>
+    </aside>
+
+    <!-- ПРАВАЯ ПАНЕЛЬ -->
+    <section class="flex-1 flex flex-col min-w-0 border border-line bg-panel rounded-xl relative">
+
+        <!-- БЛОК ТАЙМЕРА И ФАЗЫ -->
+        <div class="flex items-center justify-between p-3 border-b border-line bg-ink rounded-t-xl">
+            <div class="flex flex-col">
+                <div class="text-xs text-slate-500 tracking-widest font-bold">// ТЕКУЩАЯ ФАЗА</div>
+                <div id="current-phase-name" class="text-sm text-neon font-bold mt-1">Ожидание...</div>
+            </div>
+            <div id="global-timer" class="hidden flex items-center gap-2 border px-3 py-1.5 rounded font-mono font-bold">
+                <span id="timer-text">00:00:00</span>
+            </div>
+        </div>
+
+        <div id="status-banner" class="hidden p-3 text-center border-b border-line bg-ink text-sm font-bold tracking-widest"></div>
+
+        <div id="workspace-empty" class="p-12 flex flex-col items-center justify-center text-slate-600 text-sm min-h-[400px]">
+            <div class="text-4xl mb-4">👈</div>
+            &gt; выберите задачу из списка слева _
+        </div>
+
+        <div id="workspace" class="hidden flex-col h-full relative">
+            <div id="workspace-overlay" class="hidden absolute inset-0 bg-[#0a0e14]/90 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
+                <div id="ws-overlay-icon" class="text-4xl font-bold mb-2 animate-pulse">⏸</div>
+                <h2 id="ws-overlay-title" class="text-2xl font-bold mb-2"></h2>
+            </div>
+
+            <!-- Условие -->
+            <div class="p-6 border-b border-line bg-ink">
+                <h2 id="task-title" class="font-display text-xl font-bold text-neon"></h2>
+                <div id="task-statement" class="text-sm text-slate-300 mt-3 prose prose-invert max-w-none"></div>
+            </div>
+
+            <!-- Вкладки -->
+            <div class="flex border-b border-line bg-[#0a0e14]">
+                <button id="tab-code" class="tab-btn active px-4 py-2 text-sm font-bold text-slate-400 hover:text-white transition" onclick="switchTab('code')">КОД</button>
+                <button id="tab-test" class="tab-btn px-4 py-2 text-sm font-bold text-slate-400 hover:text-white transition" onclick="switchTab('test')">ТЕСТИРОВАНИЕ</button>
+            </div>
+
+            <!-- Редактор кода -->
+            <div id="pane-code" class="h-[400px] border-b border-line relative bg-[#0a0e14]">
+                <textarea id="code-editor"></textarea>
+            </div>
+
+            <!-- Панель тестирования -->
+            <div id="pane-test" class="hidden h-[400px] flex-col border-b border-line bg-[#0a0e14] p-4 gap-2">
+                <div class="flex-1 flex gap-2">
+                    <div class="flex-1 flex flex-col">
+                        <label class="text-xs text-slate-500 mb-1">Ввод (Input):</label>
+                        <textarea id="test-input" class="flex-1 bg-[#05080c] border border-line rounded p-2 text-sm font-mono text-slate-300 focus:outline-none focus:border-neon resize-none" placeholder="Введите тестовые данные..."></textarea>
+                    </div>
+                    <div class="flex-1 flex flex-col">
+                        <label class="text-xs text-slate-500 mb-1">Вывод (Output):</label>
+                        <pre id="test-output" class="flex-1 bg-[#05080c] border border-line rounded p-2 text-sm font-mono text-slate-300 overflow-auto whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+                <button id="btn-run-test" class="self-end bg-cyan text-ink font-bold text-xs tracking-widest px-4 py-2 rounded hover:bg-white transition" onclick="runTest()">ЗАПУСТИТЬ ▶</button>
+            </div>
+
+            <!-- Панель управления -->
+            <div class="bg-ink flex flex-col rounded-b-xl">
+                <div id="checker-output" class="hidden border-b border-line p-4 text-sm font-mono whitespace-pre-wrap bg-[#05080c] text-slate-300"></div>
+                <div class="p-4 flex items-center justify-between">
+                    <div id="submit-status" class="text-sm font-mono"></div>
+                    <button id="btn-submit" class="bg-neon text-ink font-bold text-sm tracking-widest px-6 py-2.5 rounded hover:bg-white transition shadow-neon">ОТПРАВИТЬ РЕШЕНИЕ &gt;&gt;</button>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    let editor;
+    let currentTaskId = null;
+    let globalPaused = false;
+    let globalStarted = false;
+    let teamPaused = false;
+    let teamFinished = false;
+    let isBreakPhase = false;
+    let activePhaseTaskId = null;
+
+ // --- ОБНОВЛЕННЫЕ ПЕРЕМЕННЫЕ ТАЙМЕРА ---
+    let timerInterval = null;
+    let localRemainingSeconds = 0;
+    let currentTimerPhaseIndex = -1; // Чтобы знать, для какой фазы запущен таймер
+
+    function switchTab(tab) {
+        document.getElementById('pane-code').classList.add('hidden');
+        document.getElementById('pane-test').classList.add('hidden');
+        document.getElementById('tab-code').classList.remove('active');
+        document.getElementById('tab-test').classList.remove('active');
+
+        if (tab === 'code') {
+            document.getElementById('pane-code').classList.remove('hidden');
+            document.getElementById('tab-code').classList.add('active');
+            if(editor) editor.refresh();
+        } else {
+            document.getElementById('pane-test').classList.remove('hidden');
+            document.getElementById('pane-test').classList.add('flex');
+            document.getElementById('tab-test').classList.add('active');
+        }
+    }
+
+    function formatTime(s) {
+        if (s < 0) s = 0;
+        const h = Math.floor(s/3600).toString().padStart(2,'0');
+        const m = Math.floor((s%3600)/60).toString().padStart(2,'0');
+        const sec = (s%60).toString().padStart(2,'0');
+        return `${h}:${m}:${sec}`;
+    }
+
+    function startLocalTimer(seconds, phaseIndex, isPaused) {
+        const timerText = document.getElementById('timer-text');
+
+        // Если таймер на паузе или не запущен — просто показываем время
+        if (isPaused || !globalStarted || teamFinished) {
+            if (timerInterval) clearInterval(timerInterval);
+            timerText.textContent = formatTime(seconds);
+            return;
+        }
+
+        // Если таймер уже идет для ЭТОЙ ЖЕ фазы и просто обновились данные с сервера,
+        // мы НЕ перезапускаем интервал, чтобы не сбивать отсчет.
+        // Мы только корректируем время, если оно сильно разошлось.
+        if (currentTimerPhaseIndex === phaseIndex && timerInterval) {
+            // Если разница между локальным временем и сервером больше 2 секунд — синхронизируем
+            if (Math.abs(localRemainingSeconds - seconds) > 2) {
+                localRemainingSeconds = seconds;
+            }
+            return;
+        }
+
+        // Если фаза изменилась или таймер только запускается
+        currentTimerPhaseIndex = phaseIndex;
+        localRemainingSeconds = seconds;
+
+        if (timerInterval) clearInterval(timerInterval);
+        timerText.textContent = formatTime(localRemainingSeconds);
+
+        timerInterval = setInterval(() => {
+            if (localRemainingSeconds > 0) {
+                localRemainingSeconds--;
+                timerText.textContent = formatTime(localRemainingSeconds);
+            } else {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                // Когда время вышло, принудительно запрашиваем обновление, чтобы сервер переключил фазу
+                setTimeout(init, 1000);
+            }
+        }, 1000);
+    }
+
+
+    function renderTasks(tasks) {
+        const list = document.getElementById('tasks-list');
+        if (!tasks || !tasks.length) {
+            list.innerHTML = '<div class="text-xs text-slate-500 p-2 text-center">Задач нет.</div>';
+            return;
+        }
+
+        list.innerHTML = tasks.map(t => {
+            // Если сейчас спорт-фаза, задачи заблокированы
+            const disabled = (!globalStarted || globalPaused || teamPaused || teamFinished || isBreakPhase || activePhaseTaskId !== t.id);
+            const clickAction = disabled ? '' : `onclick="openTask(${t.id})"`;
+            const classes = disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-neon';
+            const activeClass = (currentTaskId === t.id) ? 'border-neon bg-neon/5' : 'border-line';
+
+            return `
+            <div ${clickAction} class="p-3 border ${activeClass} rounded ${classes} transition group">
+                <div class="flex justify-between items-center text-[10px]">
+                    <span class="text-slate-500 group-hover:text-neon">ЗАДАЧА #${t.order_index}</span>
+                    <span class="text-warn font-mono font-bold">${t.current_score} / ${t.max_points} B</span>
+                </div>
+                <div class="text-sm font-bold mt-1">${t.title}</div>
+                ${t.time_spent > 0 ? `<div class="text-[10px] text-cyan mt-1">Решено за: ${formatTime(t.time_spent)}</div>` : ''}
+            </div>`;
+        }).join('');
+    }
+
+    async function init() {
+        try {
+            const res = await fetch('/api/team/me');
+            if (res.status === 401) return window.location.href = '/';
+            const data = await res.json();
+
+            document.getElementById('team-name').textContent = data.team.name;
+
+            globalStarted = data.global.is_started;
+            globalPaused = data.global.is_paused;
+            teamPaused = data.team.is_paused;
+            teamFinished = data.team.finished_at !== null;
+
+            // Команда финишировала — уводим на страницу результатов
+            if (teamFinished || data.team.finished_by_phases) {
+                window.location.href = '/results';
+                return;
+            }
+
+            isBreakPhase = data.global.is_break;
+            activePhaseTaskId = data.global.phase_task_id;
+            const phaseIndex = data.global.current_phase_index; // Получаем индекс текущей фазы
+
+            const phaseType = data.global.phase_type;
+            let phaseTitle = "Ожидание...";
+            if (phaseType === 'task') phaseTitle = `Решение задачи #${data.global.phase_task_id}`;
+            if (phaseType === 'sport') phaseTitle = `Спортивное задание: ${data.global.phase_sport_name}`;
+            if (teamFinished) phaseTitle = "Соревнование завершено";
+
+            document.getElementById('current-phase-name').textContent = phaseTitle;
+
+            renderTasks(data.tasks);
+
+            const netIndicator = document.getElementById('net-status');
+            const isLocked = (!globalStarted || globalPaused || teamPaused || teamFinished);
+
+            if (netIndicator) {
+                if (isLocked) {
+                    netIndicator.className = "flex items-center gap-1.5 text-magenta";
+                    netIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-magenta"></span><span class="text-[10px] tracking-widest">OFFLINE</span>';
+                } else {
+                    netIndicator.className = "flex items-center gap-1.5 text-neon";
+                    netIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-neon animate-pulse"></span><span class="text-[10px] tracking-widest">ONLINE</span>';
+                }
+            }
+
+            const banner = document.getElementById('status-banner');
+            const timerBox = document.getElementById('global-timer');
+
+            banner.classList.remove('hidden');
+            timerBox.classList.remove('hidden');
+
+            const isPausedForTeam = (globalPaused || teamPaused || !globalStarted || teamFinished);
+
+            if (teamFinished) {
+                banner.textContent = "ЗАВЕРШЕНО";
+                banner.className = "p-3 text-center border-b border-magenta bg-magenta/10 text-magenta font-bold tracking-widest";
+                document.getElementById('timer-text').textContent = "FINISHED";
+                timerBox.className = "flex items-center gap-2 border border-magenta px-3 py-1.5 rounded text-magenta font-mono font-bold";
+                if(timerInterval) clearInterval(timerInterval);
+            } else if (!globalStarted) {
+                banner.textContent = "ОЖИДАНИЕ СТАРТА";
+                banner.className = "p-3 text-center border-b border-cyan bg-cyan/10 text-cyan font-bold tracking-widest";
+                document.getElementById('timer-text').textContent = "WAITING";
+                timerBox.className = "flex items-center gap-2 border border-cyan px-3 py-1.5 rounded text-cyan font-mono font-bold";
+                if(timerInterval) clearInterval(timerInterval);
+            } else if (globalPaused || teamPaused) {
+                banner.textContent = "НА ПАУЗЕ";
+                banner.className = "p-3 text-center border-b border-warn bg-warn/10 text-warn font-bold tracking-widest";
+                document.getElementById('timer-text').textContent = "PAUSED";
+                timerBox.className = "flex items-center gap-2 border border-warn px-3 py-1.5 rounded text-warn font-mono font-bold";
+                // При паузе просто фиксируем время
+                startLocalTimer(data.global.phase_time_left, phaseIndex, true);
+            } else if (isBreakPhase) {
+                banner.textContent = "СПОРТИВНОЕ ЗАДАНИЕ (ПЕРЕРЫВ)";
+                banner.className = "p-3 text-center border-b border-warn bg-warn/10 text-warn font-bold tracking-widest";
+                timerBox.className = "flex items-center gap-2 border border-warn/30 bg-warn/10 px-3 py-1.5 rounded text-warn font-mono font-bold";
+                startLocalTimer(data.global.phase_time_left, phaseIndex, false);
+            } else {
+                banner.textContent = "РЕШЕНИЕ ЗАДАЧИ";
+                banner.className = "p-3 text-center border-b border-neon bg-neon/10 text-neon font-bold tracking-widest";
+                timerBox.className = "flex items-center gap-2 border border-neon/30 bg-neon/10 px-3 py-1.5 rounded text-neon font-mono font-bold glow-text";
+                startLocalTimer(data.global.phase_time_left, phaseIndex, false);
+            }
+
+            const wsOverlay = document.getElementById('workspace-overlay');
+            const isTaskLocked = (!globalStarted || globalPaused || teamPaused || teamFinished || isBreakPhase);
+
+            if (isTaskLocked && currentTaskId) {
+                wsOverlay.classList.remove('hidden');
+                document.getElementById('ws-overlay-icon').textContent = teamFinished ? '🏁' : (isBreakPhase ? '🏃' : '⏸');
+                document.getElementById('ws-overlay-title').textContent = teamFinished ? 'ЗАВЕРШЕНО' : (isBreakPhase ? 'СПОРТ-ПАУЗА' : 'ПАУЗА');
+            } else {
+                wsOverlay.classList.add('hidden');
+            }
+
+            // Автоматически открываем задачу, если началась фаза с ней
+            if (!isLocked && !isBreakPhase && activePhaseTaskId && currentTaskId !== activePhaseTaskId) {
+                if (!currentTaskId) openTask(activePhaseTaskId);
+            }
+
+            const btn = document.getElementById('btn-submit');
+            if (btn) {
+                if (isLocked || isBreakPhase || (activePhaseTaskId && currentTaskId !== activePhaseTaskId)) {
+                    btn.disabled = true;
+                    btn.textContent = "НЕДОСТУПНО";
+                } else {
+                    btn.disabled = false;
+                    btn.textContent = "ОТПРАВИТЬ РЕШЕНИЕ >>";
+                }
+            }
+        } catch (e) { console.error("Ошибка:", e); }
+    }
+
+    async function openTask(id) {
+        if (!globalStarted || globalPaused || teamPaused || teamFinished || isBreakPhase) return;
+        if (activePhaseTaskId && id !== activePhaseTaskId) return; // Нельзя открывать чужие задачи
+
+        currentTaskId = id;
+        document.getElementById('workspace-empty').classList.add('hidden');
+        document.getElementById('workspace').classList.remove('hidden');
+        document.getElementById('workspace').classList.add('flex');
+
+        switchTab('code');
+
+        const res = await fetch('/api/team/me');
+        if(res.ok) {
+            const data = await res.json();
+            renderTasks(data.tasks);
+        }
+
+        const taskRes = await fetch(`/api/team/tasks/${id}`);
+        const task = await taskRes.json();
+        document.getElementById('task-title').textContent = task.title;
+        document.getElementById('task-statement').innerHTML = marked.parse(task.statement);
+
+        if (!editor) {
+            editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+                mode: 'python',
+                theme: 'dracula',
+                lineNumbers: true,
+                indentUnit: 4,
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                autofocus: true,
+                extraKeys: { "Ctrl-Space": "autocomplete" }
+            });
+
+            editor.on("inputRead", function(instance, changeObj) {
+                if (changeObj.text[0].match(/[a-zA-Z_]/)) {
+                    instance.showHint({ completeSingle: false });
+                }
+            });
+        }
+        editor.setValue(localStorage.getItem(`draft_${document.getElementById('team-name').textContent}_${id}`) || '');
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function submitCode() {
+        if (!currentTaskId || !globalStarted || globalPaused || teamPaused || teamFinished || isBreakPhase) return;
+        const btn = document.getElementById('btn-submit');
+        const status = document.getElementById('submit-status');
+        const outputBox = document.getElementById('checker-output');
+
+        btn.disabled = true; status.textContent = 'Проверка...'; status.className = 'text-cyan text-sm font-mono animate-pulse'; outputBox.classList.add('hidden');
+
+        const code = editor.getValue();
+        localStorage.setItem(`draft_${document.getElementById('team-name').textContent}_${currentTaskId}`, code);
+
+        try {
+            const res = await fetch('/api/team/submissions', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ task_id: currentTaskId, code: code })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                status.textContent = '✔ ГОТОВО'; status.className = 'text-neon text-sm font-mono glow-text';
+                if (data.checker_result) { outputBox.textContent = data.checker_result; outputBox.classList.remove('hidden'); }
+                init();
+            } else {
+                status.textContent = '✘ ' + (data.detail || 'Ошибка'); status.className = 'text-magenta text-sm font-mono';
+            }
+        } catch (e) {
+            status.textContent = '✘ Сеть'; status.className = 'text-magenta text-sm font-mono';
+        } finally {
+            if(globalStarted && !globalPaused && !teamPaused && !teamFinished && !isBreakPhase) btn.disabled = false;
+        }
+    }
+
+    async function runTest() {
+        if (!currentTaskId) return;
+        const btn = document.getElementById('btn-run-test');
+        const outputBox = document.getElementById('test-output');
+        const testInput = document.getElementById('test-input').value;
+        const code = editor.getValue();
+
+        if (!code.trim()) {
+            outputBox.textContent = "Введите код!";
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = "ЗАПУСК...";
+        outputBox.textContent = "Выполнение...";
+        outputBox.className = "flex-1 bg-[#05080c] border border-line rounded p-2 text-sm font-mono text-cyan overflow-auto whitespace-pre-wrap";
+
+        try {
+            const res = await fetch('/api/team/run', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ task_id: currentTaskId, code: code, input: testInput })
+            });
+            const data = await res.json();
+
+            if (data.status === "ok") {
+                outputBox.textContent = data.output || "(Программа ничего не вывела)";
+                outputBox.className = "flex-1 bg-[#05080c] border border-line rounded p-2 text-sm font-mono text-slate-300 overflow-auto whitespace-pre-wrap";
+                if (data.error) {
+                    outputBox.textContent += "\n\n[STDERR]:\n" + data.error;
+                    outputBox.className = "flex-1 bg-[#05080c] border border-line rounded p-2 text-sm font-mono text-magenta overflow-auto whitespace-pre-wrap";
+                }
+            } else {
+                outputBox.textContent = "ОШИБКА:\n" + data.error;
+                outputBox.className = "flex-1 bg-[#05080c] border border-line rounded p-2 text-sm font-mono text-magenta overflow-auto whitespace-pre-wrap";
+            }
+        } catch (e) {
+            outputBox.textContent = "Ошибка сети: " + e.message;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "ЗАПУСТИТЬ ▶";
+        }
+    }
+
+    document.getElementById('btn-submit').addEventListener('click', submitCode);
+
+    setInterval(() => {
+        if (editor && currentTaskId) {
+            localStorage.setItem(`draft_${document.getElementById('team-name').textContent}_${currentTaskId}`, editor.getValue());
+        }
+    }, 3000);
+
+    const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
+    ws.onmessage = (e) => {
+        if (e.data === 'timer_changed' || e.data === 'tasks_changed' || e.data === 'update_rating') {
+            init();
+        }
+    };
+
+    init();
+    setInterval(init, 5000); // Ускорил опрос до 5 секунд, чтобы переключение фаз было быстрее
+</script>
+{% endblock %}

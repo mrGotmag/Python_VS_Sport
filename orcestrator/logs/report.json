@@ -1,22 +1,62 @@
 [
   {
-    "id": "1",
-    "title": "Тест",
+    "id": "2",
+    "title": "Главный корпус: расстановка бейджей по стеллажам",
     "status": "ok",
-    "score": 10,
-    "total": 10,
+    "score": 100,
+    "total": 100,
     "tests": [
       {
         "id": 1,
         "status": "ok",
+        "points": 15,
+        "max_points": 15,
+        "time_ms": 12.781400000070184,
+        "memory_mb": 3.4375
+      },
+      {
+        "id": 2,
+        "status": "ok",
         "points": 10,
         "max_points": 10,
-        "time_ms": 71.4925000029325,
+        "time_ms": 12.781400000070184,
+        "memory_mb": 3.4375
+      },
+      {
+        "id": 3,
+        "status": "ok",
+        "points": 15,
+        "max_points": 15,
+        "time_ms": 12.781400000070184,
+        "memory_mb": 3.4375
+      },
+      {
+        "id": 4,
+        "status": "ok",
+        "points": 15,
+        "max_points": 15,
+        "time_ms": 12.781400000070184,
+        "memory_mb": 3.4375
+      },
+      {
+        "id": 5,
+        "status": "ok",
+        "points": 20,
+        "max_points": 20,
+        "time_ms": 12.781400000070184,
+        "memory_mb": 3.4375
+      },
+      {
+        "id": 6,
+        "status": "ok",
+        "points": 25,
+        "max_points": 25,
+        "time_ms": 12.781400000070184,
         "memory_mb": 3.4375
       }
     ],
     "error": null,
-    "time_ms": 71.4925000029325,
+    "time_ms": 76.6884000004211,
     "memory_mb": 3.4375
   }
 ]

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-full bg-[#0a0e14]">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Python vs Спорт{% endblock %}</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { mono: ['"JetBrains Mono"', 'monospace'], display: ['"Space Grotesk"', 'sans-serif'] },
+                    colors: { ink: '#0a0e14', panel: '#111823', line: '#1f2a3a', neon: '#00ff9c', cyan: '#00e5ff', magenta: '#ff2e88', warn: '#ffb800' },
+                    boxShadow: { neon: '0 0 0 1px #00ff9c, 0 0 20px -5px #00ff9c' }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background-image: linear-gradient(rgba(0, 255, 156, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 156, 0.03) 1px, transparent 1px);
+            background-size: 32px 32px; background-color: #0a0e14;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0; pointer-events: none;
+            background: repeating-linear-gradient(0deg, rgba(0, 255, 156, 0.02) 0px, rgba(0, 255, 156, 0.02) 1px, transparent 1px, transparent 3px); z-index: 50;
+        }
+        .glow-text { text-shadow: 0 0 8px currentColor; }
+        @keyframes blink { 50% { opacity: 0; } }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0e14; }
+        ::-webkit-scrollbar-thumb { background: #1f2a3a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ff9c; }
+        [x-cloak] { display: none !important; }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+        /* Хакерский ползунок времени */
+        input[type=range].slider {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range].slider:focus {
+            outline: none;
+        }
+        /* Трек (линия) */
+        input[type=range].slider::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #1f2a3a;
+            border-radius: 3px;
+            border: 1px solid #0a0e14;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
+        }
+        /* Бегунок (кружок) */
+        input[type=range].slider::-webkit-slider-thumb {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #00e5ff;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -8px; /* Центрирование */
+            box-shadow: 0 0 10px #00e5ff, 0 0 20px #00e5ff;
+            transition: transform 0.1s;
+        }
+        input[type=range].slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Стили Markdown */
+        .prose h1 { font-size: 1.5rem; font-weight: bold; color: #00ff9c; margin-bottom: 0.5rem; font-family: 'Space Grotesk', sans-serif; }
+        .prose h3 { font-size: 1.1rem; font-weight: bold; color: #00e5ff; margin-top: 1rem; margin-bottom: 0.5rem; }
+        .prose p { margin-bottom: 0.8rem; line-height: 1.5; }
+        .prose strong { color: #e2e8f0; font-weight: bold; }
+        .prose blockquote { border-left: 3px solid #ffb800; padding-left: 1rem; color: #ffb800; margin: 1rem 0; font-style: italic; background: rgba(255, 184, 0, 0.05); padding: 0.5rem 1rem; }
+        .prose code { background: #1f2a3a; padding: 0.2rem 0.4rem; border-radius: 4px; font-family: 'JetBrains Mono', monospace; color: #00ff9c; font-size: 0.85em; }
+        .prose pre { background: #0a0e14; border: 1px solid #1f2a3a; padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body class="h-full flex flex-col text-slate-200">
+    <header class="border-b border-line bg-ink/80 backdrop-blur-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-md bg-neon/10 border border-neon flex items-center justify-center text-neon font-bold text-lg glow-text">&gt;_</div>
+                <div>
+                    <h1 class="font-display font-bold text-lg tracking-tight leading-none">PYTHON <span class="text-neon glow-text">vs</span> СПОРТ</h1>
+                    <div class="text-[10px] text-slate-500 tracking-[0.3em] mt-0.5">МИВЛГУ // CONTEST_SYS</div>
+                </div>
+            </div>
+            <nav class="flex items-center gap-6 text-xs">
+                <a href="/staff" class="text-slate-400 hover:text-cyan transition uppercase tracking-widest">Staff</a>
+                <div id="net-status" class="flex items-center gap-1.5 text-neon">
+                    <span class="w-2 h-2 rounded-full bg-neon animate-pulse"></span>
+                    <span class="text-[10px] tracking-widest">ONLINE</span>
+                </div>
+            </nav>
+        </div>
+    </header>
+    <!-- Контент -->
+    <main class="flex-grow flex w-full justify-center p-4 md:p-8">
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="border-t border-line bg-ink/80 py-3 text-center text-[10px] text-slate-600 tracking-[0.3em] uppercase">&gt; строим решения вместе _ {2024} _ mivlgu.sys</footer>
+</body>
+</html>

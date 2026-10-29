@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Результаты // Python vs Спорт{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-4xl mx-auto space-y-6 fade-in">
+
+    <!-- Заголовок -->
+    <div class="text-center border-b border-line pb-6">
+        <div class="text-[10px] text-neon tracking-[0.4em] mb-2">// CONTEST_FINISHED</div>
+        <h1 class="font-display text-3xl font-bold text-neon glow-text">ОЛИМПИАДА ЗАВЕРШЕНА</h1>
+        <p class="text-sm text-slate-400 mt-2">Таблица лидеров по итогам всех фаз</p>
+    </div>
+
+    <!-- Место команды -->
+    <div id="my-place-box" class="hidden border border-neon bg-neon/5 rounded-xl p-6 text-center fade-in">
+        <div class="text-[10px] text-neon tracking-[0.3em] mb-1">// ВАШ РЕЗУЛЬТАТ</div>
+        <div class="text-slate-300 text-sm mb-2" id="my-team-name"></div>
+        <div class="text-5xl font-display font-bold text-neon glow-text" id="my-place-number">—</div>
+        <div class="text-xs text-slate-500 mt-1" id="my-place-total"></div>
+    </div>
+
+    <!-- Таблица -->
+    <div class="bg-panel border border-line rounded-xl overflow-hidden">
+        <div class="max-h-[60vh] overflow-y-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="sticky top-0 bg-ink border-b border-line z-10">
+                    <tr class="text-slate-500 text-xs uppercase tracking-widest">
+                        <th class="p-3 w-14">#</th>
+                        <th class="p-3">Команда</th>
+                        <th class="p-3 text-center">Код</th>
+                        <th class="p-3 text-center">Спорт</th>
+                        <th class="p-3 text-right">Итого</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <tr><td colspan="5" class="p-8 text-center text-slate-500 animate-pulse">Загрузка...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Кнопки -->
+    <div class="flex justify-center gap-4 pt-2">
+        <a href="/team" class="text-xs text-slate-400 hover:text-cyan tracking-widest transition">&gt; В кабинет</a>
+        <a href="/logout" class="text-xs text-magenta hover:text-white tracking-widest transition">[ ВЫЙТИ ]</a>
+    </div>
+</div>
+
+<script>
+    async function loadLeaderboard() {
+        const tbody = document.getElementById('leaderboard-body');
+        try {
+            const res = await fetch('/api/team/leaderboard');
+            if (res.status === 401) return window.location.href = '/';
+            if (!res.ok) throw new Error('Ошибка загрузки');
+            const data = await res.json();
+
+            // Заполняем "моё место"
+            if (data.my_place) {
+                const box = document.getElementById('my-place-box');
+                box.classList.remove('hidden');
+                document.getElementById('my-team-name').textContent =
+                    data.teams.find(t => t.is_me)?.name || '';
+                document.getElementById('my-place-number').textContent =
+                    data.my_place;
+                document.getElementById('my-place-total').textContent =
+                    `из ${data.teams.length} команд`;
+            }
+
+            // Таблица
+            tbody.innerHTML = data.teams.map(t => {
+                const rowClass = t.is_me
+                    ? 'bg-neon/10 border-l-2 border-neon'
+                    : 'hover:bg-ink';
+                const medal = t.place === 1 ? '🥇' :
+                              t.place === 2 ? '🥈' :
+                              t.place === 3 ? '🥉' : '';
+                return `
+                <tr class="border-b border-line/50 ${rowClass} transition">
+                    <td class="p-3 text-neon font-bold">
+                        ${t.place} ${medal} ${t.is_me ? '<span class="text-warn">← вы</span>' : ''}
+                    </td>
+                    <td class="p-3 font-bold">
+                        ${t.name}
+                        ${t.school ? `<div class="text-[10px] text-slate-500 font-normal">${t.school}</div>` : ''}
+                    </td>
+                    <td class="p-3 text-center text-cyan font-mono">${t.code_score}</td>
+                    <td class="p-3 text-center text-warn font-mono">${t.sport_score}</td>
+                    <td class="p-3 text-right text-neon font-mono font-bold text-lg">${t.total_score}</td>
+                </tr>`;
+            }).join('');
+        } catch (e) {
+            tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-magenta">Не удалось загрузить таблицу</td></tr>';
+        }
+    }
+
+    loadLeaderboard();
+
+    // Периодически обновляем (если результаты меняются — например, судья поставил баллы)
+    setInterval(loadLeaderboard, 15000);
+</script>
+{% endblock %}

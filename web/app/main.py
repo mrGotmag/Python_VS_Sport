@@ -232,6 +232,28 @@ async def team_page(request: Request):
     return templates.TemplateResponse("team.html", {"request": request})
 
 
+@app.get("/results", response_class=HTMLResponse)
+async def results_page(request: Request):
+    token = request.cookies.get("access_token")
+    if not token:
+        return RedirectResponse("/")
+
+    payload = decode_token(token)
+    if not payload or payload.get("role") != "team":
+        return RedirectResponse("/")
+
+    # Проверяем: команда реально финишировала?
+    with Session(engine) as db:
+        team = db.get(Team, int(payload.get("sub")))
+        if not team:
+            return RedirectResponse("/")
+        if team.finished_at is None:
+            # ещё не финишировала — обратно в кабинет
+            return RedirectResponse("/team")
+
+    return templates.TemplateResponse("results.html", {"request": request})
+
+
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page(request: Request):
     token = request.cookies.get("access_token")
@@ -311,6 +333,9 @@ async def get_me(request: Request):
         time_left = 0
         is_break = False
 
+        # Признак, что команда прошла все фазы (последняя + время вышло)
+        is_finished_by_phases = False
+
         if gs.is_started and phases:
             # Проверяем, не вышло ли время текущей фазы у команды
             if team.current_phase_index < len(phases):
@@ -321,13 +346,20 @@ async def get_me(request: Request):
                     time_left = max(0, int(current_phase.duration_seconds - elapsed))
 
                     # Если время вышло, переключаем на следующую фазу
-                    if time_left == 0 and team.current_phase_index < len(phases) - 1:
-                        team.current_phase_index += 1
-                        team.phase_started_at = datetime.utcnow()
-                        db.commit()
-                        # Перечитываем данные для новой фазы
-                        current_phase = phases[team.current_phase_index]
-                        time_left = current_phase.duration_seconds
+                    if time_left == 0:
+                        if team.current_phase_index < len(phases) - 1:
+                            team.current_phase_index += 1
+                            team.phase_started_at = datetime.utcnow()
+                            db.commit()
+                            # Перечитываем данные для новой фазы
+                            current_phase = phases[team.current_phase_index]
+                            time_left = current_phase.duration_seconds
+                        else:
+                            # Последняя фаза и время вышло — команда завершила
+                            if team.finished_at is None:
+                                team.finished_at = datetime.utcnow()
+                                db.commit()
+                            is_finished_by_phases = True
 
                 is_break = (current_phase.type == "sport")
 
@@ -348,9 +380,13 @@ async def get_me(request: Request):
             })
 
         return {
-            "team": {"name": team.name, "is_paused": team.is_paused,
-                     "finished_at": team.finished_at.isoformat() if team.finished_at else None,
-                     "total_time_seconds": total_time},
+            "team": {
+                "name": team.name,
+                "is_paused": team.is_paused,
+                "finished_at": team.finished_at.isoformat() if team.finished_at else None,
+                "finished_by_phases": is_finished_by_phases,
+                "total_time_seconds": total_time,
+            },
             "global": {
                 "is_started": gs.is_started,
                 "is_paused": gs.is_paused,
@@ -365,6 +401,68 @@ async def get_me(request: Request):
             "contest": {"remaining_seconds": 0},
             "tasks": tasks_out
         }
+
+
+@app.get("/api/team/leaderboard")
+async def get_leaderboard(request: Request):
+    with Session(engine) as db:
+        team = get_current_team(request, db)
+        teams = db.query(Team).all()
+
+        rows = []
+        for t in teams:
+            subs = db.query(Submission).filter_by(team_id=t.id).all()
+            best_scores: dict[int, Submission] = {}
+            for s in subs:
+                cur = best_scores.get(s.task_id)
+                if cur is None:
+                    best_scores[s.task_id] = s
+                    continue
+                s_key = (s.score or 0, -(s.time_ms or 0), -(s.memory_mb or 0))
+                c_key = (cur.score or 0, -(cur.time_ms or 0), -(cur.memory_mb or 0))
+                if s_key > c_key:
+                    best_scores[s.task_id] = s
+
+            code_score = sum((s.score or 0) for s in best_scores.values())
+            sport_results = db.query(SportResult).filter_by(team_id=t.id).all()
+            sport_score = sum((r.points or 0) for r in sport_results)
+
+            rows.append({
+                "id": t.id, "name": t.name, "school": t.school or "",
+                "code_score": code_score, "sport_score": sport_score,
+                "total_score": code_score + sport_score,
+                "is_me": (t.id == team.id),
+            })
+
+        rows.sort(key=lambda r: (-r["total_score"], -r["code_score"]))
+        for i, r in enumerate(rows, 1):
+            r["place"] = i
+
+        my_place = next((r["place"] for r in rows if r["is_me"]), None)
+
+        return {"teams": rows, "my_place": my_place}
+
+
+@app.get("/results", response_class=HTMLResponse)
+async def results_page(request: Request):
+    token = request.cookies.get("access_token")
+    if not token:
+        return RedirectResponse("/")
+
+    payload = decode_token(token)
+    if not payload or payload.get("role") != "team":
+        return RedirectResponse("/")
+
+    # Проверяем: команда реально финишировала?
+    with Session(engine) as db:
+        team = db.get(Team, int(payload.get("sub")))
+        if not team:
+            return RedirectResponse("/")
+        if team.finished_at is None:
+            # ещё не финишировала — обратно в кабинет
+            return RedirectResponse("/team")
+
+    return templates.TemplateResponse("results.html", {"request": request})
 
 
 @app.get("/api/team/tasks/{task_id}")
@@ -397,10 +495,11 @@ async def submit_code(request: Request):
         if not gs.is_started or gs.is_paused or team.is_paused or team.finished_at:
             raise HTTPException(403, "Соревнование остановлено.")
 
-        if gs.current_phase_index >= len(phases):
+        # Индекс фазы берём у КОМАНДЫ, а не у глобальных настроек
+        if team.current_phase_index >= len(phases):
             raise HTTPException(403, "Соревнование завершено.")
 
-        current_phase = phases[gs.current_phase_index]
+        current_phase = phases[team.current_phase_index]
 
         if current_phase.type == "sport":
             raise HTTPException(403, "Сейчас перерыв на спортивное задание.")
@@ -548,9 +647,23 @@ async def toggle_global_timer(request: Request):
             gs.is_started = data["is_started"]
             if gs.is_started:
                 gs.phase_started_at = datetime.utcnow()
+
+                # Берём первую фазу (или текущую, если уже шла)
+                phases = db.query(Phase).order_by(Phase.order_index).all()
+                first_phase = phases[0] if phases else None
+
                 for t in db.query(Team).all():
-                    if not t.started_at: t.started_at = datetime.utcnow()
-        if "is_paused" in data: gs.is_paused = data["is_paused"]
+                    if not t.started_at:
+                        t.started_at = datetime.utcnow()
+
+                    # Автоматически ставим команду на первую фазу,
+                    # чтобы её таймер пошёл сразу после глобального старта
+                    if first_phase is not None:
+                        t.current_phase_index = first_phase.order_index
+                        t.phase_started_at = datetime.utcnow()
+
+        if "is_paused" in data:
+            gs.is_paused = data["is_paused"]
 
         db.commit()
         await manager.broadcast("timer_changed")

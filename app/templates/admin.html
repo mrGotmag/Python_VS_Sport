@@ -1,0 +1,871 @@
+{% extends "base.html" %}
+{% block title %}Админка // Python vs Спорт{% endblock %}
+{% block head %}
+<style>
+    .admin-tab { padding: 10px 20px; border-bottom: 2px solid transparent; cursor: pointer; color: #94a3b8; font-weight: bold; transition: all 0.2s; }
+    .admin-tab:hover { color: #00e5ff; }
+    .admin-tab.active { border-bottom-color: #00ff9c; color: #00ff9c; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Стили для перетаскивания */
+    .drag-handle { cursor: grab; color: #4b5563; font-size: 1.2rem; user-select: none; }
+    .drag-handle:active { cursor: grabbing; }
+    .dragging { opacity: 0.5; background: #1f2a3a !important; }
+    .drag-over { border-top: 2px solid #00ff9c !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-7xl mx-auto space-y-4 fade-in relative">
+    <div class="flex justify-between items-center border-b border-line pb-4">
+        <h1 class="text-2xl font-bold text-neon">АДМИН-ПАНЕЛЬ</h1>
+        <a href="/logout" class="text-magenta hover:text-white text-sm">[ ВЫЙТИ ]</a>
+    </div>
+
+    <!-- Глобальные настройки -->
+    <div class="bg-panel border border-line rounded-xl p-6 flex flex-wrap gap-6 items-center">
+        <div class="flex-grow">
+            <div class="text-[10px] text-slate-500 mb-1">// УПРАВЛЕНИЕ ОЛИМПИАДОЙ</div>
+            <div class="flex items-center gap-4">
+                <button id="btn-global-start" class="px-6 py-2 rounded font-bold border border-neon text-neon hover:bg-neon hover:text-black transition shadow-[0_0_10px_rgba(0,255,156,0.3)]">▶ ЗАПУСТИТЬ</button>
+                <button id="btn-global-pause" class="hidden px-6 py-2 rounded font-bold border border-magenta text-magenta hover:bg-magenta hover:text-white transition">⏸ ПАУЗА</button>
+                <div id="current-phase-text" class="text-sm text-cyan font-bold"></div>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button id="btn-add-team" class="bg-cyan text-ink font-bold px-4 py-2 rounded shadow-cyan">+ КОМАНДА</button>
+            <button class="bg-neon text-ink font-bold px-4 py-2 rounded shadow-neon" onclick="exportCSV()">ЭКСПОРТ CSV</button>
+        </div>
+    </div>
+
+    <!-- Вкладки -->
+    <div class="flex border-b border-line">
+        <div class="admin-tab active" data-tab="phases">ФАЗЫ (ТАЙМЕРЫ)</div>
+        <div class="admin-tab" data-tab="rating">РЕЙТИНГ</div>
+        <div class="admin-tab" data-tab="tasks">ЗАДАЧИ</div>
+        <div class="admin-tab" data-tab="sport">СПОРТ (СУДЬИ)</div>
+    </div>
+
+    <!-- ВКЛАДКА: ФАЗЫ -->
+    <div id="tab-phases" class="tab-content active bg-panel border border-line rounded-xl p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- ЛЕВАЯ КОЛОНКА (Фазы) -->
+            <div class="lg:col-span-2 space-y-4">
+                <h2 class="text-lg font-bold text-cyan">СПИСОК ФАЗ (Перетаскивайте за ≡)</h2>
+
+                <div class="bg-ink border border-line p-4 rounded grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                    <div>
+                        <label class="text-xs text-slate-400">Тип</label>
+                        <select id="phase-type" class="w-full bg-panel border border-line rounded p-2 text-white">
+                            <option value="task">Задача</option>
+                            <option value="sport">Спорт</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400">Задача / Название</label>
+                        <select id="phase-task-id" class="w-full bg-panel border border-line rounded p-2 text-white"></select>
+                        <input type="text" id="phase-sport-name" class="w-full bg-panel border border-line rounded p-2 text-white hidden" placeholder="Название упражнения">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400">Время (мин)</label>
+                        <input type="number" id="phase-duration" value="30" class="w-full bg-panel border border-line rounded p-2 text-white">
+                    </div>
+                    <div>
+                        <button onclick="addPhase()" class="w-full bg-cyan text-ink font-bold px-4 py-2 rounded hover:bg-white">ДОБАВИТЬ</button>
+                    </div>
+                </div>
+
+                <table class="w-full text-left text-sm">
+                    <thead><tr class="border-b border-line text-slate-500"><th class="pb-2 w-8"></th><th class="pb-2">#</th><th>Тип</th><th>Что именно</th><th>Время</th><th>Действия</th></tr></thead>
+                    <tbody id="phases-body"><tr><td colspan="6" class="text-center py-4 text-slate-500">Загрузка...</td></tr></tbody>
+                </table>
+            </div>
+
+            <!-- ПРАВАЯ КОЛОНКА (Монитор команд) -->
+            <div class="lg:col-span-1">
+                <h2 class="text-lg font-bold text-warn mb-4">МОНИТОР КОМАНД</h2>
+                <div class="bg-ink border border-line rounded p-4 max-h-[600px] overflow-y-auto space-y-3">
+                    <div id="team-monitor">
+                        <div class="text-center text-slate-500 text-sm py-4">Загрузка...</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ВКЛАДКА: РЕЙТИНГ -->
+    <div id="tab-rating" class="tab-content bg-panel border border-line rounded-xl p-6">
+        <table class="w-full text-left text-sm">
+            <thead><tr class="border-b border-line text-slate-500">
+                <th class="pb-2">#</th><th>Команда</th><th>Код</th><th>Спорт</th><th>Итого</th><th>Действия</th>
+            </tr></thead>
+            <tbody id="rating-body"><tr><td colspan="6" class="text-center py-4 text-slate-500">Загрузка...</td></tr></tbody>
+        </table>
+    </div>
+
+    <!-- ВКЛАДКА: ЗАДАЧИ -->
+    <div id="tab-tasks" class="tab-content bg-panel border border-line rounded-xl p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-bold text-cyan">УПРАВЛЕНИЕ ЗАДАЧАМИ</h2>
+            <button onclick="openTaskModal()" class="bg-neon text-ink font-bold px-4 py-2 rounded shadow-neon text-sm">+ ДОБАВИТЬ ЗАДАЧУ</button>
+        </div>
+        <table class="w-full text-left text-sm">
+            <thead><tr class="border-b border-line text-slate-500"><th class="pb-2">#</th><th>Название</th><th>Баллы</th><th>Действия</th></tr></thead>
+            <tbody id="tasks-body"><tr><td colspan="4" class="text-center py-4 text-slate-500">Загрузка...</td></tr></tbody>
+        </table>
+    </div>
+
+    <!-- ВКЛАДКА: СПОРТ -->
+    <div id="tab-sport" class="tab-content bg-panel border border-line rounded-xl p-6">
+        <div class="mb-4">
+            <label class="text-xs text-slate-400 mb-1 block">Выберите спортивную фазу для оценки:</label>
+            <select id="sport-phase-select" class="bg-ink border border-line rounded px-3 py-2 text-sm text-white w-full" onchange="loadSportAdmin()"></select>
+        </div>
+        <table class="w-full text-left text-sm">
+            <thead><tr class="border-b border-line text-slate-500"><th class="pb-2">Команда</th><th>Баллы за упражнение</th><th>Действия</th></tr></thead>
+            <tbody id="sport-body"><tr><td colspan="3" class="text-center py-4 text-slate-500">Выберите фазу выше</td></tr></tbody>
+        </table>
+    </div>
+
+    <!-- МОДАЛКА: РЕДАКТИРОВАНИЕ ФАЗЫ -->
+    <div id="edit-phase-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+        <div class="bg-panel border border-cyan rounded-xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold text-cyan mb-4">Редактировать фазу</h3>
+            <div class="space-y-4">
+                <div id="edit-task-container">
+                    <label class="text-xs text-slate-400">Задача</label>
+                    <select id="edit-phase-task-id" class="w-full bg-ink border border-line rounded p-2 text-white"></select>
+                </div>
+                <div id="edit-sport-container" class="hidden">
+                    <label class="text-xs text-slate-400">Название спортивного задания</label>
+                    <input type="text" id="edit-phase-sport-name" class="w-full bg-ink border border-line rounded p-2 text-white">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400">Время (мин)</label>
+                    <input type="number" id="edit-phase-duration" class="w-full bg-ink border border-line rounded p-2 text-white">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button onclick="closeEditModal()" class="text-slate-400 px-4 py-2">Отмена</button>
+                <button onclick="saveEditedPhase()" class="bg-cyan text-ink font-bold px-4 py-2 rounded">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА: ЗАПУСК ФАЗЫ -->
+    <div id="start-phase-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+        <div class="bg-panel border border-neon rounded-xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold text-neon mb-4">Запустить фазу</h3>
+            <p class="text-sm text-slate-400 mb-4">Для кого запустить эту фазу?</p>
+            <select id="start-team-select" class="w-full bg-ink border border-line rounded p-2 text-white mb-6">
+                <option value="">Для ВСЕХ команд</option>
+            </select>
+            <div class="flex justify-end gap-2">
+                <button onclick="closeStartModal()" class="text-slate-400 px-4 py-2">Отмена</button>
+                <button onclick="confirmStartPhase()" class="bg-neon text-ink font-bold px-4 py-2 rounded">Запустить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА: КОМАНДА -->
+    <div id="team-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+        <div class="bg-panel border border-cyan rounded-xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold text-cyan mb-4">Новая команда</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs text-slate-400">Название команды</label>
+                    <input type="text" id="team-name-input" class="w-full bg-ink border border-line rounded p-2 text-white">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button id="btn-cancel-team" class="text-slate-400 px-4 py-2">Отмена</button>
+                <button id="btn-save-team" class="bg-cyan text-ink font-bold px-4 py-2 rounded">Создать</button>
+            </div>
+            <div id="team-password-result" class="hidden mt-4 p-4 border border-neon bg-neon/10 rounded text-center">
+                <div class="text-xs text-slate-400 mb-1">Пароль для входа:</div>
+                <div id="new-team-password" class="text-2xl font-mono font-bold text-neon tracking-widest"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА: ЗАДАЧА (СОЗДАНИЕ/РЕДАКТИРОВАНИЕ) -->
+    <div id="task-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+        <div class="bg-panel border border-cyan rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <h3 id="task-modal-title" class="text-xl font-bold text-cyan mb-4">Задача</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs text-slate-400">Условие (Markdown поддерживается)</label>
+                    <textarea id="task-statement-input" class="w-full h-48 bg-ink border border-line rounded p-2 text-white font-mono text-sm" placeholder="Введите условие задачи..."></textarea>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400">Тесты (JSON формат)</label>
+                    <textarea id="task-tests-input" class="w-full h-48 bg-ink border border-line rounded p-2 text-white font-mono text-sm" placeholder='{"tests": [{"id": 1, "input": "1\n", "expected_output": "2\n", "points": 10}]}'></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button onclick="closeTaskModal()" class="text-slate-400 px-4 py-2">Отмена</button>
+                <button onclick="saveTask()" class="bg-cyan text-ink font-bold px-4 py-2 rounded">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let globalStarted = false;
+    let globalPaused = false;
+    let currentPhaseIndex = 0;
+    let allPhases = [];
+    let allTasks = [];
+    let allTeams = [];
+    let editingPhaseId = null;
+    let startingPhaseId = null;
+    let draggedItem = null;
+
+    // Переменные для задач
+    let editingTaskId = null;
+
+    function formatTime(s) {
+        if (s < 0) s = 0;
+        const h = Math.floor(s/3600).toString().padStart(2,'0');
+        const m = Math.floor((s%3600)/60).toString().padStart(2,'0');
+        const sec = (s%60).toString().padStart(2,'0');
+        return `${h}:${m}:${sec}`;
+    }
+
+    // Вкладки
+    document.querySelectorAll('.admin-tab').forEach(tab => {
+        tab.onclick = () => {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+
+            if (tab.dataset.tab === 'phases') loadPhases();
+            if (tab.dataset.tab === 'tasks') loadTasksAdmin();
+            if (tab.dataset.tab === 'sport') initSportTab();
+        };
+    });
+
+    document.getElementById('phase-type').onchange = (e) => {
+        if (e.target.value === 'task') {
+            document.getElementById('phase-task-id').classList.remove('hidden');
+            document.getElementById('phase-sport-name').classList.add('hidden');
+        } else {
+            document.getElementById('phase-task-id').classList.add('hidden');
+            document.getElementById('phase-sport-name').classList.remove('hidden');
+        }
+    };
+
+    async function loadPhases() {
+        const tbody = document.getElementById('phases-body');
+
+        const [phasesRes, tasksRes] = await Promise.all([
+            fetch('/api/admin/phases'),
+            fetch('/api/admin/tasks')
+        ]);
+
+        const newPhases = await phasesRes.json();
+        allTasks = await tasksRes.json();
+
+        const options = allTasks.map(t => `<option value="${t.id}">Задача ${t.id}: ${t.title}</option>`).join('');
+        if (document.getElementById('phase-task-id').innerHTML !== options) {
+            document.getElementById('phase-task-id').innerHTML = options;
+            document.getElementById('edit-phase-task-id').innerHTML = options;
+        }
+
+        const needsRedraw = allPhases.length !== newPhases.length ||
+                            JSON.stringify(allPhases) !== JSON.stringify(newPhases);
+
+        allPhases = newPhases;
+
+        if (needsRedraw) {
+            if (allPhases.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-slate-500">Фаз нет. Добавьте первую выше.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = allPhases.map((p, i) => {
+                const isActive = (i === currentPhaseIndex && globalStarted);
+                const rowClass = isActive ? 'bg-neon/10 border-l-2 border-neon' : 'hover:bg-ink';
+                const activeIcon = isActive ? '<span class="text-neon text-lg ml-2 animate-pulse">🔥</span>' : '';
+
+                let what = p.type === 'task' ? `Задача ${p.task_id}` : p.sport_name;
+                let typeLabel = p.type === 'task' ? '<span class="text-cyan">ЗАДАЧА</span>' : '<span class="text-warn">СПОРТ</span>';
+
+                return `
+                    <tr class="border-b border-line/50 transition ${rowClass}" draggable="true" data-id="${p.id}">
+                        <td class="py-3 drag-handle text-center">≡</td>
+                        <td class="text-neon font-bold">${i+1} ${activeIcon}</td>
+                        <td>${typeLabel}</td>
+                        <td class="font-bold">${what}</td>
+                        <td class="font-mono text-slate-300">${Math.floor(p.duration_seconds / 60)} мин</td>
+                        <td class="space-x-2">
+                            <button onclick="startPhase(${p.id})" class="text-xs bg-neon/20 text-neon border border-neon px-2 py-1 rounded hover:bg-neon hover:text-black transition">▶ Запустить</button>
+                            <button onclick="openEditPhase(${p.id})" class="text-xs border border-line px-2 py-1 rounded hover:border-cyan hover:text-cyan">✏️ Изменить</button>
+                            <button onclick="deletePhase(${p.id})" class="text-xs text-slate-500 hover:text-magenta px-1">🗑</button>
+                        </td>
+                    </tr>`;
+            }).join('');
+
+            setupDragAndDrop();
+        } else {
+            const rows = tbody.querySelectorAll('tr[data-id]');
+            rows.forEach((row, i) => {
+                const isActive = (i === currentPhaseIndex && globalStarted);
+
+                if (isActive) {
+                    row.classList.add('bg-neon/10', 'border-l-2', 'border-neon');
+                    row.classList.remove('hover:bg-ink');
+                    const numCell = row.children[1];
+                    if (!numCell.innerHTML.includes('🔥')) {
+                        numCell.innerHTML = `${i+1} <span class="text-neon text-lg ml-2 animate-pulse">🔥</span>`;
+                    }
+                } else {
+                    row.classList.remove('bg-neon/10', 'border-l-2', 'border-neon');
+                    row.classList.add('hover:bg-ink');
+                    const numCell = row.children[1];
+                    numCell.innerHTML = i+1;
+                }
+            });
+        }
+    }
+
+    // --- Drag and Drop ---
+    function setupDragAndDrop() {
+        const rows = document.querySelectorAll('#phases-body tr');
+
+        rows.forEach(row => {
+            row.addEventListener('dragstart', (e) => {
+                draggedItem = row;
+                row.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+
+            row.addEventListener('dragend', () => {
+                row.classList.remove('dragging');
+                document.querySelectorAll('#phases-body tr').forEach(r => r.classList.remove('drag-over'));
+                draggedItem = null;
+                savePhaseOrder();
+            });
+
+            row.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                if (row !== draggedItem) {
+                    row.classList.add('drag-over');
+                }
+            });
+
+            row.addEventListener('dragleave', () => {
+                row.classList.remove('drag-over');
+            });
+
+            row.addEventListener('drop', (e) => {
+                e.preventDefault();
+                row.classList.remove('drag-over');
+                if (row !== draggedItem && draggedItem) {
+                    const tbody = document.getElementById('phases-body');
+                    const rowsArray = Array.from(tbody.children);
+                    const draggedIdx = rowsArray.indexOf(draggedItem);
+                    const targetIdx = rowsArray.indexOf(row);
+
+                    if (draggedIdx < targetIdx) {
+                        row.parentNode.insertBefore(draggedItem, row.nextSibling);
+                    } else {
+                        row.parentNode.insertBefore(draggedItem, row);
+                    }
+                }
+            });
+        });
+    }
+
+    async function savePhaseOrder() {
+        const rows = document.querySelectorAll('#phases-body tr');
+        const newOrder = Array.from(rows).map(r => parseInt(r.dataset.id));
+
+        await fetch('/api/admin/phases/reorder', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ phase_ids: newOrder })
+        });
+        loadPhases();
+    }
+
+    // --- Запуск конкретной фазы ---
+    function startPhase(id) {
+        startingPhaseId = id;
+        const select = document.getElementById('start-team-select');
+
+        select.innerHTML = '<option value="">Для ВСЕХ команд</option>' +
+            allTeams.map(t => `<option value="${t.id}">Только для: ${t.name}</option>`).join('');
+
+        document.getElementById('start-phase-modal').classList.remove('hidden');
+    }
+
+    function closeStartModal() {
+        document.getElementById('start-phase-modal').classList.add('hidden');
+        startingPhaseId = null;
+    }
+
+    async function confirmStartPhase() {
+        if (!startingPhaseId) return;
+        const teamId = document.getElementById('start-team-select').value;
+
+        try {
+            const payload = teamId ? { team_id: parseInt(teamId) } : {};
+            const res = await fetch(`/api/admin/phases/${startingPhaseId}/start`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                closeStartModal();
+                loadStats();
+            } else {
+                const err = await res.json();
+                alert(err.detail || 'Ошибка запуска');
+            }
+        } catch (e) {
+            alert('Ошибка сети');
+        }
+    }
+
+    // --- Редактирование фазы ---
+    function openEditPhase(id) {
+        editingPhaseId = id;
+        const phase = allPhases.find(p => p.id === id);
+        if (!phase) return;
+
+        document.getElementById('edit-phase-modal').classList.remove('hidden');
+
+        if (phase.type === 'task') {
+            document.getElementById('edit-task-container').classList.remove('hidden');
+            document.getElementById('edit-sport-container').classList.add('hidden');
+            document.getElementById('edit-phase-task-id').value = phase.task_id;
+        } else {
+            document.getElementById('edit-task-container').classList.add('hidden');
+            document.getElementById('edit-sport-container').classList.remove('hidden');
+            document.getElementById('edit-phase-sport-name').value = phase.sport_name;
+        }
+
+        document.getElementById('edit-phase-duration').value = Math.floor(phase.duration_seconds / 60);
+    }
+
+    function closeEditModal() {
+        document.getElementById('edit-phase-modal').classList.add('hidden');
+        editingPhaseId = null;
+    }
+
+    async function saveEditedPhase() {
+        if (!editingPhaseId) return;
+
+        const phase = allPhases.find(p => p.id === editingPhaseId);
+        const durationMins = parseInt(document.getElementById('edit-phase-duration').value);
+
+        const payload = { duration_seconds: durationMins * 60 };
+
+        if (phase.type === 'task') {
+            payload.task_id = parseInt(document.getElementById('edit-phase-task-id').value);
+        } else {
+            payload.sport_name = document.getElementById('edit-phase-sport-name').value.trim();
+            if (!payload.sport_name) return alert("Введите название упражнения!");
+        }
+
+        await fetch(`/api/admin/phases/${editingPhaseId}/edit`, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(payload)
+        });
+
+        closeEditModal();
+        loadPhases();
+    }
+
+    // --- Остальные функции ---
+    async function addPhase() {
+        const type = document.getElementById('phase-type').value;
+        const taskId = type === 'task' ? parseInt(document.getElementById('phase-task-id').value) : null;
+        const sportName = type === 'sport' ? document.getElementById('phase-sport-name').value.trim() : null;
+        const duration = parseInt(document.getElementById('phase-duration').value) * 60;
+
+        if (type === 'sport' && !sportName) return alert('Введите название упражнения!');
+
+        await fetch('/api/admin/phases', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ type, task_id: taskId, sport_name: sportName, duration_seconds: duration })
+        });
+        loadPhases();
+    }
+
+    async function deletePhase(id) {
+        if (!confirm('Удалить эту фазу?')) return;
+        await fetch(`/api/admin/phases/${id}/delete`, { method: 'POST' });
+        loadPhases();
+    }
+
+    async function loadStats() {
+        try {
+            const res = await fetch('/api/admin/stats');
+            if (res.status === 401 || res.status === 403) return window.location.href = '/logout';
+            const data = await res.json();
+
+            globalStarted = data.global_is_started;
+            globalPaused = data.global_is_paused;
+            currentPhaseIndex = data.current_phase || 0;
+            allTeams = data.teams || [];
+
+            if (globalStarted) {
+                document.getElementById('btn-global-start').classList.add('hidden');
+                document.getElementById('btn-global-pause').classList.remove('hidden');
+                document.getElementById('btn-global-pause').textContent = globalPaused ? '▶ ПРОДОЛЖИТЬ' : '⏸ ПАУЗА';
+                document.getElementById('btn-global-pause').className = `px-6 py-2 rounded font-bold border transition ${globalPaused ? 'border-neon text-neon hover:bg-neon' : 'border-magenta text-magenta hover:bg-magenta'}`;
+
+                if (allPhases[currentPhaseIndex]) {
+                    const cp = allPhases[currentPhaseIndex];
+                    document.getElementById('current-phase-text').textContent = `Активна: ${cp.type === 'task' ? 'Задача ' + cp.task_id : cp.sport_name}`;
+                }
+            } else {
+                document.getElementById('btn-global-start').classList.remove('hidden');
+                document.getElementById('btn-global-pause').classList.add('hidden');
+                document.getElementById('current-phase-text').textContent = '';
+            }
+
+            // Рейтинг
+            const tbody = document.getElementById('rating-body');
+            if (!data.teams || data.teams.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-slate-500">Нет команд</td></tr>';
+            } else {
+                tbody.innerHTML = data.teams.map((t, i) => {
+                    const codeScore = t.score || 0;
+                    const sportScore = t.sport_score || 0;
+                    const totalScore = codeScore + sportScore;
+                    return `
+                    <tr class="border-b border-line/50 hover:bg-ink transition">
+                        <td class="py-3 text-neon font-bold">${i+1}</td>
+                        <td class="font-bold">${t.name}</td>
+                        <td class="text-cyan font-mono font-bold">${codeScore}</td>
+                        <td class="text-warn font-mono font-bold">${sportScore}</td>
+                        <td class="text-neon font-mono font-bold text-lg">${totalScore}</td>
+                        <td class="space-x-2">
+                            <button onclick="toggleTeam(${t.id}, ${!t.is_paused})" class="text-xs border border-line px-2 py-1 rounded hover:border-cyan">${t.is_paused ? 'Продолжить' : 'Пауза'}</button>
+                            <button onclick="deleteTeam(${t.id})" class="text-xs text-slate-500 hover:text-magenta px-1">🗑</button>
+                        </td>
+                    </tr>`;
+                }).join('');
+            }
+
+            // Монитор команд
+            const monitor = document.getElementById('team-monitor');
+            if (data.teams && data.teams.length > 0) {
+                monitor.innerHTML = data.teams.map(t => {
+                    const phaseName = t.phase_name || '—';
+                    const phaseTimeLeft = t.phase_time_left > 0 ? formatTime(t.phase_time_left) : '00:00:00';
+                    const totalTimeStr = t.total_time > 0 ? formatTime(t.total_time) : 'не начато';
+
+                    const isWaiting = t.total_time === 0;
+                    const cardBg = isWaiting ? 'bg-panel opacity-50' : 'bg-panel';
+                    const phaseColor = isWaiting ? 'text-slate-500' : (t.phase_name && t.phase_name.includes('Задача') ? 'text-neon' : 'text-warn');
+
+                    return `
+                    <div class="border border-line rounded p-3 mb-2 ${cardBg}">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="font-bold text-white text-sm">${t.name}</div>
+                            <div class="text-[10px] text-cyan font-mono" title="Общее время в олимпиаде">⏱ ${totalTimeStr}</div>
+                        </div>
+                        <div class="flex justify-between items-center text-xs border-t border-line/50 pt-2">
+                            <div class="${phaseColor} font-bold">${isWaiting ? 'Ждет входа' : phaseName}</div>
+                            <div class="text-slate-400 font-mono" title="Осталось до конца фазы">${isWaiting ? '--:--:--' : phaseTimeLeft}</div>
+                        </div>
+                    </div>`;
+                }).join('');
+            } else {
+                monitor.innerHTML = '<div class="text-center text-slate-500 text-sm py-4">Нет команд</div>';
+            }
+
+            if (document.getElementById('tab-phases').classList.contains('active')) {
+                updateActivePhaseHighlight();
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    function updateActivePhaseHighlight() {
+        const tbody = document.getElementById('phases-body');
+        const rows = tbody.querySelectorAll('tr[data-id]');
+        if (!rows.length) return;
+
+        rows.forEach((row, i) => {
+            const isActive = (i === currentPhaseIndex && globalStarted);
+            if (isActive) {
+                row.classList.add('bg-neon/10', 'border-l-2', 'border-neon');
+                row.classList.remove('hover:bg-ink');
+                const numCell = row.children[1];
+                if (!numCell.innerHTML.includes('🔥')) {
+                    numCell.innerHTML = `${i+1} <span class="text-neon text-lg ml-2 animate-pulse">🔥</span>`;
+                }
+            } else {
+                row.classList.remove('bg-neon/10', 'border-l-2', 'border-neon');
+                row.classList.add('hover:bg-ink');
+                const numCell = row.children[1];
+                numCell.innerHTML = i+1;
+            }
+        });
+    }
+
+    document.getElementById('btn-global-start').onclick = async () => {
+        await fetch('/api/admin/timer/global', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({is_started: true}) });
+        loadStats();
+    };
+
+    document.getElementById('btn-global-pause').onclick = async () => {
+        await fetch('/api/admin/timer/global', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({is_paused: !globalPaused}) });
+        loadStats();
+    };
+
+    async function toggleTeam(id, pause) {
+        await fetch(`/api/admin/team/${id}/timer`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({is_paused: pause}) });
+        loadStats();
+    }
+
+    async function deleteTeam(id) {
+        if (!confirm('Удалить команду и все её результаты?')) return;
+        await fetch(`/api/admin/teams/${id}/delete`, { method: 'POST' });
+        loadStats();
+    }
+
+    // --- УПРАВЛЕНИЕ ЗАДАЧАМИ ---
+    async function loadTasksAdmin() {
+        const tbody = document.getElementById('tasks-body');
+        try {
+            const res = await fetch('/api/admin/tasks');
+            const currentTasks = await res.json();
+            tbody.innerHTML = currentTasks.map((t, i) => `
+                <tr class="border-b border-line/50 hover:bg-ink transition">
+                    <td class="py-3 text-neon font-bold">${t.id}</td>
+                    <td class="font-bold">${t.title}</td>
+                    <td class="text-warn font-mono font-bold text-lg">${t.points_max}</td>
+                    <td class="space-x-2">
+                        <button onclick="openTaskModal(${t.id})" class="text-xs border border-line px-2 py-1 rounded hover:border-cyan hover:text-cyan">✏️ Изменить</button>
+                        <button onclick="deleteTask(${t.id})" class="text-xs text-slate-500 hover:text-magenta px-1">🗑</button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch { tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-magenta">Ошибка загрузки</td></tr>'; }
+    }
+
+    function openTaskModal(id = null) {
+        editingTaskId = id;
+        const modal = document.getElementById('task-modal');
+        const title = document.getElementById('task-modal-title');
+        const statementInput = document.getElementById('task-statement-input');
+        const testsInput = document.getElementById('task-tests-input');
+
+        if (id) {
+            title.textContent = `Редактировать Задачу #${id}`;
+            // Находим задачу в уже загруженном списке
+            const task = allTasks.find(t => t.id === id);
+            if (task) {
+                statementInput.value = task.statement || "";
+                testsInput.value = task.tests_json || "{}";
+            } else {
+                // Если задача не загружена (например, только что добавлена), делаем запрос
+                fetch('/api/admin/tasks').then(r=>r.json()).then(tasks => {
+                    const t = tasks.find(x => x.id === id);
+                    if (t) {
+                        statementInput.value = t.statement || "";
+                        testsInput.value = t.tests_json || "{}";
+                    }
+                });
+            }
+        } else {
+            title.textContent = "Новая Задача";
+            statementInput.value = "";
+            testsInput.value = '{\n  "task": { "title": "Название" },\n  "tests": [\n    { "id": 1, "input": "1\\n", "expected_output": "2\\n", "points": 10 }\n  ]\n}';
+        }
+        modal.classList.remove('hidden');
+    }
+
+    function closeTaskModal() {
+        document.getElementById('task-modal').classList.add('hidden');
+        editingTaskId = null;
+    }
+
+    async function saveTask() {
+        const statement = document.getElementById('task-statement-input').value;
+        const testsJson = document.getElementById('task-tests-input').value;
+
+        // Валидация JSON
+        try {
+            JSON.parse(testsJson);
+        } catch (e) {
+            alert("Ошибка в JSON тестов! Проверьте формат.");
+            return;
+        }
+
+        const url = editingTaskId ? `/api/admin/tasks/${editingTaskId}/edit` : '/api/admin/tasks';
+        const method = 'POST';
+
+        const res = await fetch(url, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ statement: statement, tests_json: testsJson })
+        });
+
+        if (res.ok) {
+            closeTaskModal();
+            loadTasksAdmin();
+            loadPhases(); // Обновляем селект фаз
+        } else {
+            alert("Ошибка сохранения");
+        }
+    }
+
+    async function deleteTask(id) {
+        if (!confirm(`Удалить задачу #${id}? Это также удалит все решения по ней.`)) return;
+        await fetch(`/api/admin/tasks/${id}/delete`, { method: 'POST' });
+        loadTasksAdmin();
+        loadPhases();
+    }
+
+    // --- СПОРТ ---
+    async function initSportTab() {
+        const select = document.getElementById('sport-phase-select');
+        const tbody = document.getElementById('sport-body');
+
+        if (allPhases.length === 0) await loadPhases();
+        const sportPhases = allPhases.filter(p => p.type === 'sport');
+
+        const currentVal = select.value;
+
+        select.innerHTML = '<option value="">-- Выберите спортивную фазу --</option>' +
+            sportPhases.map(p => `<option value="${p.id}">${p.sport_name}</option>`).join('');
+
+        if (currentVal) select.value = currentVal;
+
+        if (select.value) {
+            loadSportAdmin();
+        } else {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-slate-500">Выберите фазу выше</td></tr>';
+        }
+    }
+
+    async function loadSportAdmin() {
+        const select = document.getElementById('sport-phase-select');
+        const tbody = document.getElementById('sport-body');
+
+        const selectedPhaseId = select.value;
+        if (!selectedPhaseId) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-slate-500">Выберите фазу выше</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-slate-500 animate-pulse">Загрузка...</td></tr>';
+
+        try {
+            const [teamsRes, sportRes] = await Promise.all([
+                fetch('/api/admin/stats'),
+                fetch('/api/admin/sport')
+            ]);
+            const teamsData = await teamsRes.json();
+            const sportData = await sportRes.json();
+
+            if (!teamsData.teams || teamsData.teams.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-slate-500">Нет команд</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = teamsData.teams.map(t => {
+                const existing = sportData.find(s => s.team_id === t.id && s.phase_id == selectedPhaseId);
+                const val = existing ? existing.points : '';
+
+                return `
+                <tr class="border-b border-line/50 hover:bg-ink transition">
+                    <td class="py-3 font-bold">${t.name}</td>
+                    <td>
+                        <input type="number" step="0.5" id="sport-score-${t.id}" value="${val}" placeholder="0" class="bg-ink border border-line rounded px-2 py-1 text-sm text-white w-24">
+                    </td>
+                    <td>
+                        <button onclick="saveSport(${t.id}, ${selectedPhaseId})" class="bg-warn text-ink font-bold text-xs px-3 py-1 rounded hover:bg-white transition">Сохранить</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        } catch (e) {
+            console.error(e);
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-magenta">Ошибка загрузки</td></tr>';
+        }
+    }
+
+    async function saveSport(teamId, phaseId) {
+        const pointsInput = document.getElementById(`sport-score-${teamId}`);
+        const points = parseFloat(pointsInput.value) || 0;
+
+        try {
+            await fetch('/api/admin/sport', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ team_id: teamId, phase_id: phaseId, points: points })
+            });
+            alert('Баллы сохранены!');
+        } catch (e) { alert("Ошибка сети"); }
+    }
+
+    document.getElementById('btn-add-team').onclick = () => {
+        document.getElementById('team-modal').classList.remove('hidden');
+        document.getElementById('team-password-result').classList.add('hidden');
+        document.getElementById('btn-save-team').classList.remove('hidden');
+        document.getElementById('team-name-input').value = '';
+    };
+    document.getElementById('btn-cancel-team').onclick = () => document.getElementById('team-modal').classList.add('hidden');
+    document.getElementById('btn-save-team').onclick = async () => {
+        const name = document.getElementById('team-name-input').value.trim();
+        if (!name) return;
+        const res = await fetch('/api/admin/teams', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name }) });
+        if (res.ok) {
+            const d = await res.json();
+            document.getElementById('new-team-password').textContent = d.password;
+            document.getElementById('team-password-result').classList.remove('hidden');
+            document.getElementById('btn-save-team').classList.add('hidden');
+            loadStats();
+        }
+    };
+
+    async function exportCSV() {
+        try {
+            const res = await fetch('/api/admin/export');
+            if (!res.ok) {
+                alert('Ошибка сервера при генерации CSV');
+                return;
+            }
+
+            // Получаем файл как Blob
+            const blob = await res.blob();
+
+            // Создаем временную ссылку для скачивания
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'results.csv'; // Имя файла
+            document.body.appendChild(a);
+            a.click();
+
+            // Убираем ссылку и очищаем память
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (e) {
+            console.error(e);
+            alert('Ошибка сети при скачивании CSV');
+        }
+    }
+
+    const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
+    ws.onmessage = (e) => { if (e.data === 'update_rating' || e.data === 'timer_changed') loadStats(); };
+
+    loadPhases();
+    loadStats();
+    initSportTab();
+    setInterval(loadStats, 5000);
+</script>
+{% endblock %}

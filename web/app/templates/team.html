@@ -250,6 +250,12 @@
             teamPaused = data.team.is_paused;
             teamFinished = data.team.finished_at !== null;
 
+            // Команда финишировала — уводим на страницу результатов
+            if (teamFinished || data.team.finished_by_phases) {
+                window.location.href = '/results';
+                return;
+            }
+
             isBreakPhase = data.global.is_break;
             activePhaseTaskId = data.global.phase_task_id;
             const phaseIndex = data.global.current_phase_index; // Получаем индекс текущей фазы

@@ -1,17 +1,14 @@
 #!/usr/bin/env bash
 # ============================================================
-#  install.sh — установка и обновление проекта Python vs Спорт
+#  install.sh — Установка и запуск проекта Python vs Sport
 # ============================================================
-set -euo pipefail
+set -uo pipefail
 
-# ---- НАСТРОЙКИ ----
 REPO_URL="https://github.com/mrGotmag/Python_VS_Sport.git"
 PROJECT_DIR="Python_VS_Sport"
-PYTHON_MIN_MAJOR=3
-PYTHON_MIN_MINOR=10
-# ---------------------------------------
+PYTHON_VERSION="3.12.10"
 
-# ---- цвета ----
+# ---- Цвета ----
 if [ -t 1 ]; then
     C_RED=$'\033[31m'; C_GRN=$'\033[32m'; C_YLW=$'\033[33m'; C_CYN=$'\033[36m'; C_RST=$'\033[0m'
 else
@@ -25,78 +22,145 @@ fail()  { echo "${C_RED}  [ОШИБКА] $*${C_RST}" >&2; exit 1; }
 
 echo
 info "============================================================"
-info "  Установка / Обновление проекта Python vs Спорт"
-echo "  Репозиторий: ${REPO_URL}"
-echo "  Папка:       ${PROJECT_DIR}"
+info "  Установка проекта Python vs Sport"
 info "============================================================"
 echo
 
-# ---- 1) Python ----
-info "[1/6] Проверка Python..."
-PYTHON_BIN=""
-for candidate in python3.12 python3.11 python3.10 python3 python; do
-    if command -v "$candidate" >/dev/null 2>&1; then
-        PYTHON_BIN="$candidate"; break
-    fi
-done
-[ -n "$PYTHON_BIN" ] || fail "Python не найден."
-PY_VER="$("$PYTHON_BIN" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
-PY_MAJOR="${PY_VER%%.*}"; PY_MINOR="${PY_VER##*.}"
-if [ "$PY_MAJOR" -lt "$PYTHON_MIN_MAJOR" ] || { [ "$PY_MAJOR" -eq "$PYTHON_MIN_MAJOR" ] && [ "$PY_MINOR" -lt "$PYTHON_MIN_MINOR" ]; }; then
-    fail "Нужен Python ${PYTHON_MIN_MAJOR}.${PYTHON_MIN_MINOR}+, найден ${PY_VER}"
-fi
-ok "версия $PY_VER подходит"
+# ---- 0) Проверка базовых утилит ----
+info "[0/6] Проверка базовых утилит..."
 
-# ---- 2) git ----
+if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1 || ! command -v gcc >/dev/null 2>&1 || ! command -v make >/dev/null 2>&1; then
+    info "Устанавливаем минимальный набор для сборки..."
+    if command -v apt-get >/dev/null 2>&1; then
+        sudo apt-get update
+        sudo apt-get install -y curl git build-essential patch \
+            libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
+            libffi-dev liblzma-dev libncurses-dev || warn "Некоторые пакеты не установились, но пробуем продолжить..."
+    else
+        fail "Установите curl, git, gcc, make и patch вручную."
+    fi
+fi
+ok "Базовые утилиты готовы."
+
+# ---- 1) Проверка Python 3.12 ----
+info "[1/6] Проверка Python 3.12..."
+PYTHON_BIN=""
+if command -v python3.12 >/dev/null 2>&1; then
+    PYTHON_BIN="python3.12"
+elif [ -f "$HOME/.pyenv/versions/$PYTHON_VERSION/bin/python" ]; then
+    PYTHON_BIN="$HOME/.pyenv/versions/$PYTHON_VERSION/bin/python"
+else
+    warn "Python 3.12 не найден."
+    info "Устанавливаем Python 3.12 через pyenv (локально, без sudo)..."
+    info "Это займет 3-5 минут, так как Python компилируется из исходников."
+
+    if [ ! -d "$HOME/.pyenv" ]; then
+        curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init -)"
+    else
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init -)"
+    fi
+
+    if ! pyenv install -s "$PYTHON_VERSION"; then
+        fail "Не удалось собрать Python 3.12. Проверьте логи выше."
+    fi
+    PYTHON_BIN="$HOME/.pyenv/versions/$PYTHON_VERSION/bin/python"
+fi
+
+"$PYTHON_BIN" --version || fail "Не удалось запустить Python."
+ok "Найден $($PYTHON_BIN --version)"
+
+# ---- 2) Проверка git ----
 info "[2/6] Проверка git..."
-command -v git >/dev/null 2>&1 || fail "git не найден. Установите git."
+command -v git >/dev/null 2>&1 || fail "git не найден."
 ok "git найден"
 
-# ---- 3) Клонирование и СИНХРОНИЗАЦИЯ ----
+# ---- 3) Клонирование ----
 info "[3/6] Синхронизация файлов с GitHub..."
 if [ -d "${PROJECT_DIR}/.git" ]; then
-    echo "  Папка ${PROJECT_DIR} уже существует. Обновляем..."
+    echo "  Папка ${PROJECT_DIR} существует. Обновляем..."
+
+    # Спрашиваем, синхронизировать ли папку tasks
+    SYNC_TASKS=0
+    if [ -d "${PROJECT_DIR}/orcestrator/tasks" ]; then
+        echo
+        echo "  Обнаружена папка с задачами:"
+        echo "    ${PROJECT_DIR}/orcestrator/tasks"
+        echo
+        echo "  ВНИМАНИЕ: синхронизация с GitHub перезапишет и/или"
+        echo "  удалит файлы задач, которых нет в репозитории."
+        echo "  Если вы добавляли задачи вручную — выберите 'n',"
+        echo "  чтобы сохранить их."
+        echo
+        read -r -p "  Синхронизировать папку tasks с GitHub? (y/n): " ANSWER
+        if [[ "${ANSWER,,}" == "y" ]]; then
+            SYNC_TASKS=1
+        fi
+        echo
+    else
+        echo "  Папки tasks нет — синхронизируем всё."
+        SYNC_TASKS=1
+    fi
+
     cd "${PROJECT_DIR}"
 
-    # Сохраняем локальные изменения (если есть), чтобы не потерять
-    git stash >/dev/null 2>&1 || true
+    if [ "$SYNC_TASKS" -eq 1 ]; then
+        # Полная синхронизация, как раньше
+        git fetch --all >/dev/null 2>&1 || warn "Не удалось связаться с GitHub"
+        git reset --hard origin/main >/dev/null 2>&1 || git reset --hard origin/master >/dev/null 2>&1
+        git clean -fd -e .venv -e .env >/dev/null 2>&1 || true
+        ok "Файлы обновлены (включая tasks)"
+    else
+        # --- Сохраняем папку tasks ---
+        echo "  Сохраняем папку tasks..."
 
-    # Скачиваем последние данные с сервера
-    git fetch --all || fail "Не удалось связаться с GitHub. Проверьте интернет."
+        # 1) Временно убираем tasks из индекса
+        git rm -r --cached --ignore-unmatch "orcestrator/tasks" >/dev/null 2>&1 || true
 
-    # Жестко сбрасываем локальные изменения к последнему коммиту (main/master)
-    git reset --hard origin/main >/dev/null 2>&1 || git reset --hard origin/master >/dev/null 2>&1 || warn "Не удалось сделать reset."
+        # 2) Обновляем всё остальное
+        git fetch --all >/dev/null 2>&1 || warn "Не удалось связаться с GitHub"
+        git reset --hard origin/main >/dev/null 2>&1 || git reset --hard origin/master >/dev/null 2>&1
 
-    # Удаляем новые файлы и папки, которых нет в репозитории (кроме .venv и .env)
-    # Флаг -e (exclude) защищает важные файлы от удаления
-    git clean -fd -e ".venv" -e ".env" >/dev/null 2>&1 || true
+        # 3) Восстанавливаем индекс для tasks из origin (локальные файлы не трогаются)
+        git checkout origin/main -- "orcestrator/tasks" >/dev/null 2>&1 || \
+            git checkout origin/master -- "orcestrator/tasks" >/dev/null 2>&1 || true
 
-    ok "Файлы успешно синхронизированы с репозиторием."
+        # 4) Чистим всё, кроме tasks, .venv, .env
+        git clean -fd -e .venv -e .env -e orcestrator/tasks >/dev/null 2>&1 || true
+
+        ok "Файлы обновлены (папка tasks сохранена)"
+    fi
+
+    cd ..
 else
     if [ -e "${PROJECT_DIR}" ]; then
-        fail "Папка ${PROJECT_DIR} уже есть, но это не git-репозиторий. Удалите её."
+        echo "  Удаляем старую папку..."
+        rm -rf "${PROJECT_DIR}"
     fi
-    echo "  Клонируем репозиторий..."
     git clone "${REPO_URL}" "${PROJECT_DIR}" || fail "git clone не удался"
-    cd "${PROJECT_DIR}"
-    ok "Репозиторий склонирован."
+    ok "Репозиторий склонирован"
 fi
 
-# ---- 4) venv ----
-info "[4/6] Проверка виртуального окружения .venv..."
+cd "${PROJECT_DIR}"
+
+# ---- 4) Создание venv ----
+info "[4/6] Создание .venv..."
 if [ -x ".venv/bin/python" ]; then
-    echo "  .venv уже существует, используем его."
-else
-    "$PYTHON_BIN" -m venv .venv || fail "Не удалось создать .venv"
+    echo "  Удаляем старый .venv..."
+    rm -rf .venv
 fi
+
+"$PYTHON_BIN" -m venv .venv || fail "Не удалось создать .venv."
 VENV_PY=".venv/bin/python"
 ok "venv готов"
 
-# ---- 5) зависимости ----
-info "[5/6] Установка зависимостей..."
+# ---- 5) Установка зависимостей ----
+info "[5/6] Установка зависимостей (это может занять пару минут)..."
 if [ -f "requirements.txt" ]; then
-    "$VENV_PY" -m pip install --upgrade pip -i https://mirror.yandex.ru/mirrors/pypi/simple/ || warn "не удалось обновить pip"
-    "$VENV_PY" -m pip install -r requirements.txt -i https://mirror.yandex.ru/mirrors/pypi/simple/ || fail "Не удалось установить зависимости"
+    "$VENV_PY" -m pip install --upgrade pip setuptools wheel -q
+    "$VENV_PY" -m pip install -r requirements.txt --only-binary=:all: || fail "Не удалось установить зависимости"
     ok "зависимости установлены"
 else
     warn "requirements.txt не найден!"
@@ -104,29 +168,26 @@ fi
 
 # ---- 6) .env ----
 info "[6/6] Подготовка .env..."
-if [ -f ".env" ]; then
-    echo "  .env уже существует, не трогаем."
-elif [ -f ".env.example" ]; then
+if [ ! -f ".env" ] && [ -f ".env.example" ]; then
     cp .env.example .env
-    ok "создан .env из .env.example"
-else
-    warn "Нет .env и .env.example"
+    ok "Создан .env"
 fi
 
 # ---- Проверка ----
-echo
-info "============================================================"
-info "  Проверка установки"
-info "============================================================"
 "$VENV_PY" -c "import fastapi, uvicorn, sqlalchemy, jwt, bcrypt, markdown; print('Все зависимости успешно установлены!')" || fail "Проверка не прошла"
 
-# ---- Готово ----
+# ---- Запуск ----
 echo
 info "============================================================"
-info "  ГОТОВО!"
+info "  ЗАПУСК СЕРВЕРА"
 info "============================================================"
-echo "  Дальше:"
-echo "    cd ${PROJECT_DIR}/web"
-echo "    source ../.venv/bin/activate"
-echo "    python run.py"
+echo "  Сервер запускается. Для остановки нажмите Ctrl+C."
 echo
+
+cd web
+
+# Открываем браузер в фоне
+( sleep 2 && (xdg-open "http://localhost:8000" 2>/dev/null || open "http://localhost:8000" 2>/dev/null || echo "Откройте http://localhost:8000 вручную") ) &
+
+# Запускаем сервер
+"../${VENV_PY}" run.py
