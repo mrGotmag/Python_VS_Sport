@@ -35,7 +35,10 @@ def print_report(r: dict) -> None:
 
     for t in r["tests"]:
         if t["status"] == "ok":
-            log.info("[ OK ] #%s (+%d)", t["id"], t["points"])
+            log.info("[ OK ] #%s (+%d) time=%.1fms mem=%.1fMB",
+                     t["id"], t["points"],
+                     t.get("time_ms", 0.0) or 0.0,
+                     t.get("memory_mb", 0.0) or 0.0)
         else:
             reason = t.get("reason", "fail")
             extra = ""

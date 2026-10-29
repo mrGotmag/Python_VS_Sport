@@ -95,7 +95,7 @@ def setup_logging(logs_dir: Path | None = None) -> tuple[logging.Logger, logging
     session.addHandler(session_qh)
 
     session_console = _make_console_handler(
-        _level(settings.session_console_level, logging.INFO)
+        _level(settings.session_console_level, logging.DEBUG)
     )
     session.addHandler(session_console)
 

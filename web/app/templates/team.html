@@ -61,9 +61,12 @@
     <!-- ПРАВАЯ ПАНЕЛЬ -->
     <section class="flex-1 flex flex-col min-w-0 border border-line bg-panel rounded-xl relative">
 
-        <!-- БЛОК ТАЙМЕРА (Добавлен сюда) -->
+        <!-- БЛОК ТАЙМЕРА И ФАЗЫ -->
         <div class="flex items-center justify-between p-3 border-b border-line bg-ink rounded-t-xl">
-            <div class="text-xs text-slate-500 tracking-widest font-bold">// TIME_LEFT</div>
+            <div class="flex flex-col">
+                <div class="text-xs text-slate-500 tracking-widest font-bold">// ТЕКУЩАЯ ФАЗА</div>
+                <div id="current-phase-name" class="text-sm text-neon font-bold mt-1">Ожидание...</div>
+            </div>
             <div id="global-timer" class="hidden flex items-center gap-2 border px-3 py-1.5 rounded font-mono font-bold">
                 <span id="timer-text">00:00:00</span>
             </div>
@@ -133,9 +136,13 @@
     let globalStarted = false;
     let teamPaused = false;
     let teamFinished = false;
+    let isBreakPhase = false;
+    let activePhaseTaskId = null;
 
+ // --- ОБНОВЛЕННЫЕ ПЕРЕМЕННЫЕ ТАЙМЕРА ---
     let timerInterval = null;
     let localRemainingSeconds = 0;
+    let currentTimerPhaseIndex = -1; // Чтобы знать, для какой фазы запущен таймер
 
     function switchTab(tab) {
         document.getElementById('pane-code').classList.add('hidden');
@@ -162,15 +169,33 @@
         return `${h}:${m}:${sec}`;
     }
 
-    function startLocalTimer(seconds) {
-        localRemainingSeconds = seconds;
-        if (timerInterval) clearInterval(timerInterval);
+    function startLocalTimer(seconds, phaseIndex, isPaused) {
         const timerText = document.getElementById('timer-text');
 
-        if (!globalStarted || globalPaused || teamPaused || teamFinished) {
-            timerText.textContent = formatTime(localRemainingSeconds);
+        // Если таймер на паузе или не запущен — просто показываем время
+        if (isPaused || !globalStarted || teamFinished) {
+            if (timerInterval) clearInterval(timerInterval);
+            timerText.textContent = formatTime(seconds);
             return;
         }
+
+        // Если таймер уже идет для ЭТОЙ ЖЕ фазы и просто обновились данные с сервера,
+        // мы НЕ перезапускаем интервал, чтобы не сбивать отсчет.
+        // Мы только корректируем время, если оно сильно разошлось.
+        if (currentTimerPhaseIndex === phaseIndex && timerInterval) {
+            // Если разница между локальным временем и сервером больше 2 секунд — синхронизируем
+            if (Math.abs(localRemainingSeconds - seconds) > 2) {
+                localRemainingSeconds = seconds;
+            }
+            return;
+        }
+
+        // Если фаза изменилась или таймер только запускается
+        currentTimerPhaseIndex = phaseIndex;
+        localRemainingSeconds = seconds;
+
+        if (timerInterval) clearInterval(timerInterval);
+        timerText.textContent = formatTime(localRemainingSeconds);
 
         timerInterval = setInterval(() => {
             if (localRemainingSeconds > 0) {
@@ -178,9 +203,13 @@
                 timerText.textContent = formatTime(localRemainingSeconds);
             } else {
                 clearInterval(timerInterval);
+                timerInterval = null;
+                // Когда время вышло, принудительно запрашиваем обновление, чтобы сервер переключил фазу
+                setTimeout(init, 1000);
             }
         }, 1000);
     }
+
 
     function renderTasks(tasks) {
         const list = document.getElementById('tasks-list');
@@ -190,7 +219,8 @@
         }
 
         list.innerHTML = tasks.map(t => {
-            const disabled = (!globalStarted || globalPaused || teamPaused || teamFinished);
+            // Если сейчас спорт-фаза, задачи заблокированы
+            const disabled = (!globalStarted || globalPaused || teamPaused || teamFinished || isBreakPhase || activePhaseTaskId !== t.id);
             const clickAction = disabled ? '' : `onclick="openTask(${t.id})"`;
             const classes = disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-neon';
             const activeClass = (currentTaskId === t.id) ? 'border-neon bg-neon/5' : 'border-line';
@@ -220,6 +250,18 @@
             teamPaused = data.team.is_paused;
             teamFinished = data.team.finished_at !== null;
 
+            isBreakPhase = data.global.is_break;
+            activePhaseTaskId = data.global.phase_task_id;
+            const phaseIndex = data.global.current_phase_index; // Получаем индекс текущей фазы
+
+            const phaseType = data.global.phase_type;
+            let phaseTitle = "Ожидание...";
+            if (phaseType === 'task') phaseTitle = `Решение задачи #${data.global.phase_task_id}`;
+            if (phaseType === 'sport') phaseTitle = `Спортивное задание: ${data.global.phase_sport_name}`;
+            if (teamFinished) phaseTitle = "Соревнование завершено";
+
+            document.getElementById('current-phase-name').textContent = phaseTitle;
+
             renderTasks(data.tasks);
 
             const netIndicator = document.getElementById('net-status');
@@ -241,6 +283,8 @@
             banner.classList.remove('hidden');
             timerBox.classList.remove('hidden');
 
+            const isPausedForTeam = (globalPaused || teamPaused || !globalStarted || teamFinished);
+
             if (teamFinished) {
                 banner.textContent = "ЗАВЕРШЕНО";
                 banner.className = "p-3 text-center border-b border-magenta bg-magenta/10 text-magenta font-bold tracking-widest";
@@ -258,26 +302,39 @@
                 banner.className = "p-3 text-center border-b border-warn bg-warn/10 text-warn font-bold tracking-widest";
                 document.getElementById('timer-text').textContent = "PAUSED";
                 timerBox.className = "flex items-center gap-2 border border-warn px-3 py-1.5 rounded text-warn font-mono font-bold";
-                if(timerInterval) clearInterval(timerInterval);
+                // При паузе просто фиксируем время
+                startLocalTimer(data.global.phase_time_left, phaseIndex, true);
+            } else if (isBreakPhase) {
+                banner.textContent = "СПОРТИВНОЕ ЗАДАНИЕ (ПЕРЕРЫВ)";
+                banner.className = "p-3 text-center border-b border-warn bg-warn/10 text-warn font-bold tracking-widest";
+                timerBox.className = "flex items-center gap-2 border border-warn/30 bg-warn/10 px-3 py-1.5 rounded text-warn font-mono font-bold";
+                startLocalTimer(data.global.phase_time_left, phaseIndex, false);
             } else {
-                banner.textContent = "ИДЕТ СОРЕВНОВАНИЕ";
+                banner.textContent = "РЕШЕНИЕ ЗАДАЧИ";
                 banner.className = "p-3 text-center border-b border-neon bg-neon/10 text-neon font-bold tracking-widest";
                 timerBox.className = "flex items-center gap-2 border border-neon/30 bg-neon/10 px-3 py-1.5 rounded text-neon font-mono font-bold glow-text";
-                startLocalTimer(data.contest.remaining_seconds);
+                startLocalTimer(data.global.phase_time_left, phaseIndex, false);
             }
 
             const wsOverlay = document.getElementById('workspace-overlay');
-            if (isLocked) {
+            const isTaskLocked = (!globalStarted || globalPaused || teamPaused || teamFinished || isBreakPhase);
+
+            if (isTaskLocked && currentTaskId) {
                 wsOverlay.classList.remove('hidden');
-                document.getElementById('ws-overlay-icon').textContent = teamFinished ? '🏁' : (!globalStarted ? '⏳' : '⏸');
-                document.getElementById('ws-overlay-title').textContent = teamFinished ? 'ЗАВЕРШЕНО' : (!globalStarted ? 'ОЖИДАНИЕ' : 'ПАУЗА');
+                document.getElementById('ws-overlay-icon').textContent = teamFinished ? '🏁' : (isBreakPhase ? '🏃' : '⏸');
+                document.getElementById('ws-overlay-title').textContent = teamFinished ? 'ЗАВЕРШЕНО' : (isBreakPhase ? 'СПОРТ-ПАУЗА' : 'ПАУЗА');
             } else {
                 wsOverlay.classList.add('hidden');
             }
 
+            // Автоматически открываем задачу, если началась фаза с ней
+            if (!isLocked && !isBreakPhase && activePhaseTaskId && currentTaskId !== activePhaseTaskId) {
+                if (!currentTaskId) openTask(activePhaseTaskId);
+            }
+
             const btn = document.getElementById('btn-submit');
             if (btn) {
-                if (isLocked) {
+                if (isLocked || isBreakPhase || (activePhaseTaskId && currentTaskId !== activePhaseTaskId)) {
                     btn.disabled = true;
                     btn.textContent = "НЕДОСТУПНО";
                 } else {
@@ -289,7 +346,9 @@
     }
 
     async function openTask(id) {
-        if (!globalStarted || globalPaused || teamPaused || teamFinished) return;
+        if (!globalStarted || globalPaused || teamPaused || teamFinished || isBreakPhase) return;
+        if (activePhaseTaskId && id !== activePhaseTaskId) return; // Нельзя открывать чужие задачи
+
         currentTaskId = id;
         document.getElementById('workspace-empty').classList.add('hidden');
         document.getElementById('workspace').classList.remove('hidden');
@@ -332,7 +391,7 @@
     }
 
     async function submitCode() {
-        if (!currentTaskId || !globalStarted || globalPaused || teamPaused || teamFinished) return;
+        if (!currentTaskId || !globalStarted || globalPaused || teamPaused || teamFinished || isBreakPhase) return;
         const btn = document.getElementById('btn-submit');
         const status = document.getElementById('submit-status');
         const outputBox = document.getElementById('checker-output');
@@ -358,7 +417,7 @@
         } catch (e) {
             status.textContent = '✘ Сеть'; status.className = 'text-magenta text-sm font-mono';
         } finally {
-            if(globalStarted && !globalPaused && !teamPaused && !teamFinished) btn.disabled = false;
+            if(globalStarted && !globalPaused && !teamPaused && !teamFinished && !isBreakPhase) btn.disabled = false;
         }
     }
 
@@ -422,6 +481,6 @@
     };
 
     init();
-    setInterval(init, 10000);
+    setInterval(init, 5000); // Ускорил опрос до 5 секунд, чтобы переключение фаз было быстрее
 </script>
 {% endblock %}

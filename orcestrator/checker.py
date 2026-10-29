@@ -249,53 +249,58 @@ def check_task(task_dir: Path) -> dict:
 
     # ---------- 4) разбор результатов ----------
     score = 0
+    # ---------- 4) разбор результатов ----------
+    total_score = 0
+    total_time_ms = 0.0
+    max_memory_mb = 0.0
+
     for t, r in zip(tests, results):
         rc = r.get("rc", -1)
         err_text = r.get("err", "") or ""
+        time_ms = r.get("time_ms", 0.0)
+        mem_mb = r.get("memory_mb", 0.0)
 
         if rc != 0:
-            if err_text in ("TIMEOUT", "MEMORY_LIMIT", "RUNNER_ERROR", "MISSING"):
-                reason = err_text
-            else:
-                lines = err_text.strip().splitlines()
-                reason = lines[-1][:200] if lines else f"rc={rc}"
-
+            reason = err_text if err_text in ("TIMEOUT", "MEMORY_LIMIT", "RUNNER_ERROR", "MISSING") else \
+                err_text.strip().splitlines()[-1][:200]
             log.info("Задача %s: тест #%s FAIL (%s)", task_id, t["id"], reason)
             report["tests"].append({
-                "id": t["id"],
-                "status": "fail",
-                "reason": reason,
-                "points": 0,
-                "max_points": t["points"],
+                "id": t["id"], "status": "fail", "reason": reason,
+                "points": 0, "max_points": t["points"],
+                "time_ms": time_ms, "memory_mb": mem_mb
             })
             continue
 
+        # Если тест пройден, начисляем баллы
         out = r.get("out", "")
         if _normalize(out) == _normalize(t["expected_output"]):
-            score += int(t["points"])
-            log.info("Задача %s: тест #%s OK (+%s)",
-                     task_id, t["id"], t["points"])
+            points = int(t["points"])
+            total_score += points
+            total_time_ms += time_ms
+            max_memory_mb = max(max_memory_mb, mem_mb)
+
+            log.info("Задача %s: тест #%s OK (+%d)", task_id, t["id"], points)
+
             report["tests"].append({
-                "id": t["id"],
-                "status": "ok",
-                "points": int(t["points"]),
-                "max_points": int(t["points"]),
+                "id": t["id"], "status": "ok",
+                "points": points, "max_points": t["points"],
+                "time_ms": time_ms, "memory_mb": mem_mb
             })
         else:
             log.info("Задача %s: тест #%s FAIL (wrong output)", task_id, t["id"])
-            log.debug("  expected=%r got=%r", t["expected_output"], out)
             report["tests"].append({
-                "id": t["id"],
-                "status": "fail",
-                "reason": "wrong output",
-                "expected": t["expected_output"],
-                "got": out,
-                "points": 0,
-                "max_points": int(t["points"]),
+                "id": t["id"], "status": "fail", "reason": "wrong output",
+                "expected": t["expected_output"], "got": out,
+                "points": 0, "max_points": t["points"],
+                "time_ms": time_ms, "memory_mb": mem_mb
             })
 
-    report["score"] = score
-    report["status"] = "ok" if score == report["total"] else "partial"
+    # Итоговые результаты
+    report["score"] = total_score
+    report["time_ms"] = total_time_ms
+    report["memory_mb"] = max_memory_mb
+    report["status"] = "ok" if total_score == report["total"] else "partial"
+
     log.info("Задача %s: итог %d/%d (%s)",
-             task_id, score, report["total"], report["status"])
+             task_id, total_score, report["total"], report["status"])
     return report

@@ -1,48 +1,22 @@
 [
   {
     "id": "1",
-    "title": "Посвящение в МИВЛГУ: сине-белые браслеты",
+    "title": "Тест",
     "status": "ok",
-    "score": 100,
-    "total": 100,
+    "score": 10,
+    "total": 10,
     "tests": [
       {
         "id": 1,
         "status": "ok",
-        "points": 15,
-        "max_points": 15
-      },
-      {
-        "id": 2,
-        "status": "ok",
-        "points": 15,
-        "max_points": 15
-      },
-      {
-        "id": 3,
-        "status": "ok",
-        "points": 15,
-        "max_points": 15
-      },
-      {
-        "id": 4,
-        "status": "ok",
-        "points": 15,
-        "max_points": 15
-      },
-      {
-        "id": 5,
-        "status": "ok",
-        "points": 20,
-        "max_points": 20
-      },
-      {
-        "id": 6,
-        "status": "ok",
-        "points": 20,
-        "max_points": 20
+        "points": 10,
+        "max_points": 10,
+        "time_ms": 71.4925000029325,
+        "memory_mb": 3.4375
       }
     ],
-    "error": null
+    "error": null,
+    "time_ms": 71.4925000029325,
+    "memory_mb": 3.4375
   }
 ]

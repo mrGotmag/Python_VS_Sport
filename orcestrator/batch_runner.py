@@ -9,6 +9,13 @@ import logging
 import platform
 import subprocess
 import sys
+import threading
+import time
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
 
 from config import settings
 
@@ -217,33 +224,87 @@ def run_batch(
     )
     preexec = _apply_limits(memory_mb)
 
+    # --- Замер памяти: поток-монитор параллельно с процессом ---
+    peak_memory_mb = 0.0
+    proc = None
+    stop_event = threading.Event()
+
+    def _monitor_memory(pid: int, holder: dict, stop_evt: threading.Event) -> None:
+        if not HAS_PSUTIL:
+            return
+        try:
+            p = psutil.Process(pid)
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            return
+        peak = 0.0
+        while not stop_evt.is_set():
+            try:
+                mem_info = p.memory_info()
+                if hasattr(mem_info, "peak_wset"):  # Windows
+                    mem_val = mem_info.peak_wset / (1024 * 1024)
+                else:  # Linux/macOS
+                    mem_val = mem_info.rss / (1024 * 1024)
+                if mem_val > peak:
+                    peak = mem_val
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                break
+            if not p.is_running():
+                break
+            time.sleep(0.005)
+        holder["peak_mb"] = peak
+
+    mem_holder = {"peak_mb": 0.0}
+    monitor = None
+
+    # --- Запуск процесса и замер общего времени ---
+    start_time = time.perf_counter()
     try:
-        proc = subprocess.run(
+        proc = subprocess.Popen(
             [sys.executable, "-I", "-c", runner],
-            input=payload,
-            capture_output=True,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
-            timeout=total_timeout,
             preexec_fn=preexec,
         )
-    except subprocess.TimeoutExpired:
-        crash.warning("BATCH TIMEOUT (%.1fs) на %d тестов", total_timeout, len(tests))
-        return _safe_stub(tests, "TIMEOUT")
+
+        if HAS_PSUTIL:
+            monitor = threading.Thread(
+                target=_monitor_memory,
+                args=(proc.pid, mem_holder, stop_event),
+                daemon=True,
+            )
+            monitor.start()
+
+        try:
+            stdout, stderr = proc.communicate(input=payload, timeout=total_timeout)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            stdout, stderr = proc.communicate()
+            crash.warning("BATCH TIMEOUT (%.1fs) на %d тестов", total_timeout, len(tests))
+            return _safe_stub(tests, "TIMEOUT")
     except MemoryError:
         crash.warning("BATCH MEMORY_LIMIT (%d МБ)", memory_mb)
         return _safe_stub(tests, "MEMORY_LIMIT")
     except OSError as e:
         crash.error("BATCH: не удалось запустить процесс: %s", e)
         return _safe_stub(tests, "RUNNER_ERROR")
+    finally:
+        stop_event.set()
+        if monitor is not None:
+            monitor.join(timeout=1.0)
+        peak_memory_mb = mem_holder.get("peak_mb", 0.0)
+
+    total_elapsed_ms = (time.perf_counter() - start_time) * 1000.0
 
     if proc.returncode != 0:
-        crash.warning("BATCH: раннер упал rc=%d: %s", proc.returncode, (proc.stderr or "")[:300])
+        crash.warning("BATCH: раннер упал rc=%d: %s", proc.returncode, (stderr or "")[:300])
         return _safe_stub(tests, "RUNNER_ERROR")
 
     try:
-        data = json.loads(proc.stdout)
+        data = json.loads(stdout)
     except json.JSONDecodeError:
-        crash.error("BATCH: некорректный JSON: %r", (proc.stdout or "")[:200])
+        crash.error("BATCH: некорректный JSON: %r", (stdout or "")[:200])
         return _safe_stub(tests, "RUNNER_ERROR")
 
     if not isinstance(data, list):
@@ -251,16 +312,31 @@ def run_batch(
 
     by_id = {x.get("id"): x for x in data if isinstance(x, dict)}
 
+    # Приблизительное время на 1 тест: суммарное / число тестов.
+    # Для точности — надо править _RUNNER_TEMPLATE (внутренний замер).
+    per_test_ms = total_elapsed_ms / max(len(tests), 1)
+
     result: list[dict] = []
     for t in tests:
         r = by_id.get(t["id"])
         if r is None:
-            result.append({"id": t["id"], "out": "", "rc": -1, "err": "MISSING"})
+            result.append({
+                "id": t["id"], "out": "", "rc": -1, "err": "MISSING",
+                "time_ms": 0.0, "memory_mb": 0.0,
+            })
             continue
         result.append({
             "id": t["id"],
             "out": r.get("out", "") or "",
             "rc": int(r.get("rc", -1)),
             "err": r.get("err", "") or "",
+            "time_ms": per_test_ms,
+            "memory_mb": peak_memory_mb,
         })
+
+    # Логирование для отладки (пойдёт в session.log через QueueHandler)
+    for r in result:
+        log.info("Тест #%s: rc=%s, time=%.1fms, mem=%.1fMB",
+                 r["id"], r["rc"], r["time_ms"], r["memory_mb"])
+
     return result
