@@ -59,33 +59,56 @@
 
 ```text
 Python_VS_Sport/
-├── .env                     # Единый файл конфигурации (создается автоматически)
+├── .env                     # Единый файл конфигурации (создаётся автоматически)
 ├── .env.example             # Шаблон конфигурации
-├── .venv/                   # Виртуальное окружение Python
+├── .venv/                   # Виртуальное окружение Python 3.12
+├── requirements.txt         # Зависимости (FastAPI, SQLAlchemy, psutil и др.)
 │
-├── orcestrator/             # ОРКЕСТРАТОР (Бэкенд-логика проверки)
-│   ├── logs/                # Логи работы оркестратора, report.json, session.log, crash.log
-│   ├── tasks/               # Папка с файлами задач (task.txt, tests.json)
+├── orcestrator/             # ОРКЕСТРАТОР (изолированная проверка кода)
+│   ├── logs/                # Логи и отчёты
+│   │   ├── session.log      # Все шаги проверки (TimedRotatingFileHandler)
+│   │   ├── crash.log        # Только ошибки и падения
+│   │   └── report.json      # Структурированный отчёт по последней проверке
+│   │
+│   ├── tasks/               # Папки задач (1, 2, 3…)
+│   │   ├── 1/
+│   │   │   ├── task.txt     # Условие (Markdown)
+│   │   │   └── tests.json   # Тесты: { "task": {...}, "tests": [{...}] }
+│   │   ├── 2/ …
+│   │   └── temp/            # Временная папка для прогонов (автоочистка)
+│   │
 │   ├── batch_runner.py      # Запуск тестов, замер времени и памяти (psutil)
 │   ├── checker.py           # Ядро проверки: прогон и сравнение с эталоном
-│   ├── code_reader.py       # Модуль чтения и парсинга присланного кода
-│   ├── config.py            # Загрузка конфигурации
-│   ├── logger_setup.py      # Настройка логирования (файлы + консоль)
-│   ├── main.py              # Точка входа оркестратора (CLI)
-│   ├── pool.py              # Пул воркеров (ProcessPoolExecutor)
-│   └── reporter.py          # Формирование отчётов в stdout и report.json
+│   ├── code_reader.py       # Чтение и валидация solution.py
+│   ├── config.py            # Загрузка .env
+│   ├── logger_setup.py      # Логирование (файлы + консоль, DEBUG)
+│   ├── main.py              # CLI оркестратора (python main.py tasks --only N)
+│   ├── pool.py              # ProcessPoolExecutor для параллельных проверок
+│   └── reporter.py          # Отчёт в stdout + logs/report.json
 │
-├── web/                     # ВЕБ-ПРИЛОЖЕНИЕ (Фронтенд + API)
-│   ├── app/                 # Исходный код FastAPI (роуты, шаблоны, модели)
+├── web/                     # ВЕБ-ПРИЛОЖЕНИЕ (FastAPI)
 │   ├── contest_web.db       # База данных SQLite
-│   └── run.py               # Умный запуск сервера (определение IP, порты)
+│   ├── run.py               # Запуск uvicorn + вывод IP + открытие браузера
+│   └── app/
+│       ├── __init__.py
+│       ├── config.py        # Настройки приложения (SECRET_KEY, PORT и т.д.)
+│       ├── models.py        # SQLAlchemy: Team, Task, Phase, Submission…
+│       ├── schemas.py       # Pydantic-схемы запросов
+│       ├── security.py      # bcrypt + JWT
+│       ├── main.py          # Все роуты, WebSocket, /api/admin/export
+│       └── templates/       # Jinja2-шаблоны
+│           ├── base.html
+│           ├── login.html
+│           ├── register.html
+│           ├── setup.html
+│           ├── team.html
+│           └── admin.html
 │
-├── install.bat              # Скрипт автоустановки для Windows
+├── install.bat              # Автоустановка для Windows
 ├── uninstall.bat            # Удаление проекта и правил брандмауэра (Windows)
-├── install.sh               # Скрипт автоустановки для Linux/macOS
+├── install.sh               # Автоустановка для Linux/macOS
 ├── uninstall.sh             # Удаление проекта (Linux/macOS)
-├── requirements.txt         # Зависимости Python
-└── README.md                # Документация проекта
+└── README.md                # Документация
 ```
 
 ---
