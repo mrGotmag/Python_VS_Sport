@@ -114,21 +114,12 @@ def sync_tasks_from_disk():
         db.commit()
 
         # 2. АВТОМАТИЧЕСКАЯ СБОРКА ФАЗ
-        # Проверяем, совпадает ли количество фаз с задачами. Если нет (или они пустые) — пересобираем.
         current_phases = db.query(Phase).order_by(Phase.order_index).all()
 
-        # Если фаз нет или их количество не равно (задачи * 2 - 1), пересобираем
-        expected_phases_count = len(valid_ids) * 2 - 1 if valid_ids else 0
+        # Генерируем фазы ТОЛЬКО если список фаз полностью пуст (первый запуск)
+        if len(current_phases) == 0 and valid_ids:
+            print(f"[SYNC] Первичная генерация фаз для {len(valid_ids)} задач...")
 
-        if len(current_phases) != expected_phases_count:
-            print(f"[SYNC] Пересборка фаз (было {len(current_phases)}, ожидается {expected_phases_count})...")
-
-            # Удаляем старые фазы
-            for p in current_phases:
-                db.delete(p)
-            db.commit()
-
-            # Создаем новые
             for idx, tid in enumerate(valid_ids):
                 # Добавляем фазу с задачей
                 db.add(Phase(

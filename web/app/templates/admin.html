@@ -583,19 +583,42 @@
 
     // --- Остальные функции ---
     async function addPhase() {
-        const type = document.getElementById('phase-type').value;
-        const taskId = type === 'task' ? parseInt(document.getElementById('phase-task-id').value) : null;
-        const sportName = type === 'sport' ? document.getElementById('phase-sport-name').value.trim() : null;
-        const direction = document.getElementById('phase-direction').value;
+        const typeEl = document.getElementById('phase-type');
+        const type = typeEl ? typeEl.value : 'task';
+
+        const taskEl = document.getElementById('phase-task-id');
+        const taskId = (type === 'task' && taskEl) ? parseInt(taskEl.value) : null;
+
+        const sportNameEl = document.getElementById('phase-sport-name');
+        const sportName = (type === 'sport' && sportNameEl) ? sportNameEl.value.trim() : null;
+
+        const dirEl = document.getElementById('phase-direction');
+        const sportDirection = (type === 'sport' && dirEl) ? dirEl.value : 'more';
+
+        const durationEl = document.getElementById('phase-duration');
+        // Четко объявляем переменную duration (по умолчанию 30 минут)
+        const durationMin = durationEl ? parseInt(durationEl.value) : 30;
+        const durationSec = durationMin * 60;
 
         if (type === 'sport' && !sportName) return alert('Введите название упражнения!');
 
-        await fetch('/api/admin/phases', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ type, task_id: taskId, sport_name: sportName, sport_direction: direction, duration_seconds: duration })
-        });
-        loadPhases();
+        try {
+            await fetch('/api/admin/phases', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({
+                    type: type,
+                    task_id: taskId,
+                    sport_name: sportName,
+                    sport_direction: sportDirection,
+                    duration_seconds: durationSec
+                })
+            });
+            loadPhases();
+        } catch (e) {
+            alert('Ошибка добавления фазы');
+            console.error(e);
+        }
     }
 
     async function deletePhase(id) {
@@ -966,6 +989,11 @@
         await fetch(`/api/admin/judges/${id}/delete`, { method: 'POST' });
         loadJudges();
     }
+
+    // Открытие модалки создания команды
+    document.getElementById('btn-add-team').onclick = () => {
+        document.getElementById('team-modal').classList.remove('hidden');
+    };
 
     const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
     ws.onmessage = (e) => { if (e.data === 'update_rating' || e.data === 'timer_changed') loadStats(); };
