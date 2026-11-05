@@ -248,8 +248,6 @@ def check_task(task_dir: Path) -> dict:
         return report
 
     # ---------- 4) разбор результатов ----------
-    score = 0
-    # ---------- 4) разбор результатов ----------
     total_score = 0
     total_time_ms = 0.0
     max_memory_mb = 0.0

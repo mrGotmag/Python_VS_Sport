@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     secret_key: str
     access_token_expire_minutes: int = 480
 
+    team_size: int = 5
+
     database_url: str = "sqlite:///./contest_web.db"
     port: int = 8000
     host: str = "0.0.0.0"

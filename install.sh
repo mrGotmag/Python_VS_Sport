@@ -29,89 +29,42 @@ echo
 # ---- 0) Проверка базовых утилит ----
 info "[0/6] Проверка базовых утилит..."
 
-if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1; then
-    info "Устанавливаем минимальный набор (curl, git)..."
+if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1 || ! command -v gcc >/dev/null 2>&1 || ! command -v make >/dev/null 2>&1; then
+    info "Устанавливаем минимальный набор для сборки..."
     if command -v apt-get >/dev/null 2>&1; then
         sudo apt-get update
-        sudo apt-get install -y curl git || warn "Некоторые пакеты не установились, пробуем продолжить..."
+        sudo apt-get install -y curl git build-essential patch \
+            libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
+            libffi-dev liblzma-dev libncurses-dev || warn "Некоторые пакеты не установились, но пробуем продолжить..."
     else
-        fail "Установите curl и git вручную."
+        fail "Установите curl, git, gcc, make и patch вручную."
     fi
 fi
 ok "Базовые утилиты готовы."
 
-# ---- 1) Проверка Python 3.12 (Скачивание или Сборка) ----
+# ---- 1) Проверка Python 3.12 ----
 info "[1/6] Проверка Python 3.12..."
 PYTHON_BIN=""
-
-# 1.1 Ищем системный Python или уже установленный в pyenv
 if command -v python3.12 >/dev/null 2>&1; then
     PYTHON_BIN="python3.12"
-    ok "Найден системный Python 3.12"
 elif [ -f "$HOME/.pyenv/versions/$PYTHON_VERSION/bin/python" ]; then
     PYTHON_BIN="$HOME/.pyenv/versions/$PYTHON_VERSION/bin/python"
-    ok "Найден Python 3.12 в pyenv"
-fi
-
-# 1.2 Если нет — пробуем СКАЧАТЬ готовый бинарник
-if [ -z "$PYTHON_BIN" ]; then
-    info "Python 3.12 не найден. Пытаемся скачать готовую сборку (без компиляции)..."
-    
-    ARCH=$(uname -m)
-    if [ "$ARCH" = "x86_64" ]; then
-        TARGET="x86_64-unknown-linux-gnu"
-    elif [ "$ARCH" = "aarch64" ]; then
-        TARGET="aarch64-unknown-linux-gnu"
-    else
-        TARGET=""
-    fi
-
-    if [ -n "$TARGET" ]; then
-        # Ссылка на скомпилированный Python 3.12.10 от Astral (python-build-standalone)
-        DL_URL="https://github.com/astral-sh/python-build-standalone/releases/download/20240415/cpython-3.12.2+20240415-${TARGET}-install_only.tar.gz"
-        PY_DIR="$HOME/.local/share/python-standalone"
-        
-        mkdir -p "$PY_DIR"
-        info "Скачиваем архив (около 25 МБ)..."
-        
-        if curl -fL --connect-timeout 15 -o "$PY_DIR/python.tar.gz" "$DL_URL" 2>/dev/null; then
-            info "Распаковываем..."
-            tar -xzf "$PY_DIR/python.tar.gz" -C "$PY_DIR"
-            PYTHON_BIN="$PY_DIR/python/bin/python3.12"
-            
-            if [ -x "$PYTHON_BIN" ] && "$PYTHON_BIN" --version >/dev/null 2>&1; then
-                ok "Успешно скачан готовый Python 3.12"
-            else
-                warn "Архив скачался, но не запускается. Откат на компиляцию."
-                PYTHON_BIN=""
-            fi
-        else
-            warn "Не удалось скачать бинарник (возможно, блокировка сети)."
-        fi
-    fi
-fi
-
-# 1.3 Если скачать не удалось — СОБИРАЕМ через pyenv (Fallback)
-if [ -z "$PYTHON_BIN" ]; then
-    warn "Переходим к сборке Python 3.12 из исходников через pyenv..."
-    info "Это займет 3-5 минут."
-    
-    if ! command -v gcc >/dev/null 2>&1 || ! command -v make >/dev/null 2>&1; then
-        info "Устанавливаем компилятор и библиотеки для сборки..."
-        if command -v apt-get >/dev/null 2>&1; then
-            sudo apt-get install -y build-essential libssl-dev zlib1g-dev libbz2-dev \
-                libreadline-dev libsqlite3-dev libffi-dev liblzma-dev libncurses-dev || true
-        fi
-    fi
+else
+    warn "Python 3.12 не найден."
+    info "Устанавливаем Python 3.12 через pyenv (локально, без sudo)..."
+    info "Это займет 3-5 минут, так как Python компилируется из исходников."
 
     if [ ! -d "$HOME/.pyenv" ]; then
         curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init -)"
+    else
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init -)"
     fi
-    export PATH="$HOME/.pyenv/bin:$PATH"
-    eval "$(pyenv init -)"
-    
+
     if ! pyenv install -s "$PYTHON_VERSION"; then
-        fail "Не удалось собрать Python 3.12. Не хватает библиотек или прав."
+        fail "Не удалось собрать Python 3.12. Проверьте логи выше."
     fi
     PYTHON_BIN="$HOME/.pyenv/versions/$PYTHON_VERSION/bin/python"
 fi
@@ -124,11 +77,12 @@ info "[2/6] Проверка git..."
 command -v git >/dev/null 2>&1 || fail "git не найден."
 ok "git найден"
 
-# ---- 3) Клонирование и СИНХРОНИЗАЦИЯ ----
+# ---- 3) Клонирование ----
 info "[3/6] Синхронизация файлов с GitHub..."
 if [ -d "${PROJECT_DIR}/.git" ]; then
     echo "  Папка ${PROJECT_DIR} существует. Обновляем..."
 
+    # Спрашиваем, синхронизировать ли папку tasks
     SYNC_TASKS=0
     if [ -d "${PROJECT_DIR}/orcestrator/tasks" ]; then
         echo
@@ -153,19 +107,32 @@ if [ -d "${PROJECT_DIR}/.git" ]; then
     cd "${PROJECT_DIR}"
 
     if [ "$SYNC_TASKS" -eq 1 ]; then
+        # Полная синхронизация, как раньше
         git fetch --all >/dev/null 2>&1 || warn "Не удалось связаться с GitHub"
         git reset --hard origin/main >/dev/null 2>&1 || git reset --hard origin/master >/dev/null 2>&1
         git clean -fd -e .venv -e .env >/dev/null 2>&1 || true
         ok "Файлы обновлены (включая tasks)"
     else
+        # --- Сохраняем папку tasks ---
         echo "  Сохраняем папку tasks..."
+
+        # 1) Временно убираем tasks из индекса
         git rm -r --cached --ignore-unmatch "orcestrator/tasks" >/dev/null 2>&1 || true
+
+        # 2) Обновляем всё остальное
         git fetch --all >/dev/null 2>&1 || warn "Не удалось связаться с GitHub"
         git reset --hard origin/main >/dev/null 2>&1 || git reset --hard origin/master >/dev/null 2>&1
-        git checkout origin/main -- "orcestrator/tasks" >/dev/null 2>&1 || git checkout origin/master -- "orcestrator/tasks" >/dev/null 2>&1 || true
+
+        # 3) Восстанавливаем индекс для tasks из origin (локальные файлы не трогаются)
+        git checkout origin/main -- "orcestrator/tasks" >/dev/null 2>&1 || \
+            git checkout origin/master -- "orcestrator/tasks" >/dev/null 2>&1 || true
+
+        # 4) Чистим всё, кроме tasks, .venv, .env
         git clean -fd -e .venv -e .env -e orcestrator/tasks >/dev/null 2>&1 || true
+
         ok "Файлы обновлены (папка tasks сохранена)"
     fi
+
     cd ..
 else
     if [ -e "${PROJECT_DIR}" ]; then
@@ -219,6 +186,8 @@ echo
 
 cd web
 
+# Открываем браузер в фоне
 ( sleep 2 && (xdg-open "http://localhost:8000" 2>/dev/null || open "http://localhost:8000" 2>/dev/null || echo "Откройте http://localhost:8000 вручную") ) &
 
+# Запускаем сервер
 "../${VENV_PY}" run.py

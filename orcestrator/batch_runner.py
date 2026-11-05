@@ -39,6 +39,9 @@ import builtins
 ALLOWED = "__ALLOWED__".split()
 
 _original_import = builtins.__import__
+# Сохраняем ссылки на exec и compile ПЕРЕД тем, как удалить их из builtins
+_safe_exec = exec
+_safe_compile = compile
 
 def _safe_import(name, globals=None, locals=None, fromlist=(), level=0):
     root_module = name.split('.')[0]
@@ -46,7 +49,20 @@ def _safe_import(name, globals=None, locals=None, fromlist=(), level=0):
         raise ImportError(f"Импорт модуля '{root_module}' запрещен правилами олимпиады.")
     return _original_import(name, globals, locals, fromlist, level)
 
+# Блокируем открытие файлов
+def _safe_open(*args, **kwargs):
+    raise PermissionError("Открытие файлов запрещено правилами олимпиады.")
+
 builtins.__import__ = _safe_import
+builtins.open = _safe_open
+
+# Удаляем опасные встроенные функции
+_DANGEROUS = ("eval", "exec", "compile", "breakpoint", "globals", "locals", "vars", "__import__")
+for _name in _DANGEROUS:
+    try:
+        delattr(builtins, _name)
+    except AttributeError:
+        pass
 """
 
 _SEQ_RUNNER_TEMPLATE = r'''
@@ -69,7 +85,8 @@ def main():
         sys.stdin = io.StringIO(t["input"])
         try:
             with contextlib.redirect_stdout(buf):
-                exec(compile(code, "<solution>", "exec"), {"__name__": "__main__"})
+                # ИСПОЛЬЗУЕМ БЕЗОПАСНЫЕ ВЕРСИИ:
+                _safe_exec(_safe_compile(code, "<solution>", "exec"), {"__name__": "__main__"})
             out = buf.getvalue()
             if len(out) > MAX_OUTPUT:
                 results.append({"id": t["id"], "out": out[:MAX_OUTPUT],
@@ -109,7 +126,8 @@ def _run(payload):
     sys.stdin = io.StringIO(stdin_data)
     try:
         with contextlib.redirect_stdout(buf):
-            exec(compile(code, "<solution>", "exec"), {"__name__": "__main__"})
+            # ИСПОЛЬЗУЕМ БЕЗОПАСНЫЕ ВЕРСИИ:
+            _safe_exec(_safe_compile(code, "<solution>", "exec"), {"__name__": "__main__"})
         out = buf.getvalue()
         if len(out) > MAX_OUTPUT:
             return {"out": out[:MAX_OUTPUT], "rc": 1, "err": "OUTPUT_LIMIT"}
@@ -236,7 +254,20 @@ def run_batch(
             p = psutil.Process(pid)
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             return
+
         peak = 0.0
+
+        # Первый замер сразу — ловим память интерпретатора с самого старта,
+        # даже если процесс очень короткий.
+        try:
+            mem_info = p.memory_info()
+            if hasattr(mem_info, "peak_wset"):  # Windows
+                peak = mem_info.peak_wset / (1024 * 1024)
+            else:  # Linux/macOS
+                peak = mem_info.rss / (1024 * 1024)
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            pass
+
         while not stop_evt.is_set():
             try:
                 mem_info = p.memory_info()
@@ -250,7 +281,7 @@ def run_batch(
                 break
             if not p.is_running():
                 break
-            time.sleep(0.005)
+            time.sleep(0.001)  # было 0.005 — увеличена частота опроса
         holder["peak_mb"] = peak
 
     mem_holder = {"peak_mb": 0.0}

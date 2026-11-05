@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block title %}Панель судьи // Python vs Спорт{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-4xl mx-auto fade-in">
+    <div class="flex justify-between items-center border-b border-line pb-4 mb-6">
+        <h1 class="text-2xl font-bold text-warn">ПАНЕЛЬ СУДЬИ</h1>
+        <a href="/logout" class="text-magenta hover:text-white text-sm">[ ВЫЙТИ ]</a>
+    </div>
+
+    <div class="bg-panel border border-line rounded-xl p-6 mb-6">
+        <div class="mb-4">
+            <label class="text-sm text-slate-400 mb-2 block">Выберите спортивную дисциплину:</label>
+            <select id="staff-phase-select" class="w-full bg-ink border border-line rounded px-4 py-3 text-lg text-white focus:border-warn outline-none" onchange="loadStaffTeams()">
+                <option value="">-- Загрузка... --</option>
+            </select>
+        </div>
+
+        <!-- ОБНОВЛЕННЫЙ БЛОК ПРАВИЛА -->
+        <div id="direction-container" class="hidden flex items-center justify-between bg-ink border border-line p-3 rounded">
+            <div id="phase-direction-hint" class="text-sm text-cyan font-bold"></div>
+            <button onclick="toggleDirection()" class="text-xs bg-panel border border-cyan text-cyan px-4 py-2 rounded hover:bg-cyan hover:text-black transition font-bold">
+                СМЕНИТЬ ПРАВИЛО
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-panel border border-line rounded-xl p-6">
+        <table class="w-full text-left">
+            <thead>
+                <tr class="border-b border-line text-slate-500 text-sm">
+                    <th class="pb-3 px-2">Команда</th>
+                    <th class="pb-3 px-2 w-32">Подходы</th>
+                    <th class="pb-3 px-2 w-32">Действие</th>
+                </tr>
+            </thead>
+            <tbody id="staff-teams-body">
+                <tr><td colspan="3" class="text-center py-8 text-slate-500">Выберите дисциплину выше</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    let sportData = { phases: [], teams: [], results: [] };
+
+    async function loadStaffData() {
+        try {
+            const res = await fetch('/api/staff/sport_data');
+            if (res.status === 401 || res.status === 403) return window.location.href = '/';
+            sportData = await res.json();
+
+            const select = document.getElementById('staff-phase-select');
+            if (sportData.phases.length === 0) {
+                select.innerHTML = '<option value="">Нет спортивных фаз</option>';
+                return;
+            }
+
+            select.innerHTML = '<option value="">-- Выберите дисциплину --</option>' +
+                sportData.phases.map(p => `<option value="${p.id}">${p.sport_name}</option>`).join('');
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function loadStaffTeams() {
+        const phaseId = parseInt(document.getElementById('staff-phase-select').value);
+        const tbody = document.getElementById('staff-teams-body');
+        const container = document.getElementById('direction-container');
+        const hint = document.getElementById('phase-direction-hint');
+
+        if (!phaseId) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center py-8 text-slate-500">Выберите дисциплину</td></tr>';
+            container.classList.add('hidden');
+            return;
+        }
+
+        const phase = sportData.phases.find(p => p.id === phaseId);
+        container.classList.remove('hidden');
+        hint.textContent = phase.sport_direction === 'more' ? 'Правило: БОЛЬШЕ = ЛУЧШЕ' : 'Правило: МЕНЬШЕ = ЛУЧШЕ';
+
+        tbody.innerHTML = sportData.teams.map(t => {
+            const result = sportData.results.find(r => r.team_id === t.id && r.phase_id === phaseId);
+            const attempts = result ? result.attempts : '';
+
+            return `
+                <tr class="border-b border-line/50 hover:bg-ink transition">
+                    <td class="py-4 px-2 font-bold text-lg">${t.name}</td>
+                    <td class="py-4 px-2">
+                        <input type="number" id="staff-input-${t.id}" value="${attempts}" placeholder="0" min="0" class="w-full bg-ink border border-line rounded px-3 py-2 text-lg text-center font-mono text-neon focus:border-neon outline-none">
+                    </td>
+                    <td class="py-4 px-2">
+                        <button onclick="saveStaffResult(${t.id}, ${phaseId})" class="w-full bg-warn text-ink font-bold py-2 rounded hover:bg-white transition">
+                            СОХРАНИТЬ
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+        async function toggleDirection() {
+        const phaseId = parseInt(document.getElementById('staff-phase-select').value);
+        if (!phaseId) return;
+
+        const phase = sportData.phases.find(p => p.id === phaseId);
+        const newDir = phase.sport_direction === 'more' ? 'less' : 'more';
+
+        try {
+            const res = await fetch(`/api/staff/phase/${phaseId}/direction`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ direction: newDir })
+            });
+
+            if (!res.ok) throw new Error('Ошибка сервера'); // <--- ВОТ ЭТА СТРОКА
+
+            // Обновляем локально и перерисовываем
+            phase.sport_direction = newDir;
+            loadStaffTeams();
+        } catch (e) {
+            alert('Ошибка смены правила. Проверьте консоль (F12).');
+            console.error(e);
+        }
+    }
+
+    async function saveStaffResult(teamId, phaseId) {
+        const input = document.getElementById(`staff-input-${teamId}`);
+        const attempts = parseInt(input.value) || 0;
+        const btn = input.parentElement.nextElementSibling.querySelector('button');
+        const originalText = btn.textContent;
+
+        btn.disabled = true;
+        btn.textContent = '...';
+
+        try {
+            const res = await fetch('/api/staff/sport_result', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ team_id: teamId, phase_id: phaseId, attempts: attempts })
+            });
+
+            if (res.ok) {
+                btn.textContent = '✔ ОК';
+                btn.className = 'w-full bg-neon text-ink font-bold py-2 rounded transition';
+                input.classList.add('border-neon');
+
+                // Обновляем локальные данные
+                const existing = sportData.results.find(r => r.team_id === teamId && r.phase_id === phaseId);
+                if (existing) existing.attempts = attempts;
+                else sportData.results.push({team_id: teamId, phase_id: phaseId, attempts: attempts});
+
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.className = 'w-full bg-warn text-ink font-bold py-2 rounded hover:bg-white transition';
+                    btn.disabled = false;
+                    input.classList.remove('border-neon');
+                }, 1500);
+            } else {
+                alert('Ошибка сохранения');
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        } catch (e) {
+            alert('Ошибка сети');
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    loadStaffData();
+</script>
+{% endblock %}

@@ -26,7 +26,9 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     const res = await fetch('/api/login', { method: 'POST', body: new URLSearchParams({password: pwd}) });
     if (res.ok) {
         const data = await res.json();
-        window.location.href = data.role === 'admin' ? '/admin' : '/team';
+        if (data.role === 'admin') window.location.href = '/admin';
+        else if (data.role === 'judge') window.location.href = '/staff';
+        else window.location.href = '/team';
     } else { const d = await res.json(); const er = document.getElementById('err'); er.textContent = d.detail; er.classList.remove('hidden'); }
 });
 </script>

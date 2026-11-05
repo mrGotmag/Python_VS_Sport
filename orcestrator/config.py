@@ -60,7 +60,8 @@ def _get_bool(key: str, default: bool) -> bool:
 
 
 def _get_path(key: str, default: str) -> Path:
-    return Path(_get_str(key, default))
+    p = Path(_get_str(key, default))
+    return p if p.is_absolute() else _PROJECT_ROOT / p
 
 
 class Settings(BaseSettings):
@@ -71,9 +72,9 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
     # ---------- пути ----------
-    tasks_dir: Path = _get_path("TASKS_DIR", "tasks")
-    logs_dir: Path = _get_path("LOGS_DIR", "logs")
-    report_json: Path = _get_path("REPORT_JSON", "logs/report.json")
+    tasks_dir: Path = _get_path("TASKS_DIR", "orcestrator/tasks")
+    logs_dir: Path = _get_path("LOGS_DIR", "orcestrator/logs")
+    report_json: Path = _get_path("REPORT_JSON", "orcestrator/logs/report.json")
 
     solution_name: str = _get_str("SOLUTION_NAME", "solution.py")
     tests_name: str = _get_str("TESTS_NAME", "tests.json")

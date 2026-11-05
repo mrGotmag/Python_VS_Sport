@@ -18,28 +18,22 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 # Импортируем все модели
-from app.models import Base, AdminUser, GlobalSettings, Organization, Team, Task, Submission, Phase, SportResult
+from app.models import Base, AdminUser, GlobalSettings, Organization, Team, Task, Submission, Phase, SportResult, Participant, Judge
 from app.security import get_password_hash, verify_password, create_access_token, decode_token
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse, Response
 from fastapi import Response
 
-def find_orcestrator_dir():
-    current = Path(__file__).resolve()
-    for parent in current.parents:
-        if (parent / "orcestrator").exists() and (parent / "orcestrator").is_dir():
-            return parent / "orcestrator"
-        if (parent / "orcestrator" / "tasks").exists():
-            return parent / "orcestrator"
-        if (parent / "tasks").exists() and parent.name == "orcestrator":
-            return parent
-    return current.parent.parent.parent / "orcestrator"
+# Единый источник правды для путей — orcestrator/config.py
+import sys as _sys
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent  # = Contest/
+_orch_path = str(_PROJECT_ROOT / "orcestrator")
+if _orch_path not in _sys.path:
+    _sys.path.insert(0, _orch_path)
 
+from config import settings as _orch_settings  # orcestrator/config.py
 
-ORCESTRATOR_DIR = find_orcestrator_dir()
-TASKS_DIR = ORCESTRATOR_DIR / "tasks"
-
-print(f"[INIT] Путь к orcestrator: {ORCESTRATOR_DIR}")
-print(f"[INIT] Путь к задачам: {TASKS_DIR}")
+ORCESTRATOR_DIR = _PROJECT_ROOT / "orcestrator"
+TASKS_DIR = _orch_settings.tasks_dir
 
 connect_args = {"check_same_thread": False} if "sqlite" in settings.database_url else {}
 engine = create_engine(settings.database_url, connect_args=connect_args)
@@ -89,7 +83,7 @@ def sync_tasks_from_disk():
 
         valid_ids = [int(f.name) for f in TASKS_DIR.iterdir() if f.is_dir() and f.name.isdigit()]
         valid_ids.sort()
-        print(f"[SYNC] Найдено папок с задачами: {len(valid_ids)}")
+        # print(f"[SYNC] Найдено папок с задачами: {len(valid_ids)}")
 
         # 1. Обновляем задачи в БД
         for et in db.query(Task).all():
@@ -200,6 +194,14 @@ def get_current_admin(request: Request, db: Session):
     return db.get(AdminUser, int(payload.get("sub")))
 
 
+def get_current_judge(request: Request, db: Session):
+    token = request.cookies.get("access_token")
+    if not token: raise HTTPException(401, "Нет токена")
+    payload = decode_token(token)
+    if not payload or payload.get("role") != "judge": raise HTTPException(403, "Нужен токен судьи")
+    return db.get(Judge, int(payload.get("sub")))
+
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     with Session(engine) as db:
@@ -298,6 +300,25 @@ async def login(request: Request):
             res.set_cookie("access_token", token, httponly=True)
             return res
 
+        # Проверка судьи
+        matched_judge = next((j for j in db.query(Judge).all() if verify_password(pwd, j.password_hash)), None)
+        if matched_judge:
+            token = create_access_token({"sub": matched_judge.id, "role": "judge"})
+            res = JSONResponse({"status": "ok", "role": "judge"})
+            res.set_cookie("access_token", token, httponly=True)
+            return res
+
+        # Проверка входа участника по персональному коду
+        participant = db.query(Participant).filter(Participant.login_code == pwd).first()
+        if participant:
+            team = db.get(Team, participant.team_id)
+            if not team or not team.is_active:
+                raise HTTPException(401, "Команда недоступна")
+            token = create_access_token({"sub": team.id, "role": "team"})
+            res = JSONResponse({"status": "ok", "role": "team"})
+            res.set_cookie("access_token", token, httponly=True)
+            return res
+
         matched_org = next((o for o in db.query(Organization).all() if verify_password(pwd, o.password_hash)), None)
         if not matched_org: raise HTTPException(401, "Неверный пароль")
 
@@ -324,6 +345,29 @@ async def get_me(request: Request):
 
         # Если команда зашла впервые, запускаем её личный таймер
         if team.started_at is None and gs.is_started:
+            # Ждём полной посадки, если админ не запустил принудительно
+            if not team.is_full and not team.force_started:
+                tasks = db.execute(
+                    select(Task).where(Task.is_active == True).order_by(Task.order_index)).scalars().all()
+                return {
+                    "team": {
+                        "name": team.name,
+                        "is_paused": False,
+                        "finished_at": None,
+                        "finished_by_phases": False,
+                        "total_time_seconds": 0,
+                        "waiting_for_team": True,
+                        "team_size": db.query(Participant).filter(Participant.team_id == team.id).count(),
+                        "team_max": settings.team_size,
+                    },
+                    "global": {"is_started": gs.is_started, "is_paused": gs.is_paused, "current_phase_index": 0,
+                               "total_phases": len(phases), "phase_type": "none", "phase_task_id": None,
+                               "phase_sport_name": None, "phase_time_left": 0, "is_break": False},
+                    "contest": {"remaining_seconds": 0},
+                    "tasks": []
+                }
+
+            # Запускаем
             team.started_at = datetime.utcnow()
             team.current_phase_index = 0
             team.phase_started_at = datetime.utcnow()
@@ -424,45 +468,20 @@ async def get_leaderboard(request: Request):
                     best_scores[s.task_id] = s
 
             code_score = sum((s.score or 0) for s in best_scores.values())
-            sport_results = db.query(SportResult).filter_by(team_id=t.id).all()
-            sport_score = sum((r.points or 0) for r in sport_results)
 
             rows.append({
                 "id": t.id, "name": t.name, "school": t.school or "",
-                "code_score": code_score, "sport_score": sport_score,
-                "total_score": code_score + sport_score,
+                "code_score": code_score,
+                "total_score": code_score,  # для совместимости с фронтом
                 "is_me": (t.id == team.id),
             })
 
-        rows.sort(key=lambda r: (-r["total_score"], -r["code_score"]))
+        rows.sort(key=lambda r: -r["code_score"])
         for i, r in enumerate(rows, 1):
             r["place"] = i
 
         my_place = next((r["place"] for r in rows if r["is_me"]), None)
-
         return {"teams": rows, "my_place": my_place}
-
-
-@app.get("/results", response_class=HTMLResponse)
-async def results_page(request: Request):
-    token = request.cookies.get("access_token")
-    if not token:
-        return RedirectResponse("/")
-
-    payload = decode_token(token)
-    if not payload or payload.get("role") != "team":
-        return RedirectResponse("/")
-
-    # Проверяем: команда реально финишировала?
-    with Session(engine) as db:
-        team = db.get(Team, int(payload.get("sub")))
-        if not team:
-            return RedirectResponse("/")
-        if team.finished_at is None:
-            # ещё не финишировала — обратно в кабинет
-            return RedirectResponse("/team")
-
-    return templates.TemplateResponse("results.html", {"request": request})
 
 
 @app.get("/api/team/tasks/{task_id}")
@@ -539,21 +558,50 @@ async def submit_code(request: Request):
         score = 0
         time_ms = 0.0
         memory_mb = 0.0
+        status = "WA"
+        details = ""
 
-        # Парсим общий балл
+        # 1. Парсим общий балл
         match = re.search(r"(?:Результат|итог):\s*(\d+)/(\d+)", raw_log, re.IGNORECASE)
         if match:
             score = int(match.group(1))
+            max_score = int(match.group(2))
+            if score == max_score and max_score > 0:
+                status = "OK"
 
-        # Парсим время и память из вывода чекера.
-        # Ожидаемый формат от orcestrator: "Тест #1: rc=0, time=12.5ms, mem=15.2MB"
+        # 2. Если не ОК, выясняем причину
+        if status != "OK":
+            # Ищем первую ошибку в логе
+            fail_lines = re.findall(r"\[FAIL\] #(\d+):\s*(.*)", raw_log)
+            if fail_lines:
+                test_id, err_msg = fail_lines[0]
+
+                if "wrong output" in err_msg:
+                    status = "WA"
+                    details = f"Неверный ответ на тесте #{test_id}."
+                elif "TIMEOUT" in err_msg or "Time Limit" in err_msg:
+                    status = "TL"
+                    details = f"Превышено время выполнения на тесте #{test_id}."
+                elif "MEMORY_LIMIT" in err_msg:
+                    status = "TL"  # Обычно превышение памяти считают как TL или ML
+                    details = f"Превышена память на тесте #{test_id}."
+                elif "SyntaxError" in err_msg or "IndentationError" in err_msg:
+                    status = "CE"
+                    details = f"Ошибка компиляции:\n{err_msg}"
+                else:
+                    # Сюда попадут ВСЕ остальные ошибки (NameError, KeyError, ZeroDivision, кастомные исключения и т.д.)
+                    status = "RE"
+                    details = f"Ошибка на тесте #{test_id}:\n{err_msg}"
+            else:
+                # Если лог необычный (например, упал сам сервер)
+                status = "RE"
+                details = "Внутренняя ошибка сервера проверки."
+
+        # 3. Парсим время и память
         times = re.findall(r"time=([\d\.]+)ms", raw_log)
         mems = re.findall(r"mem=([\d\.]+)MB", raw_log)
-
-        if times:
-            time_ms = max(float(t) for t in times)  # Берем худшее время
-        if mems:
-            memory_mb = max(float(m) for m in mems)  # Берем пиковую память
+        if times: time_ms = max(float(t) for t in times)
+        if mems: memory_mb = max(float(m) for m in mems)
 
         # --- РАСЧЕТ ВРЕМЕНИ В ИГРЕ (добавьте эту строку) ---
         time_spent = int((datetime.utcnow() - team.started_at).total_seconds()) if team.started_at else 0
@@ -573,11 +621,13 @@ async def submit_code(request: Request):
             score=score,
             time_ms=time_ms,
             memory_mb=memory_mb,
-            time_spent=time_spent
+            time_spent=time_spent,
+            status=status # <--- ДОБАВИТЬ ЭТУ СТРОКУ
         ))
         db.commit()
         await manager.broadcast("update_rating")
-        return {"status": "ok", "score": score, "checker_result": raw_log, "max_points": task_db.points_max}
+        # Возвращаем только безопасную информацию, без сырых логов
+        return {"status": "ok", "verdict": status, "score": score, "details": details, "max_points": task_db.points_max}
 
 
 @app.get("/api/admin/stats")
@@ -588,51 +638,106 @@ async def admin_stats(request: Request):
         teams = db.query(Team).all()
         phases = db.query(Phase).order_by(Phase.order_index).all()
 
-        teams_data = []
+        # 1. Собираем базовую инфу и баллы по Python
+        teams_data = {}
         for t in teams:
-            best_subs = db.execute(select(Submission).where(Submission.team_id == t.id)).scalars().all()
-            code_score = sum({s.task_id: s.score for s in best_subs}.values())
+            subs = db.execute(select(Submission).where(Submission.team_id == t.id)).scalars().all()
+            best_subs = {}
+            for s in subs:
+                if s.task_id not in best_subs or (s.score or 0) > (best_subs[s.task_id].score or 0):
+                    best_subs[s.task_id] = s
 
-            sport_results = db.query(SportResult).filter(SportResult.team_id == t.id).all()
-            sport_total = sum(r.points for r in sport_results)
+            code_score = sum((s.score or 0) for s in best_subs.values())
+            # Время и память лучшей посылки (для тай-брейка Python)
+            best_time = min([s.time_ms or 0 for s in best_subs.values()] + [999999])
+            best_mem = min([s.memory_mb or 0 for s in best_subs.values()] + [999999])
 
-            # Считаем время
-            total_time = 0
+            total_time = int((datetime.utcnow() - t.started_at).total_seconds()) if t.started_at else 0
             time_left = 0
-            current_phase = None
+            current_phase = phases[t.current_phase_index] if t.current_phase_index < len(phases) else None
             phase_name = "Ожидание"
+            if current_phase:
+                phase_name = current_phase.sport_name if current_phase.type == 'sport' else f"Задача {current_phase.task_id}"
+                if t.phase_started_at:
+                    elapsed = (datetime.utcnow() - t.phase_started_at).total_seconds()
+                    time_left = max(0, int(current_phase.duration_seconds - elapsed))
 
-            if t.started_at:
-                # Общее время в игре
-                total_time = int((datetime.utcnow() - t.started_at).total_seconds())
-
-                # Текущая фаза
-                if t.current_phase_index < len(phases):
-                    current_phase = phases[t.current_phase_index]
-                    phase_name = current_phase.sport_name if current_phase.type == 'sport' else f"Задача {current_phase.task_id}"
-
-                    if t.phase_started_at:
-                        elapsed = (datetime.utcnow() - t.phase_started_at).total_seconds()
-                        time_left = max(0, int(current_phase.duration_seconds - elapsed))
-
-            teams_data.append({
+            teams_data[t.id] = {
                 "id": t.id, "name": t.name,
                 "score": code_score,
-                "sport_score": sport_total,
+                "best_time": best_time, "best_mem": best_mem,
                 "is_paused": t.is_paused, "is_active": t.is_active,
                 "finished_at": t.finished_at.isoformat() if t.finished_at else None,
                 "current_phase_index": t.current_phase_index,
-                "phase_name": phase_name,
-                "phase_time_left": time_left,
-                "total_time": total_time
-            })
+                "phase_name": phase_name, "phase_time_left": time_left, "total_time": total_time,
+                "team_size": db.query(Participant).filter(Participant.team_id == t.id).count(),
+                "team_max": settings.team_size, "is_full": t.is_full, "force_started": t.force_started
+            }
 
-        teams_data.sort(key=lambda x: (x["score"] + x["sport_score"]), reverse=True)
+        # 2. Считаем place_python
+        sorted_py = sorted(teams, key=lambda t: (-teams_data[t.id]["score"], teams_data[t.id]["best_time"],
+                                                 teams_data[t.id]["best_mem"]))
+        for idx, t in enumerate(sorted_py):
+            teams_data[t.id]["place_python"] = idx + 1
+
+        # 3. Считаем place_sport (Олимпийская система - сумма мест по фазам)
+        sport_phases = [p for p in phases if p.type == "sport"]
+        sport_ranks_sum = {t.id: 0 for t in teams}
+
+        if sport_phases:
+            for sp in sport_phases:
+                results = db.query(SportResult).filter_by(phase_id=sp.id).all()
+                res_dict = {r.team_id: r.attempts for r in results}
+
+                # Сортируем команды для текущей спорт-фазы
+                def sport_sort_key(t):
+                    val = res_dict.get(t.id, None)
+                    if val is None: return (1, 0)  # Нет результата -> худшие
+                    return (0, -val if sp.sport_direction == 'more' else val)
+
+                sorted_sp = sorted(teams, key=sport_sort_key)
+
+                # Раздаем места (1, 2, 2, 4...)
+                current_rank = 1
+                for i, t in enumerate(sorted_sp):
+                    if i > 0:
+                        prev_val = res_dict.get(sorted_sp[i - 1].id, None)
+                        curr_val = res_dict.get(t.id, None)
+                        if curr_val != prev_val or curr_val is None:
+                            current_rank = i + 1
+
+                    sport_ranks_sum[t.id] += current_rank
+
+        # 4. Считаем place_sport на основе суммы рангов
+        sorted_sport = sorted(teams, key=lambda t: sport_ranks_sum[t.id])
+        for idx, t in enumerate(sorted_sport):
+            teams_data[t.id]["place_sport"] = idx + 1
+            teams_data[t.id]["sport_score"] = sum(
+                [r.attempts for r in db.query(SportResult).filter_by(team_id=t.id).all()])  # Сумма подходов (для инфы)
+
+        # 5. Итоговое место (Сумма мест)
+        for t_id, data in teams_data.items():
+            data["final_place"] = data.get("place_python", 99) + data.get("place_sport", 99)
+
+        # Сортируем итоговый массив для админки (по итоговому месту)
+        # Сортируем итоговый массив для админки (по итоговому месту)
+        final_sorted = sorted(teams_data.values(), key=lambda x: (x["final_place"], x["place_python"]))
+
+        # Определяем «активную» фазу для подсветки в админке:
+        # берём фазу у команды, которая зашла позже всех.
+        current_phase_for_admin = 0
+        latest_start = None
+        for t in teams:
+            if t.phase_started_at and t.current_phase_index < len(phases):
+                if latest_start is None or t.phase_started_at > latest_start:
+                    latest_start = t.phase_started_at
+                    current_phase_for_admin = t.current_phase_index
 
         return {
-            "teams": teams_data,
+            "teams": final_sorted,
             "global_is_started": gs.is_started,
-            "global_is_paused": gs.is_paused
+            "global_is_paused": gs.is_paused,
+            "current_phase": current_phase_for_admin
         }
 
 
@@ -646,7 +751,6 @@ async def toggle_global_timer(request: Request):
         if "is_started" in data:
             gs.is_started = data["is_started"]
             if gs.is_started:
-                gs.phase_started_at = datetime.utcnow()
 
                 # Берём первую фазу (или текущую, если уже шла)
                 phases = db.query(Phase).order_by(Phase.order_index).all()
@@ -693,15 +797,56 @@ async def admin_create_team(request: Request):
         get_current_admin(request, db)
         data = await request.json()
         team_name = data.get("name")
+        participants = data.get("participants", [])  # [{name, email}]
+
         if not team_name: raise HTTPException(400, "Укажите название")
-        new_password = secrets.token_urlsafe(6)
-        org = Organization(name=team_name, password_hash=get_password_hash(new_password))
+
+        org = Organization(name=team_name, password_hash=get_password_hash(secrets.token_urlsafe(6)))
         db.add(org)
         db.flush()
         team = Team(name=team_name, organization_id=org.id, is_active=True)
         db.add(team)
+        db.flush()
+
+        created_participants = []
+        for p in participants:
+            p_name = p.get("name", "").strip()
+            p_email = p.get("email", "").strip().lower()
+            if not p_name or not p_email: continue
+
+            # Проверка на уникальность email
+            if db.query(Participant).filter(Participant.email == p_email).first():
+                continue  # пропускаем дубликат
+
+            code = secrets.token_urlsafe(6)
+            while db.query(Participant).filter(Participant.login_code == code).first():
+                code = secrets.token_urlsafe(6)
+
+            db.add(Participant(name=p_name, email=p_email, login_code=code, team_id=team.id))
+            created_participants.append({"name": p_name, "email": p_email, "login_code": code})
+
+        if len(created_participants) >= settings.team_size:
+            team.is_full = True
+
         db.commit()
-        return {"status": "ok", "password": new_password, "team_name": team_name}
+        return {"status": "ok", "team_name": team_name, "participants": created_participants}
+
+
+@app.post("/api/admin/teams/{team_id}/force_start")
+async def admin_force_start_team(team_id: int, request: Request):
+    with Session(engine) as db:
+        get_current_admin(request, db)
+        team = db.get(Team, team_id)
+        if not team: raise HTTPException(404)
+
+        team.force_started = True
+        if team.started_at is None:
+            team.started_at = datetime.utcnow()
+            team.current_phase_index = 0
+            team.phase_started_at = datetime.utcnow()
+        db.commit()
+        await manager.broadcast("timer_changed")
+        return {"status": "ok"}
 
 
 @app.post("/api/admin/teams/{team_id}/delete")
@@ -794,6 +939,7 @@ async def admin_edit_phase(phase_id: int, request: Request):
         if "task_id" in data: phase.task_id = data["task_id"]
         if "sport_name" in data: phase.sport_name = data["sport_name"]
         if "duration_seconds" in data: phase.duration_seconds = int(data["duration_seconds"])
+        if "sport_direction" in data: phase.sport_direction = data["sport_direction"]
 
         db.commit()
         return {"status": "ok"}
@@ -814,22 +960,6 @@ async def admin_reorder_phases(request: Request):
         db.commit()
         return {"status": "ok"}
 
-@app.post("/api/admin/phase/next")
-async def next_phase(request: Request):
-    with Session(engine) as db:
-        get_current_admin(request, db)
-        gs = db.query(GlobalSettings).first()
-        phases = db.query(Phase).order_by(Phase.order_index).all()
-
-        if gs.current_phase_index < len(phases) - 1:
-            gs.current_phase_index += 1
-            gs.phase_started_at = datetime.utcnow()
-            db.commit()
-            await manager.broadcast("timer_changed")
-            return {"status": "ok", "current_phase": gs.current_phase_index}
-        else:
-            raise HTTPException(400, "Это была последняя фаза.")
-
 
 @app.post("/api/team/run")
 async def run_virtual(request: Request):
@@ -843,50 +973,87 @@ async def run_virtual(request: Request):
         code = data.get("code", "")
         test_input = data.get("input", "")
 
-        temp = TASKS_DIR / "temp" / f"run_{team.id}"
-        if temp.exists(): shutil.rmtree(temp)
-        temp.mkdir(parents=True)
-
-        sol_file = temp / "solution.py"
-        sol_file.write_text(code, encoding="utf-8")
+        # Используем безопасный раннер из оркестратора
+        from batch_runner import run_batch
 
         try:
-            res = subprocess.run(
-                [sys.executable, "-I", str(sol_file)],
-                input=test_input,
-                capture_output=True,
-                text=True,
-                timeout=3.0
+            # Передаём фиктивный тест, так как run_batch ожидает список тестов
+            results = run_batch(
+                code,
+                [{"id": 1, "input": test_input}],
+                timeout_per_test=3.0,
+                memory_mb=256,
+                isolated=False  # На Windows isolated=True откатывается на seq, на Linux можно True
             )
-            output = res.stdout
-            error = res.stderr
-            return {"status": "ok", "output": output, "error": error}
-        except subprocess.TimeoutExpired:
-            return {"status": "error", "error": "Time Limit Exceeded (3.0s)"}
+            r = results[0]
+
+            # Если код выполнился успешно (даже с ошибкой в решении, но без ошибок безопасности)
+            if r["rc"] == 0:
+                return {"status": "ok", "output": r["out"], "error": ""}
+            elif "SecurityError" in r["err"]:
+                return {"status": "error", "error": "Запрещено правилами олимпиады:\n" + r["err"]}
+            else:
+                # Обычная ошибка выполнения кода (например, деление на ноль)
+                return {"status": "ok", "output": r["out"], "error": r["err"]}
+
         except Exception as e:
             return {"status": "error", "error": str(e)}
-        finally:
-            if temp.exists(): shutil.rmtree(temp)
 
 
 @app.post("/api/public/register")
 async def public_register(request: Request):
     form = await request.form()
-    team_name = (form.get("team_name") or "").strip()
-    if not team_name or len(team_name) < 2: raise HTTPException(400, "Название слишком короткое")
+    name = (form.get("name") or "").strip()
+    email = (form.get("email") or "").strip().lower()
+
+    if len(name) < 2:
+        raise HTTPException(400, "Имя слишком короткое")
+    if "@" not in email or len(email) < 5:
+        raise HTTPException(400, "Некорректный email")
 
     with Session(engine) as db:
-        if db.query(Organization).filter(Organization.name == team_name).first():
-            raise HTTPException(400, "Команда уже существует")
+        if db.query(Participant).filter(Participant.email == email).first():
+            raise HTTPException(400, "Этот email уже зарегистрирован")
 
-        new_password = secrets.token_urlsafe(6)
-        org = Organization(name=team_name, password_hash=get_password_hash(new_password))
-        db.add(org)
+        # Ищем открытую команду (где < 5 человек)
+        open_team = None
+        for t in db.query(Team).filter(Team.is_full == False).order_by(Team.created_at).all():
+            cnt = db.query(Participant).filter(Participant.team_id == t.id).count()
+            if cnt < settings.team_size:
+                open_team = t
+                break
+
+        if open_team is None:
+            # Создаём новую команду
+            org_name = f"Команда {datetime.utcnow().strftime('%H%M%S')}"
+            org = Organization(name=org_name, password_hash=get_password_hash(secrets.token_urlsafe(6)))
+            db.add(org)
+            db.flush()
+            open_team = Team(name=org_name, organization_id=org.id, is_active=True)
+            db.add(open_team)
+            db.flush()
+
+        # Генерируем уникальный код для участника
+        login_code = secrets.token_urlsafe(6)
+        while db.query(Participant).filter(Participant.login_code == login_code).first():
+            login_code = secrets.token_urlsafe(6)
+
+        db.add(Participant(name=name, email=email, login_code=login_code, team_id=open_team.id))
         db.flush()
-        team = Team(name=team_name, organization_id=org.id, is_active=True)
-        db.add(team)
+
+        # Проверяем, набралась ли команда
+        cnt = db.query(Participant).filter(Participant.team_id == open_team.id).count()
+        if cnt >= settings.team_size:
+            open_team.is_full = True
+
         db.commit()
-        return {"status": "ok", "password": new_password}
+        return {
+            "status": "ok",
+            "login_code": login_code,
+            "team_name": open_team.name,
+            "team_size": cnt,
+            "team_max": settings.team_size
+        }
 
 
 # --- УПРАВЛЕНИЕ ФАЗАМИ ---
@@ -897,7 +1064,9 @@ async def admin_get_phases(request: Request):
         phases = db.query(Phase).order_by(Phase.order_index).all()
         return [{
             "id": p.id, "order_index": p.order_index, "type": p.type,
-            "task_id": p.task_id, "sport_name": p.sport_name, "duration_seconds": p.duration_seconds
+            "task_id": p.task_id, "sport_name": p.sport_name,
+            "sport_direction": p.sport_direction, # <--- ДОБАВИТЬ ЭТУ СТРОКУ
+            "duration_seconds": p.duration_seconds
         } for p in phases]
 
 
@@ -913,8 +1082,10 @@ async def admin_create_phase(request: Request):
             type=data.get("type", "task"),
             task_id=data.get("task_id"),
             sport_name=data.get("sport_name"),
+            sport_direction=data.get("sport_direction", "more"),  # <- ДОБАВИТЬ
             duration_seconds=int(data.get("duration_seconds", 1800))
         )
+
         db.add(phase)
         db.commit()
         return {"status": "ok"}
@@ -931,132 +1102,114 @@ async def admin_delete_phase(phase_id: int, request: Request):
         return {"status": "ok"}
 
 
-# --- СПОРТИВНЫЕ БАЛЛЫ ---
-@app.get("/api/admin/sport")
-async def admin_get_sport(request: Request):
-    with Session(engine) as db:
-        get_current_admin(request, db)
-        results = db.query(SportResult).all()
-
-        res = []
-        for r in results:
-            phase = db.get(Phase, r.phase_id) if r.phase_id else None
-            res.append({
-                "team_id": r.team_id, "phase_id": r.phase_id,
-                "exercise_name": phase.sport_name if phase else r.exercise_name,
-                "points": r.points
-            })
-        return res
-
-
-@app.post("/api/admin/sport")
-async def admin_add_sport_score(request: Request):
-    with Session(engine) as db:
-        get_current_admin(request, db)
-        data = await request.json()
-        team_id = data.get("team_id")
-        phase_id = data.get("phase_id")
-        points = float(data.get("points", 0))
-
-        if not phase_id:
-            raise HTTPException(400, "Не выбрана фаза спорта")
-
-        phase = db.get(Phase, phase_id)
-        if not phase: raise HTTPException(404, "Фаза не найдена")
-
-        existing = db.query(SportResult).filter_by(team_id=team_id, phase_id=phase_id).first()
-        if existing:
-            existing.points = points
-        else:
-            db.add(SportResult(team_id=team_id, phase_id=phase_id, exercise_name=phase.sport_name, points=points))
-
-        db.commit()
-        await manager.broadcast("update_rating")
-        return {"status": "ok"}
-
-
 # --- ЭКСПОРТ CSV ---
 @app.get("/api/admin/export")
 async def export_csv(request: Request):
     with Session(engine) as db:
         get_current_admin(request, db)
+
+        # Получаем те же данные, что и для админки
+        gs = db.query(GlobalSettings).first()
         teams = db.query(Team).all()
-        tasks = db.query(Task).order_by(Task.order_index).all()
+        phases = db.query(Phase).order_by(Phase.order_index).all()
 
-        rows = []
+        teams_data = {}
         for t in teams:
-            subs = db.query(Submission).filter_by(team_id=t.id).all()
-
-            # Выбираем лучшую посылку по задаче:
-            # 1) больше баллов
-            # 2) меньше времени
-            # 3) меньше памяти
-            best_scores: dict[int, Submission] = {}
+            subs = db.execute(select(Submission).where(Submission.team_id == t.id)).scalars().all()
+            best_subs = {}
             for s in subs:
-                cur = best_scores.get(s.task_id)
-                if cur is None:
-                    best_scores[s.task_id] = s
-                    continue
-                s_key = (s.score or 0, -(s.time_ms or 0), -(s.memory_mb or 0))
-                c_key = (cur.score or 0, -(cur.time_ms or 0), -(cur.memory_mb or 0))
-                if s_key > c_key:
-                    best_scores[s.task_id] = s
+                if s.task_id not in best_subs or (s.score or 0) > (best_subs[s.task_id].score or 0):
+                    best_subs[s.task_id] = s
 
-            code_score = sum((s.score or 0) for s in best_scores.values())
+            code_score = sum((s.score or 0) for s in best_subs.values())
+            best_time = min([s.time_ms or 0 for s in best_subs.values()] + [999999])
+            best_mem = min([s.memory_mb or 0 for s in best_subs.values()] + [999999])
 
-            sport_results = db.query(SportResult).filter_by(team_id=t.id).all()
-            sport_score = sum(r.points or 0 for r in sport_results)
-
-            row = {
-                "team": t.name,
-                "school": t.school or "",
-                "code_score": code_score,
-                "sport_score": sport_score,
-                "total_score": code_score + sport_score,
+            teams_data[t.id] = {
+                "name": t.name,
+                "score": code_score,
+                "best_time": best_time,
+                "best_mem": best_mem,
             }
 
-            for task in tasks:
-                sub = best_scores.get(task.id)
-                if sub:
-                    row[f"task_{task.id}_score"] = sub.score or 0
-                    row[f"task_{task.id}_time"] = f"{(sub.time_ms or 0):.1f}"
-                    row[f"task_{task.id}_mem"] = f"{(sub.memory_mb or 0):.1f}"
-                else:
-                    row[f"task_{task.id}_score"] = 0
-                    row[f"task_{task.id}_time"] = "-"
-                    row[f"task_{task.id}_mem"] = "-"
+        # Считаем place_python
+        sorted_py = sorted(teams, key=lambda t: (-teams_data[t.id]["score"], teams_data[t.id]["best_time"],
+                                                 teams_data[t.id]["best_mem"]))
+        for idx, t in enumerate(sorted_py):
+            teams_data[t.id]["place_python"] = idx + 1
 
-            rows.append(row)
+        # Считаем place_sport
+        sport_phases = [p for p in phases if p.type == "sport"]
+        sport_ranks_sum = {t.id: 0 for t in teams}
 
-        rows.sort(key=lambda x: x["total_score"], reverse=True)
+        for sp in sport_phases:
+            results = db.query(SportResult).filter_by(phase_id=sp.id).all()
+            res_dict = {r.team_id: r.attempts for r in results}
 
+            def sport_sort_key(t):
+                val = res_dict.get(t.id, None)
+                if val is None: return (1, 0)
+                return (0, -val if sp.sport_direction == 'more' else val)
+
+            sorted_sp = sorted(teams, key=sport_sort_key)
+
+            current_rank = 1
+            for i, t in enumerate(sorted_sp):
+                if i > 0:
+                    prev_val = res_dict.get(sorted_sp[i - 1].id, None)
+                    curr_val = res_dict.get(t.id, None)
+                    if curr_val != prev_val or curr_val is None:
+                        current_rank = i + 1
+                sport_ranks_sum[t.id] += current_rank
+
+        sorted_sport = sorted(teams, key=lambda t: sport_ranks_sum[t.id])
+        for idx, t in enumerate(sorted_sport):
+            teams_data[t.id]["place_sport"] = idx + 1
+            teams_data[t.id]["sport_attempts"] = sum(
+                [r.attempts for r in db.query(SportResult).filter_by(team_id=t.id).all()])
+
+        # Итоговое место
+        for t_id, data in teams_data.items():
+            data["final_place"] = data.get("place_python", 99) + data.get("place_sport", 99)
+
+        # Сортируем по итоговому месту
+        final_sorted = sorted(teams_data.values(), key=lambda x: (x["final_place"], x["place_python"]))
+
+        # --- ГЕНЕРАЦИЯ CSV ---
         output = io.StringIO()
-        # ВАЖНО: lineterminator='\r\n' — стандарт CSV (RFC 4180), Excel его любит
         writer = csv.writer(output, delimiter=';', lineterminator='\r\n')
 
-        headers = ["Место", "Команда", "Школа", "Баллы (Код)", "Баллы (Спорт)", "Итого"]
-        for task in tasks:
-            headers.extend([
-                f"Задача {task.order_index} (Баллы)",
-                f"Задача {task.order_index} (Время, мс)",
-                f"Задача {task.order_index} (Память, МБ)",
-            ])
+        # Заголовки
+        headers = [
+            "Итоговое место", "Команда",
+            "Место (Код)", "Баллы (Код)",
+            "Место (Спорт)", "Всего подходов (Спорт)"
+        ]
+        for sp in sport_phases:
+            headers.append(f"{sp.sport_name} (Подходы)")
+
         writer.writerow(headers)
 
-        for i, row in enumerate(rows, 1):
+        # Данные
+        for row in final_sorted:
             line = [
-                i, row["team"], row["school"],
-                row["code_score"], row["sport_score"], row["total_score"],
+                row["final_place"], row["name"],
+                row["place_python"], row["score"],
+                row["place_sport"], row["sport_attempts"]
             ]
-            for task in tasks:
-                line.extend([
-                    row[f"task_{task.id}_score"],
-                    row[f"task_{task.id}_time"],
-                    row[f"task_{task.id}_mem"],
-                ])
+
+            for sp in sport_phases:
+                # Получаем подходы для конкретной фазы
+                t = next((x for x in teams if x.name == row["name"]), None)
+                if t:
+                    r = db.query(SportResult).filter_by(team_id=t.id, phase_id=sp.id).first()
+                    line.append(r.attempts if r else "-")
+                else:
+                    line.append("-")
+
             writer.writerow(line)
 
-        # КЛЮЧЕВОЕ: BOM + sep=; + сами данные, всё в одной строке байтов
+        # BOM для Excel
         body = '\ufeff' + output.getvalue()
         data = body.encode('utf-8')
 
@@ -1068,6 +1221,41 @@ async def export_csv(request: Request):
                 "Content-Length": str(len(data)),
             },
         )
+
+
+# --- УПРАВЛЕНИЕ СУДЬЯМИ ---
+@app.get("/api/admin/judges")
+async def admin_get_judges(request: Request):
+    with Session(engine) as db:
+        get_current_admin(request, db)
+        judges = db.query(Judge).all()
+        return [{"id": j.id, "name": j.name, "created_at": j.created_at.isoformat()} for j in judges]
+
+
+@app.post("/api/admin/judges")
+async def admin_create_judge(request: Request):
+    with Session(engine) as db:
+        get_current_admin(request, db)
+        data = await request.json()
+        name = data.get("name", "").strip()
+        if not name: raise HTTPException(400, "Укажите имя судьи")
+
+        new_password = f"{secrets.randbelow(10000):04d}"
+        judge = Judge(name=name, password_hash=get_password_hash(new_password))
+        db.add(judge)
+        db.commit()
+        return {"status": "ok", "password": new_password, "name": name}
+
+
+@app.post("/api/admin/judges/{judge_id}/delete")
+async def admin_delete_judge(judge_id: int, request: Request):
+    with Session(engine) as db:
+        get_current_admin(request, db)
+        judge = db.get(Judge, judge_id)
+        if judge:
+            db.delete(judge)
+            db.commit()
+        return {"status": "ok"}
 
 
 @app.post("/api/admin/phases/{phase_id}/start")
@@ -1104,4 +1292,72 @@ async def admin_start_phase(phase_id: int, request: Request):
 
         db.commit()
         await manager.broadcast("timer_changed")
+        return {"status": "ok"}
+
+
+@app.get("/staff", response_class=HTMLResponse)
+async def staff_page(request: Request):
+    token = request.cookies.get("access_token")
+    if not token: return RedirectResponse("/")
+    payload = decode_token(token)
+    if not payload or payload.get("role") != "judge": return RedirectResponse("/")
+    return templates.TemplateResponse("staff.html", {"request": request})
+
+
+@app.get("/api/staff/sport_data")
+async def get_staff_sport_data(request: Request):
+    with Session(engine) as db:
+        get_current_judge(request, db)
+        # Отдаем все спортивные фазы
+        phases = db.query(Phase).filter(Phase.type == "sport").order_by(Phase.order_index).all()
+        # Отдаем все команды (только активные)
+        teams = db.query(Team).filter(Team.is_active == True).all()
+        # Отдаем все существующие результаты
+        results = db.query(SportResult).all()
+
+        return {
+            "phases": [{"id": p.id, "sport_name": p.sport_name, "sport_direction": p.sport_direction} for p in phases],
+            "teams": [{"id": t.id, "name": t.name} for t in teams],
+            "results": [{"team_id": r.team_id, "phase_id": r.phase_id, "attempts": r.attempts} for r in results]
+        }
+
+
+@app.post("/api/staff/sport_result")
+async def save_staff_sport_result(request: Request):
+    with Session(engine) as db:
+        get_current_judge(request, db)
+        data = await request.json()
+        team_id = data.get("team_id")
+        phase_id = data.get("phase_id")
+        attempts = int(data.get("attempts", 0))
+
+        phase = db.get(Phase, phase_id)
+        if not phase: raise HTTPException(404, "Фаза не найдена")
+
+        existing = db.query(SportResult).filter_by(team_id=team_id, phase_id=phase_id).first()
+        if existing:
+            existing.attempts = attempts
+        else:
+            db.add(SportResult(team_id=team_id, phase_id=phase_id, exercise_name=phase.sport_name, attempts=attempts))
+
+        db.commit()
+        await manager.broadcast("update_rating")
+        return {"status": "ok"}
+
+
+@app.post("/api/staff/phase/{phase_id}/direction")
+async def staff_change_direction(phase_id: int, request: Request):
+    with Session(engine) as db:
+        get_current_judge(request, db)
+        data = await request.json()
+        new_dir = data.get("direction")
+        if new_dir not in ("more", "less"):
+            raise HTTPException(400, "Неверное направление")
+
+        phase = db.get(Phase, phase_id)
+        if not phase:
+            raise HTTPException(404, "Фаза не найдена")
+
+        phase.sport_direction = new_dir
+        db.commit()
         return {"status": "ok"}

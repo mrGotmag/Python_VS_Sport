@@ -139,6 +139,83 @@
     let isBreakPhase = false;
     let activePhaseTaskId = null;
 
+        // --- Автоотправка, retry, принудительное сохранение ---
+    let autoSubmitInterval = null;
+    const lastSubmittedCode = {};
+
+    async function forceSaveAndSubmit(taskId) {
+        if (!editor || !taskId) return;
+        const code = editor.getValue();
+        if (!code.trim()) return;
+        const teamName = document.getElementById('team-name').textContent;
+        if (!teamName) return;
+
+        localStorage.setItem(`draft_${teamName}_${taskId}`, code);
+
+        // Не отправляем повторно, если код не изменился
+        if (lastSubmittedCode[taskId] === code) return;
+        lastSubmittedCode[taskId] = code;
+
+        try {
+            const res = await fetch('/api/team/submissions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ task_id: taskId, code: code, auto: true })
+            });
+            if (!res.ok) {
+                lastSubmittedCode[taskId] = null;
+                localStorage.setItem(`unsent_${teamName}_${taskId}`, 'true');
+            } else {
+                localStorage.removeItem(`unsent_${teamName}_${taskId}`);
+            }
+        } catch (e) {
+            lastSubmittedCode[taskId] = null;
+            localStorage.setItem(`unsent_${teamName}_${taskId}`, 'true');
+        }
+    }
+
+    async function retryUnsent() {
+        const teamName = document.getElementById('team-name').textContent;
+        if (!teamName) return;
+        const keys = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.startsWith(`unsent_${teamName}_`)) keys.push(k);
+        }
+        for (const k of keys) {
+            const taskId = parseInt(k.split('_').pop());
+            const code = localStorage.getItem(`draft_${teamName}_${taskId}`);
+            if (!code) { localStorage.removeItem(k); continue; }
+            try {
+                const res = await fetch('/api/team/submissions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ task_id: taskId, code: code, auto: true })
+                });
+                if (res.ok) {
+                    localStorage.removeItem(k);
+                    lastSubmittedCode[taskId] = code;
+                }
+            } catch (_) {}
+        }
+    }
+
+    function startAutoSubmit() {
+        if (autoSubmitInterval) return;  // уже запущен
+        autoSubmitInterval = setInterval(() => {
+            if (currentTaskId && globalStarted && !globalPaused && !teamPaused && !teamFinished && !isBreakPhase) {
+                forceSaveAndSubmit(currentTaskId);
+            }
+        }, 30000);
+    }
+
+    function stopAutoSubmit() {
+        if (autoSubmitInterval) {
+            clearInterval(autoSubmitInterval);
+            autoSubmitInterval = null;
+        }
+    }
+
  // --- ОБНОВЛЕННЫЕ ПЕРЕМЕННЫЕ ТАЙМЕРА ---
     let timerInterval = null;
     let localRemainingSeconds = 0;
@@ -204,8 +281,8 @@
             } else {
                 clearInterval(timerInterval);
                 timerInterval = null;
-                // Когда время вышло, принудительно запрашиваем обновление, чтобы сервер переключил фазу
-                setTimeout(init, 1000);
+                // Время вышло. Переключение фазы подхватит setInterval(init, 5000).
+
             }
         }, 1000);
     }
@@ -242,6 +319,25 @@
             const res = await fetch('/api/team/me');
             if (res.status === 401) return window.location.href = '/';
             const data = await res.json();
+
+            // Проверка на ожидание полной посадки
+            if (data.team.waiting_for_team) {
+                document.getElementById('status-banner').classList.remove('hidden');
+                document.getElementById('status-banner').textContent = `ОЖИДАНИЕ КОМАНДЫ: ${data.team.team_size}/${data.team.team_max}`;
+                document.getElementById('status-banner').className = "p-3 text-center border-b border-warn bg-warn/10 text-warn font-bold tracking-widest";
+
+                document.getElementById('timer-text').textContent = "WAITING";
+                document.getElementById('global-timer').className = "flex items-center gap-2 border border-warn px-3 py-1.5 rounded text-warn font-mono font-bold";
+                document.getElementById('global-timer').classList.remove('hidden');
+
+                document.getElementById('workspace-empty').innerHTML = `
+                    <div class="text-4xl mb-4">⏳</div>
+                    <div class="text-lg font-bold text-warn mb-2">Ожидание команды</div>
+                    <div class="text-sm text-slate-400 text-center">Соревнование начнется, когда наберется ${data.team.team_max} человек,<br>либо когда администратор запустит его принудительно.</div>
+                `;
+                document.getElementById('tasks-list').innerHTML = '<div class="text-xs text-center py-4 text-slate-500">Заблокировано</div>';
+                return; // Прерываем дальнейшую инициализацию
+            }
 
             document.getElementById('team-name').textContent = data.team.name;
 
@@ -333,9 +429,12 @@
                 wsOverlay.classList.add('hidden');
             }
 
-            // Автоматически открываем задачу, если началась фаза с ней
+            // Автоматически открываем задачу текущей фазы, если она сменилась
             if (!isLocked && !isBreakPhase && activePhaseTaskId && currentTaskId !== activePhaseTaskId) {
-                if (!currentTaskId) openTask(activePhaseTaskId);
+                if (currentTaskId) {
+                    await forceSaveAndSubmit(currentTaskId);
+                }
+                await openTask(activePhaseTaskId);
             }
 
             const btn = document.getElementById('btn-submit');
@@ -348,12 +447,28 @@
                     btn.textContent = "ОТПРАВИТЬ РЕШЕНИЕ >>";
                 }
             }
+
+            // Автоотправка: стартуем/останавливаем в зависимости от состояния
+            if (!isLocked && !isBreakPhase) {
+                startAutoSubmit();
+            } else {
+                stopAutoSubmit();
+            }
+
+            // Пробуем дослать всё, что не ушло в прошлый раз
+            retryUnsent();
         } catch (e) { console.error("Ошибка:", e); }
     }
 
     async function openTask(id) {
         if (!globalStarted || globalPaused || teamPaused || teamFinished || isBreakPhase) return;
         if (activePhaseTaskId && id !== activePhaseTaskId) return; // Нельзя открывать чужие задачи
+
+        // Принудительно сохраняем черновик предыдущей задачи перед переключением
+        if (editor && currentTaskId && currentTaskId !== id) {
+            const teamName = document.getElementById('team-name').textContent;
+            localStorage.setItem(`draft_${teamName}_${currentTaskId}`, editor.getValue());
+        }
 
         currentTaskId = id;
         document.getElementById('workspace-empty').classList.add('hidden');
@@ -414,8 +529,26 @@
             });
             const data = await res.json();
             if (res.ok) {
-                status.textContent = '✔ ГОТОВО'; status.className = 'text-neon text-sm font-mono glow-text';
-                if (data.checker_result) { outputBox.textContent = data.checker_result; outputBox.classList.remove('hidden'); }
+                const v = data.verdict;
+                let color = 'text-neon glow-text';
+                let text = '✔ OK';
+
+                if (v === 'WA') { color = 'text-magenta'; text = '✘ WRONG ANSWER (WA)'; }
+                else if (v === 'TL') { color = 'text-warn'; text = '⏱ TIME LIMIT (TL)'; }
+                else if (v === 'RE') { color = 'text-orange-500'; text = '💥 RUNTIME ERROR (RE)'; }
+                else if (v === 'CE') { color = 'text-purple-400'; text = '📝 COMPILATION ERROR (CE)'; }
+
+                status.textContent = text;
+                status.className = `${color} text-sm font-mono font-bold`;
+
+                // Показываем только безопасные детали
+                if (data.details) {
+                    outputBox.textContent = data.details;
+                    outputBox.classList.remove('hidden');
+                } else {
+                    outputBox.classList.add('hidden');
+                    outputBox.textContent = '';
+                }
                 init();
             } else {
                 status.textContent = '✘ ' + (data.detail || 'Ошибка'); status.className = 'text-magenta text-sm font-mono';

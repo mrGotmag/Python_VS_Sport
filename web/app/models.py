@@ -38,6 +38,7 @@ class Phase(Base):
 
     # Для спорта: название упражнения
     sport_name: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    sport_direction: Mapped[str] = mapped_column(String(8), default="more")
 
     # Время на фазу в секундах (30 мин = 1800, 10 мин = 600)
     duration_seconds: Mapped[int] = mapped_column(Integer, default=1800)
@@ -68,11 +69,15 @@ class Team(Base):
     finished_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     is_paused: Mapped[bool] = mapped_column(Boolean, default=False)
     paused_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     # Индивидуальный прогресс по фазам
     current_phase_index: Mapped[int] = mapped_column(Integer, default=0)
     phase_started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    is_full: Mapped[bool] = mapped_column(Boolean, default=False)
+    force_started: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
 class Task(Base):
@@ -113,5 +118,23 @@ class SportResult(Base):
     # Привязка к фазе (чтобы видеть, за какое именно упражнение балл)
     phase_id: Mapped[int | None] = mapped_column(ForeignKey("phases.id"), nullable=True)
     exercise_name: Mapped[str] = mapped_column(String(128))
-    points: Mapped[float] = mapped_column(Float, default=0.0)
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class Participant(Base):
+    __tablename__ = "participants"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(128))
+    email: Mapped[str] = mapped_column(String(128), unique=True, index=True)
+    login_code: Mapped[str] = mapped_column(String(32), unique=True, index=True)
+    team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class Judge(Base):
+    __tablename__ = "judges"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(128))
+    password_hash: Mapped[str] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

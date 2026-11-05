@@ -1,62 +1,91 @@
 [
   {
-    "id": "2",
-    "title": "Главный корпус: расстановка бейджей по стеллажам",
-    "status": "ok",
-    "score": 100,
+    "id": "3",
+    "title": "Миваныч и плотина: самый прочный пролёт",
+    "status": "partial",
+    "score": 0,
     "total": 100,
     "tests": [
       {
         "id": 1,
-        "status": "ok",
-        "points": 15,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "9\n",
+        "got": "9 1\n",
+        "points": 0,
         "max_points": 15,
-        "time_ms": 12.781400000070184,
+        "time_ms": 10.487314285585724,
         "memory_mb": 3.4375
       },
       {
         "id": 2,
-        "status": "ok",
-        "points": 10,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "0\n",
+        "got": "0 1\n",
+        "points": 0,
         "max_points": 10,
-        "time_ms": 12.781400000070184,
+        "time_ms": 10.487314285585724,
         "memory_mb": 3.4375
       },
       {
         "id": 3,
-        "status": "ok",
-        "points": 15,
-        "max_points": 15,
-        "time_ms": 12.781400000070184,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "-1000000000\n",
+        "got": "-1000000000 1\n",
+        "points": 0,
+        "max_points": 10,
+        "time_ms": 10.487314285585724,
         "memory_mb": 3.4375
       },
       {
         "id": 4,
-        "status": "ok",
-        "points": 15,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "-1\n",
+        "got": "-1 1\n",
+        "points": 0,
         "max_points": 15,
-        "time_ms": 12.781400000070184,
+        "time_ms": 10.487314285585724,
         "memory_mb": 3.4375
       },
       {
         "id": 5,
-        "status": "ok",
-        "points": 20,
-        "max_points": 20,
-        "time_ms": 12.781400000070184,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "21\n",
+        "got": "21 1\n",
+        "points": 0,
+        "max_points": 15,
+        "time_ms": 10.487314285585724,
         "memory_mb": 3.4375
       },
       {
         "id": 6,
-        "status": "ok",
-        "points": 25,
-        "max_points": 25,
-        "time_ms": 12.781400000070184,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "4000000000\n",
+        "got": "4000000000 1\n",
+        "points": 0,
+        "max_points": 20,
+        "time_ms": 10.487314285585724,
+        "memory_mb": 3.4375
+      },
+      {
+        "id": 7,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "1000000000\n",
+        "got": "1000000000 1\n",
+        "points": 0,
+        "max_points": 15,
+        "time_ms": 10.487314285585724,
         "memory_mb": 3.4375
       }
     ],
     "error": null,
-    "time_ms": 76.6884000004211,
-    "memory_mb": 3.4375
+    "time_ms": 0.0,
+    "memory_mb": 0.0
   }
 ]
