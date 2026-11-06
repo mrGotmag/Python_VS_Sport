@@ -2,6 +2,16 @@
 chcp 65001 >nul
 setlocal EnableDelayedExpansion
 
+REM --- Проверка прав Администратора (для брандмауэра) ---
+net session >nul 2>&1
+if errorlevel 1 (
+    echo [ПРЕДУПРЕЖДЕНИЕ] Вы запустили установщик без прав Администратора.
+    echo Брандмауэр Windows может заблокировать доступ участников к сайту.
+    echo Рекомендуется закрыть это окно и запустить install.bat от имени Администратора.
+    echo.
+    pause
+)
+
 cd /d "%USERPROFILE%\Desktop"
 
 set "REPO_URL=https://github.com/mrGotmag/Python_VS_Sport.git"
@@ -15,7 +25,6 @@ echo.
 
 REM ---- 1) Проверка Python 3.12 ----
 echo [1/6] Проверка Python 3.12...
-
 set "PYTHON_EXE=%LocalAppData%\Programs\Python\Python312\python.exe"
 
 if exist "%PYTHON_EXE%" (
@@ -46,7 +55,6 @@ timeout /t 3 /nobreak >nul
 if not exist "%PYTHON_EXE%" (
     echo [ОШИБКА] Python установился, но файл не найден по пути:
     echo %PYTHON_EXE%
-    echo Скорее всего, антивирус заблокировал установку или путь другой.
     pause
     exit /b 1
 )
@@ -57,7 +65,6 @@ echo   OK: Python 3.12 готов.
 REM ---- 2) Проверка git ----
 echo.
 echo [2/6] Проверка git...
-
 where git >nul 2>nul
 if not errorlevel 1 goto :git_ok
 
@@ -78,7 +85,6 @@ if not exist "%GIT_INSTALLER%" (
 echo   Устанавливаем Git (тихий режим)...
 start /wait "" "%GIT_INSTALLER%" /VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /COMPONENTS="icons,ext\reg\shellhere,assoc,assoc_sh"
 del /q "%GIT_INSTALLER%"
-
 set "PATH=%ProgramFiles%\Git\cmd;%PATH%"
 
 where git >nul 2>nul
@@ -94,26 +100,18 @@ echo   OK: git найден.
 REM ---- 3) Клонирование и СИНХРОНИЗАЦИЯ ----
 echo.
 echo [3/6] Синхронизация файлов с GitHub...
-
-REM Флаг: синхронизировать ли папку tasks (1 = да, 0 = нет)
 set "SYNC_TASKS=0"
 
 if exist "%PROJECT_DIR%\.git" (
     echo   Папка существует. Обновляем...
 
-    REM --- Спрашиваем, синхронизировать ли папку tasks ---
     set "TASKS_DIR_EXISTS=0"
     if exist "%PROJECT_DIR%\orcestrator\tasks" set "TASKS_DIR_EXISTS=1"
 
     if "!TASKS_DIR_EXISTS!"=="1" (
         echo.
-        echo   Обнаружена папка с задачами:
-        echo     %PROJECT_DIR%\orcestrator\tasks
-        echo.
-        echo   ВНИМАНИЕ: синхронизация с GitHub перезапишет и/или
-        echo   удалит файлы задач, которых нет в репозитории.
-        echo   Если вы добавляли задачи вручную — выберите "n",
-        echo   чтобы сохранить их.
+        echo   Обнаружена папка с задачами: %PROJECT_DIR%\orcestrator\tasks
+        echo   ВНИМАНИЕ: синхронизация с GitHub перезапишет и/или удалит файлы задач.
         echo.
         set /p "SYNC_TASKS_ANSWER=  Синхронизировать папку tasks с GitHub? (y/n): "
         if /I "!SYNC_TASKS_ANSWER!"=="y" set "SYNC_TASKS=1"
@@ -125,30 +123,19 @@ if exist "%PROJECT_DIR%\.git" (
 
     cd "%PROJECT_DIR%"
 
+    REM --- ИСПРАВЛЕНИЕ: Добавлена поддержка ветки master, если main не найдена
     if "!SYNC_TASKS!"=="1" (
-        REM Полная синхронизация, как раньше
         git fetch --all >nul 2>&1
-        git reset --hard origin/main >nul 2>&1
+        git reset --hard origin/main >nul 2>&1 || git reset --hard origin/master >nul 2>&1
         git clean -fd -e .venv -e .env >nul 2>&1
         echo   OK: файлы обновлены (включая tasks).
     ) else (
-        REM --- Сохраняем папку tasks ---
         echo   Сохраняем папку tasks...
-
-        REM 1) Временно убираем tasks из индекса git, чтобы reset --hard не тронул
         git rm -r --cached --ignore-unmatch "orcestrator/tasks" >nul 2>&1
-
-        REM 2) Обновляем всё остальное
         git fetch --all >nul 2>&1
-        git reset --hard origin/main >nul 2>&1
-
-        REM 3) Восстанавливаем индекс для tasks из origin (если там были файлы),
-        REM    но локальные файлы не трогаем
-        git checkout origin/main -- "orcestrator/tasks" >nul 2>&1
-
-        REM 4) Чистим всё, КРОМЕ tasks, .venv, .env
+        git reset --hard origin/main >nul 2>&1 || git reset --hard origin/master >nul 2>&1
+        git checkout origin/main -- "orcestrator/tasks" >nul 2>&1 || git checkout origin/master -- "orcestrator/tasks" >nul 2>&1
         git clean -fd -e .venv -e .env -e orcestrator/tasks >nul 2>&1
-
         echo   OK: файлы обновлены (папка tasks сохранена).
     )
 
@@ -193,9 +180,8 @@ echo   OK: .venv создано.
 echo.
 echo [5/6] Установка зависимостей (займет 1-2 минуты)...
 if exist "requirements.txt" (
-    ".venv\Scripts\python.exe" -m pip install --upgrade pip setuptools wheel
+    ".venv\Scripts\python.exe" -m pip install --upgrade pip setuptools wheel >nul
     ".venv\Scripts\python.exe" -m pip install -r requirements.txt --only-binary=:all:
-
     if errorlevel 1 (
         echo [ОШИБКА] Не удалось установить зависимости.
         pause
@@ -217,9 +203,10 @@ if exist ".env" (
 
 echo.
 echo Проверка импортов...
-".venv\Scripts\python.exe" -c "import fastapi, uvicorn, sqlalchemy, jwt, bcrypt, markdown; print('OK')"
+REM --- ИСПРАВЛЕНИЕ: Добавлена проверка psutil и pydantic_settings
+".venv\Scripts\python.exe" -c "import fastapi, uvicorn, sqlalchemy, jwt, bcrypt, markdown, psutil, pydantic_settings, dotenv; print('OK')"
 if errorlevel 1 (
-    echo [ОШИБКА] Зависимости не установились.
+    echo [ОШИБКА] Зависимости не установились (проверьте консоль выше).
     pause
     exit /b 1
 )
@@ -229,10 +216,10 @@ echo ============================================================
 echo   ЗАПУСК СЕРВЕРА
 echo ============================================================
 echo.
-echo   Открываем браузер и запускаем сервер...
+echo   Запускаем сервер (браузер откроется автоматически)...
 
 cd web
-start "" explorer "http://localhost:8000"
+REM --- ИСПРАВЛЕНИЕ: Убрали start explorer, так как run.py сам открывает браузер
 start "Python vs Sport Server" cmd /k "..\.venv\Scripts\python.exe run.py"
 cd ..
 

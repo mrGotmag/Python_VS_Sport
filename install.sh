@@ -36,6 +36,9 @@ if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1 || ! co
         sudo apt-get install -y curl git build-essential patch \
             libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
             libffi-dev liblzma-dev libncurses-dev || warn "Некоторые пакеты не установились, но пробуем продолжить..."
+    elif command -v brew >/dev/null 2>&1; then
+        info "Обнаружен macOS (Homebrew). Устанавливаем зависимости..."
+        brew install curl git gcc make patch openssl readline sqlite3 xz zlib || warn "Некоторые пакеты brew не установились..."
     else
         fail "Установите curl, git, gcc, make и patch вручную."
     fi
@@ -56,12 +59,11 @@ else
 
     if [ ! -d "$HOME/.pyenv" ]; then
         curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
-        export PATH="$HOME/.pyenv/bin:$PATH"
-        eval "$(pyenv init -)"
-    else
-        export PATH="$HOME/.pyenv/bin:$PATH"
-        eval "$(pyenv init -)"
     fi
+
+    # Подгружаем pyenv в текущую сессию
+    export PATH="$HOME/.pyenv/bin:$PATH"
+    eval "$(pyenv init -)"
 
     if ! pyenv install -s "$PYTHON_VERSION"; then
         fail "Не удалось собрать Python 3.12. Проверьте логи выше."
@@ -107,29 +109,20 @@ if [ -d "${PROJECT_DIR}/.git" ]; then
     cd "${PROJECT_DIR}"
 
     if [ "$SYNC_TASKS" -eq 1 ]; then
-        # Полная синхронизация, как раньше
+        # Полная синхронизация
         git fetch --all >/dev/null 2>&1 || warn "Не удалось связаться с GitHub"
         git reset --hard origin/main >/dev/null 2>&1 || git reset --hard origin/master >/dev/null 2>&1
         git clean -fd -e .venv -e .env >/dev/null 2>&1 || true
         ok "Файлы обновлены (включая tasks)"
     else
-        # --- Сохраняем папку tasks ---
+        # Сохраняем папку tasks
         echo "  Сохраняем папку tasks..."
-
-        # 1) Временно убираем tasks из индекса
         git rm -r --cached --ignore-unmatch "orcestrator/tasks" >/dev/null 2>&1 || true
-
-        # 2) Обновляем всё остальное
         git fetch --all >/dev/null 2>&1 || warn "Не удалось связаться с GitHub"
         git reset --hard origin/main >/dev/null 2>&1 || git reset --hard origin/master >/dev/null 2>&1
-
-        # 3) Восстанавливаем индекс для tasks из origin (локальные файлы не трогаются)
         git checkout origin/main -- "orcestrator/tasks" >/dev/null 2>&1 || \
             git checkout origin/master -- "orcestrator/tasks" >/dev/null 2>&1 || true
-
-        # 4) Чистим всё, кроме tasks, .venv, .env
         git clean -fd -e .venv -e .env -e orcestrator/tasks >/dev/null 2>&1 || true
-
         ok "Файлы обновлены (папка tasks сохранена)"
     fi
 
@@ -174,20 +167,19 @@ if [ ! -f ".env" ] && [ -f ".env.example" ]; then
 fi
 
 # ---- Проверка ----
-"$VENV_PY" -c "import fastapi, uvicorn, sqlalchemy, jwt, bcrypt, markdown; print('Все зависимости успешно установлены!')" || fail "Проверка не прошла"
+# ИСПРАВЛЕНИЕ: Добавлена проверка psutil, pydantic_settings и dotenv
+"$VENV_PY" -c "import fastapi, uvicorn, sqlalchemy, jwt, bcrypt, markdown, psutil, pydantic_settings, dotenv; print('Все зависимости успешно установлены!')" || fail "Проверка импортов не прошла"
 
 # ---- Запуск ----
 echo
 info "============================================================"
 info "  ЗАПУСК СЕРВЕРА"
 info "============================================================"
-echo "  Сервер запускается. Для остановки нажмите Ctrl+C."
+echo "  Сервер запускается. Браузер откроется автоматически (через run.py)."
+echo "  Для остановки нажмите Ctrl+C."
 echo
 
 cd web
 
-# Открываем браузер в фоне
-( sleep 2 && (xdg-open "http://localhost:8000" 2>/dev/null || open "http://localhost:8000" 2>/dev/null || echo "Откройте http://localhost:8000 вручную") ) &
-
-# Запускаем сервер
-"../${VENV_PY}" run.py
+# ИСПРАВЛЕНИЕ: Убрали дублирующий xdg-open, так как run.py сам открывает браузер
+"../.venv/bin/python" run.py
