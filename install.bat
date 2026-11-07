@@ -40,12 +40,28 @@ echo OK: Python 3.12 готов.
 
 echo.
 echo [2/5] Скачивание файлов с GitHub
-set "ZIP_FILE=%TEMP%\project.zip"
-set "EXTRACT_DIR=%TEMP%\project_extracted"
-if exist "%EXTRACT_DIR%" rmdir /S /Q "%EXTRACT_DIR%"
-mkdir "%EXTRACT_DIR%"
 
-echo Скачиваем архив, пожалуйста подождите...
+REM --- БЭКАП БАЗЫ И НАСТРОЕК ---
+if exist "%PROJECT_DIR%\web\contest_web.db" (
+    echo Сохраняем текущую базу данных...
+    if not exist "%TEMP%\sport_backup" mkdir "%TEMP%\sport_backup"
+    copy /Y "%PROJECT_DIR%\web\contest_web.db" "%TEMP%\sport_backup\contest_web.db" >nul
+)
+if exist "%PROJECT_DIR%\.env" (
+    echo Сохраняем файл настроек .env...
+    if not exist "%TEMP%\sport_backup" mkdir "%TEMP%\sport_backup"
+    copy /Y "%PROJECT_DIR%\.env" "%TEMP%\sport_backup\.env" >nul
+)
+
+REM --- УДАЛЕНИЕ СТАРОЙ ПАПКИ ---
+if exist "%PROJECT_DIR%" (
+    echo Удаляем старую папку проекта...
+    rmdir /S /Q "%PROJECT_DIR%"
+)
+
+REM --- СКАЧИВАНИЕ И РАСПАКОВКА ---
+set "ZIP_FILE=%TEMP%\project.zip"
+echo Скачиваем архив...
 curl -L -o "%ZIP_FILE%" "%ZIP_URL%"
 if not exist "%ZIP_FILE%" (
     echo [ОШИБКА] Не удалось скачать архив. Проверьте интернет.
@@ -53,76 +69,53 @@ if not exist "%ZIP_FILE%" (
     exit /b 1
 )
 
-echo Распаковываем во временную папку...
-tar -xf "%ZIP_FILE%" -C "%EXTRACT_DIR%"
-if not exist "%EXTRACT_DIR%\Python_VS_Sport-main" (
-    echo [ОШИБКА] Архив скачался, но папка Python_VS_Sport-main не найдена.
+echo Распаковываем архив...
+tar -xf "%ZIP_FILE%" -C "%CD%"
+
+if not exist "Python_VS_Sport-main" (
+    echo [ОШИБКА] Архив распаковался, но папка Python_VS_Sport-main не найдена.
     pause
     exit /b 1
 )
 
-if exist "%PROJECT_DIR%" goto update_files
-goto clean_install
-
-:update_files
-echo.
-echo [ИНФО] Обнаружена существующая папка %PROJECT_DIR%.
-echo [ИНФО] Обновляем файлы кода, сохраняя вашу базу данных и настройки...
-if exist "%PROJECT_DIR%" ren "%PROJECT_DIR%" "%PROJECT_DIR%_old"
-ren "%EXTRACT_DIR%\Python_VS_Sport-main" "%PROJECT_DIR%"
-
-if exist "%PROJECT_DIR%_old\web\contest_web.db" copy /Y "%PROJECT_DIR%_old\web\contest_web.db" "%PROJECT_DIR%\web\contest_web.db" >nul
-if exist "%PROJECT_DIR%_old\.env" copy /Y "%PROJECT_DIR%_old\.env" "%PROJECT_DIR%\.env" >nul
-if exist "%PROJECT_DIR%_old\.venv" move /Y "%PROJECT_DIR%_old\.venv" "%PROJECT_DIR%\.venv" >nul
-
-rmdir /S /Q "%PROJECT_DIR%_old"
-echo OK: Файлы кода обновлены. Ваша база данных не тронута.
-goto clean_temp
-
-:clean_install
-echo.
-echo [ИНФО] Выполняется чистая установка...
-ren "%EXTRACT_DIR%\Python_VS_Sport-main" "%PROJECT_DIR%"
-if not exist "%PROJECT_DIR%\web\contest_web.db" goto clean_temp
-
-echo.
-echo [ВНИМАНИЕ] Обнаружена база данных web\contest_web.db, скачанная с GitHub.
-choice /C YN /M "Удалить ее для чистой установки"
-if errorlevel 2 goto clean_temp
-if errorlevel 1 del /q "%PROJECT_DIR%\web\contest_web.db"
-echo OK: База данных удалена.
-
-:clean_temp
-rmdir /S /Q "%EXTRACT_DIR%"
+ren "Python_VS_Sport-main" "%PROJECT_DIR%"
 del /q "%ZIP_FILE%"
+echo OK: Файлы успешно скопированы.
 
-if not exist "%PROJECT_DIR%\requirements.txt" (
-    echo.
-    echo [ОШИБКА] Файл %PROJECT_DIR%\requirements.txt не найден! 
-    echo Возможно, он отсутствует в репозитории на GitHub.
-    pause
-    exit /b 1
+REM --- ВОССТАНОВЛЕНИЕ БАЗЫ И НАСТРОЕК ---
+if exist "%TEMP%\sport_backup\contest_web.db" (
+    copy /Y "%TEMP%\sport_backup\contest_web.db" "%PROJECT_DIR%\web\contest_web.db" >nul
+    echo OK: База данных восстановлена.
 )
+if exist "%TEMP%\sport_backup\.env" (
+    copy /Y "%TEMP%\sport_backup\.env" "%PROJECT_DIR%\.env" >nul
+    echo OK: Файл .env восстановлен.
+)
+if exist "%TEMP%\sport_backup" rmdir /S /Q "%TEMP%\sport_backup"
 
 cd /d "%PROJECT_DIR%"
 
 echo.
-echo [4/5] Проверка .venv
-if exist ".venv\Scripts\python.exe" goto venv_ok
+echo [3/5] Проверка зависимостей и создание .venv
+if exist ".venv" rmdir /S /Q ".venv"
 
-echo Создаем новый .venv, пожалуйста подождите...
+echo Создаем чистое окружение .venv...
 "%PYTHON_EXE%" -m venv .venv
 if not exist ".venv\Scripts\python.exe" (
     echo [ОШИБКА] Не удалось создать .venv.
     pause
     exit /b 1
 )
-
-:venv_ok
-echo OK: .venv готово.
+echo OK: .venv создано.
 
 echo.
-echo [5/5] Установка зависимостей
+echo [4/5] Установка библиотек
+if not exist "requirements.txt" (
+    echo [ОШИБКА] Файл requirements.txt не найден!
+    pause
+    exit /b 1
+)
+
 ".venv\Scripts\python.exe" -m pip install --upgrade pip setuptools wheel
 ".venv\Scripts\python.exe" -m pip install -r requirements.txt --only-binary=:all:
 if errorlevel 1 (
@@ -130,29 +123,12 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
-echo OK: зависимости установлены.
-
-if exist ".env" goto skip_env
-if not exist ".env.example" goto skip_env
-copy /Y ".env.example" ".env" >nul
-echo OK: .env создан.
-
-:skip_env
-echo.
-echo Проверка импортов...
-".venv\Scripts\python.exe" -c "import fastapi, uvicorn, sqlalchemy, jwt, bcrypt, markdown, psutil, pydantic_settings, dotenv; print('OK')"
-if errorlevel 1 (
-    echo [ОШИБКА] Зависимости не установились.
-    pause
-    exit /b 1
-)
+echo OK: Библиотеки установлены.
 
 echo.
-echo ============================================================
-echo   ЗАПУСК СЕРВЕРА
-echo ============================================================
+echo [5/5] Запуск сервера
 echo.
-echo Запускаем сервер, браузер откроется автоматически...
+echo Сервер запускается, браузер откроется автоматически...
 
 cd web
 start "Python vs Sport Server" cmd /k "..\.venv\Scripts\python.exe run.py"
@@ -160,6 +136,6 @@ cd ..
 cd ..
 
 echo.
-echo Готово. Нажмите любую клавишу, чтобы закрыть это окно.
+echo Установка завершена. Нажмите любую клавишу для выхода.
 pause
 exit /b 0
