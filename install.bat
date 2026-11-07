@@ -10,7 +10,7 @@ set "ZIP_URL=https://github.com/mrGotmag/Python_VS_Sport/archive/refs/heads/main
 
 echo.
 echo ============================================================
-echo   Установка проекта Python vs Sport
+echo   Установка / Обновление проекта Python vs Sport
 echo ============================================================
 echo.
 
@@ -54,12 +54,12 @@ REM ---- 2) Скачивание файлов проекта ----
 echo.
 echo [2/5] Скачивание файлов с GitHub...
 
-if exist "%PROJECT_DIR%" (
-    echo   Удаляем старую папку...
-    rmdir /S /Q "%PROJECT_DIR%"
-)
-
 set "ZIP_FILE=%TEMP%\project.zip"
+set "EXTRACT_DIR=%TEMP%\project_extracted"
+
+if exist "%EXTRACT_DIR%" rmdir /S /Q "%EXTRACT_DIR%"
+mkdir "%EXTRACT_DIR%"
+
 echo   Скачиваем архив (пожалуйста, подождите)...
 curl -L -o "%ZIP_FILE%" "%ZIP_URL%"
 
@@ -69,45 +69,68 @@ if not exist "%ZIP_FILE%" (
     exit /b 1
 )
 
-echo   Распаковываем...
-tar -xf "%ZIP_FILE%" -C "%CD%"
+echo   Распаковываем во временную папку...
+tar -xf "%ZIP_FILE%" -C "%EXTRACT_DIR%"
 
-if exist "Python_VS_Sport-main" (
-    ren "Python_VS_Sport-main" "%PROJECT_DIR%"
-) else (
-    echo [ОШИБКА] Архив скачался, но папка не найдена.
-    echo Убедитесь, что в репозитории ветка называется main.
+if not exist "%EXTRACT_DIR%\Python_VS_Sport-main" (
+    echo [ОШИБКА] Архив скачался, но папка Python_VS_Sport-main не найдена.
     pause
     exit /b 1
 )
 
+REM ---- 3) Умное обновление или чистая установка ----
+if exist "%PROJECT_DIR%" (
+    echo.
+    echo   [ИНФО] Обнаружена существующая папка %PROJECT_DIR%.
+    echo   [ИНФО] Обновляем файлы кода, СОХРАНЯЯ вашу базу данных и настройки...
+    REM Используем robocopy для копирования. 
+    REM /E - копировать все папки. /XF - исключить файлы (db, env). /XD - исключить папки (.venv, .git)
+    robocopy "%EXTRACT_DIR%\Python_VS_Sport-main" "%PROJECT_DIR%" /E /XF "contest_web.db" ".env" /XD ".venv" ".git" >nul
+    echo   OK: Файлы кода обновлены. Ваша база данных не тронута.
+) else (
+    echo.
+    echo   [ИНФО] Выполняется чистая установка...
+    ren "%EXTRACT_DIR%\Python_VS_Sport-main" "%PROJECT_DIR%"
+    
+    REM Проверяем, пришла ли база данных с GitHub при первой установке
+    if exist "%PROJECT_DIR%\web\contest_web.db" (
+        echo.
+        echo   [ВНИМАНИЕ] Обнаружена база данных web\contest_web.db, скачанная с GitHub.
+        set /p "DEL_DB=  Удалить её для чистой установки? [y/n]: "
+        if /I "!DEL_DB!"=="y" (
+            del /q "%PROJECT_DIR%\web\contest_web.db"
+            echo   OK: База данных удалена.
+        )
+    )
+)
+
+REM Чистим временные файлы
+rmdir /S /Q "%EXTRACT_DIR%"
 del /q "%ZIP_FILE%"
-echo   OK: файлы готовы. Они лежат в: %CD%\%PROJECT_DIR%
 
 cd "%PROJECT_DIR%"
 
-REM ---- 3) Создание venv ----
+REM ---- 4) Создание venv ----
 echo.
-echo [3/5] Проверка .venv...
+echo [4/5] Проверка .venv...
 
 if exist ".venv\Scripts\python.exe" (
-    echo   Удаляем старый .venv для чистой установки...
-    rmdir /S /Q ".venv"
+    echo   Окружение .venv уже существует. Пропускаем создание.
+) else (
+    echo   Создаем новый .venv (пожалуйста, подождите)...
+    "%PYTHON_EXE%" -m venv .venv
 )
-
-echo   Создаем новый .venv (пожалуйста, подождите)...
-"%PYTHON_EXE%" -m venv .venv
 
 if not exist ".venv\Scripts\python.exe" (
     echo [ОШИБКА] Не удалось создать .venv.
     pause
     exit /b 1
 )
-echo   OK: .venv создано.
+echo   OK: .venv готово.
 
-REM ---- 4) Установка зависимостей ----
+REM ---- 5) Установка зависимостей ----
 echo.
-echo [4/5] Установка зависимостей (займет 1-2 минуты)...
+echo [5/5] Установка зависимостей...
 if exist "requirements.txt" (
     ".venv\Scripts\python.exe" -m pip install --upgrade pip setuptools wheel >nul
     ".venv\Scripts\python.exe" -m pip install -r requirements.txt --only-binary=:all:
@@ -117,15 +140,11 @@ if exist "requirements.txt" (
         exit /b 1
     )
     echo   OK: зависимости установлены.
-) else (
-    echo   ВНИМАНИЕ: requirements.txt не найден.
 )
 
-REM ---- 5) Подготовка .env ----
-echo.
-echo [5/5] Подготовка .env...
+REM ---- Подготовка .env ----
 if exist ".env" (
-    echo   .env существует.
+    echo   .env существует (сохранен).
 ) else if exist ".env.example" (
     copy /Y ".env.example" ".env" >nul
     echo   OK: .env создан.
@@ -153,6 +172,6 @@ cd ..
 
 cd ..
 echo.
-echo Установка завершена. Нажмите любую клавишу, чтобы закрыть это окно.
+echo Готово. Нажмите любую клавишу, чтобы закрыть это окно.
 pause
 exit /b 0
