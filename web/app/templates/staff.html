@@ -1,160 +1,319 @@
 {% extends "base.html" %}
 {% block title %}Панель судьи // Python vs Спорт{% endblock %}
 
+{% block head %}
+<style>
+    @keyframes flash-green {
+        0% { background-color: rgba(0, 255, 156, 0.2); border-color: #00ff9c; }
+        100% { background-color: transparent; border-color: #1f2a3a; }
+    }
+    .saved-success {
+        animation: flash-green 1s ease-out;
+    }
+
+    .pill-transition {
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease;
+    }
+
+    /* Красивый тонкий скроллбар для вкладок дисциплин */
+    .tabs-container::-webkit-scrollbar {
+        height: 4px;
+    }
+    .tabs-container::-webkit-scrollbar-track {
+        background: #0a0e14;
+        border-radius: 4px;
+    }
+    .tabs-container::-webkit-scrollbar-thumb {
+        background: #1f2a3a;
+        border-radius: 4px;
+    }
+    .tabs-container::-webkit-scrollbar-thumb:hover {
+        background: #00e5ff;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="w-full max-w-4xl mx-auto fade-in">
-    <div class="flex justify-between items-center border-b border-line pb-4 mb-6">
-        <h1 class="text-2xl font-bold text-warn">ПАНЕЛЬ СУДЬИ</h1>
-        <a href="/logout" class="text-magenta hover:text-white text-sm">[ ВЫЙТИ ]</a>
+<div class="w-full max-w-5xl mx-auto fade-in p-2 md:p-4 pb-20">
+
+    <!-- ЗАГОЛОВОК -->
+    <div class="flex justify-between items-center border-b border-line pb-2 mb-3">
+        <h1 class="text-lg md:text-xl font-bold text-warn">ПАНЕЛЬ СУДЬИ</h1>
+        <a href="/logout" class="text-magenta hover:text-white text-xs font-bold bg-magenta/10 px-2 py-1 rounded border border-magenta/30">ВЫЙТИ</a>
     </div>
 
-    <div class="bg-panel border border-line rounded-xl p-6 mb-6">
-        <div class="mb-4">
-            <label class="text-sm text-slate-400 mb-2 block">Выберите спортивную дисциплину:</label>
-            <select id="staff-phase-select" class="w-full bg-ink border border-line rounded px-4 py-3 text-lg text-white focus:border-warn outline-none" onchange="loadStaffTeams()">
-                <option value="">-- Загрузка... --</option>
-            </select>
-        </div>
+    <!-- ЛИПКАЯ ПАНЕЛЬ УПРАВЛЕНИЯ -->
+    <div class="sticky top-[60px] z-40 bg-panel/95 backdrop-blur-xl border border-line rounded-xl p-3 mb-4 shadow-xl transition-all flex flex-col gap-3">
 
-        <!-- ОБНОВЛЕННЫЙ БЛОК ПРАВИЛА -->
-        <div id="direction-container" class="hidden flex items-center justify-between bg-ink border border-line p-3 rounded">
-            <div id="phase-direction-hint" class="text-sm text-cyan font-bold"></div>
-            <button onclick="toggleDirection()" class="text-xs bg-panel border border-cyan text-cyan px-4 py-2 rounded hover:bg-cyan hover:text-black transition font-bold">
-                СМЕНИТЬ ПРАВИЛО
+        <!-- Строка поиска (на всю ширину) -->
+        <div class="relative w-full">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+            <input type="text" id="search-input" placeholder="Поиск участника по имени или команде..."
+                class="w-full bg-ink border border-line rounded-lg pl-10 pr-10 py-2.5 text-sm text-white focus:border-warn outline-none transition">
+            <button id="btn-clear-search" onclick="clearSearch()" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-white transition">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
         </div>
+
+        <!-- Вкладки дисциплин (крупные, с горизонтальным скроллом) -->
+        <div>
+            <div class="text-[10px] text-slate-500 uppercase tracking-wider mb-1.5 font-bold">Дисциплина:</div>
+            <div id="phase-pills-container" class="tabs-container flex overflow-x-auto gap-2 pb-2 snap-x">
+                <div class="text-slate-500 animate-pulse text-xs py-2">Загрузка...</div>
+            </div>
+        </div>
+
+        <!-- Переключатель правила (Больше/Меньше) -->
+        <div id="direction-container" class="hidden pt-2 border-t border-line/50">
+            <div class="text-[10px] text-slate-500 uppercase tracking-wider mb-1.5 font-bold">Правило оценки:</div>
+            <div class="relative flex bg-ink border border-line rounded-lg p-1 h-[48px]">
+                <div id="dir-pill" class="pill-transition absolute top-1 bottom-1 w-[calc(50%-4px)] bg-cyan rounded-md shadow-[0_0_15px_rgba(0,229,255,0.4)] z-0" style="left: 4px;"></div>
+
+                <button id="btn-dir-more" onclick="setDirection('more')" class="relative z-10 flex-1 py-2 rounded-md font-bold text-xs md:text-sm flex items-center justify-center transition-colors duration-300 text-ink">
+                    ↑ БОЛЬШЕ = ЛУЧШЕ
+                </button>
+                <button id="btn-dir-less" onclick="setDirection('less')" class="relative z-10 flex-1 py-2 rounded-md font-bold text-xs md:text-sm flex items-center justify-center transition-colors duration-300 text-slate-500 hover:text-white">
+                    ↓ МЕНЬШЕ = ЛУЧШЕ
+                </button>
+            </div>
+        </div>
     </div>
 
-    <div class="bg-panel border border-line rounded-xl p-6">
-        <table class="w-full text-left">
-            <thead>
-                <tr class="border-b border-line text-slate-500 text-sm">
-                    <th class="pb-3 px-2">Команда</th>
-                    <th class="pb-3 px-2 w-32">Подходы</th>
-                    <th class="pb-3 px-2 w-32">Действие</th>
-                </tr>
-            </thead>
-            <tbody id="staff-teams-body">
-                <tr><td colspan="3" class="text-center py-8 text-slate-500">Выберите дисциплину выше</td></tr>
-            </tbody>
-        </table>
+    <!-- Сетка карточек участников -->
+    <div id="staff-teams-container" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="col-span-full text-center py-8 text-slate-500 bg-panel border border-line rounded-xl text-sm">
+            Выберите дисциплину выше
+        </div>
+    </div>
+
+    <div id="no-results-msg" class="hidden col-span-full text-center py-8 text-slate-500 text-sm">
+        Участники не найдены.
     </div>
 </div>
 
 <script>
-    let sportData = { phases: [], teams: [], results: [] };
+    let sportData = { phases: [], participants: [], results: [] };
+    let currentPhaseId = null;
+
+    document.getElementById('search-input').addEventListener('input', function() {
+        const clearBtn = document.getElementById('btn-clear-search');
+        if (this.value.length > 0) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+        filterParticipants();
+    });
+
+    function clearSearch() {
+        const input = document.getElementById('search-input');
+        input.value = '';
+        document.getElementById('btn-clear-search').classList.add('hidden');
+        filterParticipants();
+    }
+
+    function filterParticipants() {
+        const query = document.getElementById('search-input').value.toLowerCase().trim();
+        const cards = document.querySelectorAll('.participant-card');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const searchStr = card.getAttribute('data-search');
+            if (searchStr.includes(query)) {
+                card.classList.remove('hidden');
+                visibleCount++;
+            } else {
+                card.classList.add('hidden');
+            }
+        });
+
+        const noResults = document.getElementById('no-results-msg');
+        if (visibleCount === 0 && cards.length > 0) {
+            noResults.classList.remove('hidden');
+        } else {
+            noResults.classList.add('hidden');
+        }
+    }
 
     async function loadStaffData() {
         try {
-            const res = await fetch('/api/staff/sport_data');
+            const res = await fetch('/api/staff/sport_data', { credentials: 'include' });
             if (res.status === 401 || res.status === 403) return window.location.href = '/';
             sportData = await res.json();
 
-            const select = document.getElementById('staff-phase-select');
+            const container = document.getElementById('phase-pills-container');
+
             if (sportData.phases.length === 0) {
-                select.innerHTML = '<option value="">Нет спортивных фаз</option>';
+                container.innerHTML = '<div class="text-slate-500 text-xs">Нет фаз</div>';
                 return;
             }
 
-            select.innerHTML = '<option value="">-- Выберите дисциплину --</option>' +
-                sportData.phases.map(p => `<option value="${p.id}">${p.sport_name}</option>`).join('');
+            // Крупные вкладки (как в браузере), с min-w-max, чтобы не сжимались
+            container.innerHTML = sportData.phases.map(p => `
+                <button id="pill-${p.id}" onclick="selectPhase(${p.id})"
+                    class="phase-pill flex-shrink-0 min-w-max px-5 py-2.5 rounded-lg border border-line bg-ink text-slate-400 hover:border-slate-500 hover:text-white font-bold text-sm transition-all duration-300 snap-start">
+                    ${p.sport_name}
+                </button>
+            `).join('');
+
+            if (sportData.phases.length > 0) {
+                selectPhase(sportData.phases[0].id);
+            }
+
         } catch (e) {
             console.error(e);
+        }
+    }
+
+    function selectPhase(phaseId) {
+        currentPhaseId = phaseId;
+
+        document.querySelectorAll('.phase-pill').forEach(btn => {
+            btn.className = 'phase-pill flex-shrink-0 min-w-max px-5 py-2.5 rounded-lg border border-line bg-ink text-slate-400 hover:border-slate-500 hover:text-white font-bold text-sm transition-all duration-300 snap-start';
+        });
+
+        const activeBtn = document.getElementById(`pill-${phaseId}`);
+        if (activeBtn) {
+            activeBtn.className = 'phase-pill flex-shrink-0 min-w-max px-5 py-2.5 rounded-lg border border-cyan bg-cyan/10 text-cyan font-bold text-sm shadow-[0_0_15px_rgba(0,229,255,0.2)] transition-all duration-300 snap-start scale-[1.02]';
+            // Прокручиваем к активной вкладке, если она за пределами экрана
+            activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+
+        loadStaffTeams();
+    }
+
+    function updateDirectionUI(direction) {
+        const pill = document.getElementById('dir-pill');
+        const btnMore = document.getElementById('btn-dir-more');
+        const btnLess = document.getElementById('btn-dir-less');
+
+        if (direction === 'more') {
+            pill.style.left = '4px';
+            btnMore.classList.remove('text-slate-500', 'hover:text-white');
+            btnMore.classList.add('text-ink');
+            btnLess.classList.add('text-slate-500', 'hover:text-white');
+            btnLess.classList.remove('text-ink');
+        } else {
+            pill.style.left = '50%';
+            btnLess.classList.remove('text-slate-500', 'hover:text-white');
+            btnLess.classList.add('text-ink');
+            btnMore.classList.add('text-slate-500', 'hover:text-white');
+            btnMore.classList.remove('text-ink');
         }
     }
 
     function loadStaffTeams() {
-        const phaseId = parseInt(document.getElementById('staff-phase-select').value);
-        const tbody = document.getElementById('staff-teams-body');
-        const container = document.getElementById('direction-container');
-        const hint = document.getElementById('phase-direction-hint');
+        const container = document.getElementById('staff-teams-container');
+        const dirContainer = document.getElementById('direction-container');
 
-        if (!phaseId) {
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center py-8 text-slate-500">Выберите дисциплину</td></tr>';
-            container.classList.add('hidden');
+        if (!currentPhaseId) {
+            container.innerHTML = '<div class="col-span-full text-center py-8 text-slate-500 bg-panel border border-line rounded-xl text-sm">Выберите дисциплину</div>';
+            dirContainer.classList.add('hidden');
             return;
         }
 
-        const phase = sportData.phases.find(p => p.id === phaseId);
-        container.classList.remove('hidden');
-        hint.textContent = phase.sport_direction === 'more' ? 'Правило: БОЛЬШЕ = ЛУЧШЕ' : 'Правило: МЕНЬШЕ = ЛУЧШЕ';
+        const phase = sportData.phases.find(p => p.id === currentPhaseId);
+        dirContainer.classList.remove('hidden');
+        updateDirectionUI(phase.sport_direction);
 
-        tbody.innerHTML = sportData.teams.map(t => {
-            const result = sportData.results.find(r => r.team_id === t.id && r.phase_id === phaseId);
+        const sortedParticipants = [...sportData.participants].sort((a, b) => {
+            if (a.team_name !== b.team_name) return a.team_name.localeCompare(b.team_name);
+            return a.name.localeCompare(b.name);
+        });
+
+        if (sortedParticipants.length === 0) {
+            container.innerHTML = '<div class="col-span-full text-center py-8 text-slate-500">Нет участников</div>';
+            return;
+        }
+
+        container.innerHTML = '';
+
+        container.innerHTML = sortedParticipants.map(p => {
+            const result = sportData.results.find(r => r.participant_id === p.id && r.phase_id === currentPhaseId);
             const attempts = result ? result.attempts : '';
+            const searchStr = `${p.name.toLowerCase()} ${p.team_name.toLowerCase()}`;
 
             return `
-                <tr class="border-b border-line/50 hover:bg-ink transition">
-                    <td class="py-4 px-2 font-bold text-lg">${t.name}</td>
-                    <td class="py-4 px-2">
-                        <input type="number" id="staff-input-${t.id}" value="${attempts}" placeholder="0" min="0" class="w-full bg-ink border border-line rounded px-3 py-2 text-lg text-center font-mono text-neon focus:border-neon outline-none">
-                    </td>
-                    <td class="py-4 px-2">
-                        <button onclick="saveStaffResult(${t.id}, ${phaseId})" class="w-full bg-warn text-ink font-bold py-2 rounded hover:bg-white transition">
+                <div id="card-${p.id}" data-search="${searchStr}" class="participant-card bg-panel border border-line rounded-xl p-3 flex flex-col gap-2 shadow-md transition hover:border-slate-600">
+                    <div class="flex justify-between items-start">
+                        <div class="font-bold text-base text-white leading-tight">${p.name}</div>
+                        <div class="text-[9px] bg-ink text-cyan border border-line px-1.5 py-0.5 rounded-full whitespace-nowrap ml-2 mt-0.5">${p.team_name}</div>
+                    </div>
+
+                    <div class="flex gap-2 mt-1">
+                        <div class="relative w-1/2">
+                            <input type="number" id="staff-input-${p.id}" value="${attempts}" placeholder="0" min="0"
+                                class="w-full bg-ink border-2 border-line rounded-lg px-2 py-2 text-xl text-center font-mono font-bold text-neon focus:border-neon outline-none transition">
+                        </div>
+                        <button onclick="saveStaffResult(${p.id}, ${currentPhaseId})"
+                            class="w-1/2 bg-warn text-ink font-bold text-xs rounded-lg hover:bg-white transition active:scale-95 shadow-[0_0_10px_rgba(255,184,0,0.3)]">
                             СОХРАНИТЬ
                         </button>
-                    </td>
-                </tr>
+                    </div>
+                </div>
             `;
         }).join('');
-    }
 
-        async function toggleDirection() {
-        const phaseId = parseInt(document.getElementById('staff-phase-select').value);
-        if (!phaseId) return;
-
-        const phase = sportData.phases.find(p => p.id === phaseId);
-        const newDir = phase.sport_direction === 'more' ? 'less' : 'more';
-
-        try {
-            const res = await fetch(`/api/staff/phase/${phaseId}/direction`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ direction: newDir })
-            });
-
-            if (!res.ok) throw new Error('Ошибка сервера'); // <--- ВОТ ЭТА СТРОКА
-
-            // Обновляем локально и перерисовываем
-            phase.sport_direction = newDir;
-            loadStaffTeams();
-        } catch (e) {
-            alert('Ошибка смены правила. Проверьте консоль (F12).');
-            console.error(e);
+        if (document.getElementById('search-input').value.length > 0) {
+            filterParticipants();
         }
     }
 
-    async function saveStaffResult(teamId, phaseId) {
-        const input = document.getElementById(`staff-input-${teamId}`);
+    async function setDirection(newDir) {
+        if (!currentPhaseId) return;
+
+        const phase = sportData.phases.find(p => p.id === currentPhaseId);
+        if (phase.sport_direction === newDir) return;
+
+        phase.sport_direction = newDir;
+        updateDirectionUI(newDir);
+
+        try {
+            const res = await fetch(`/api/staff/phase/${currentPhaseId}/direction`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ direction: newDir }),
+                credentials: 'include'
+            });
+            if (!res.ok) throw new Error('Ошибка сервера');
+        } catch (e) {
+            alert('Ошибка смены правила: ' + e.message);
+            phase.sport_direction = newDir === 'more' ? 'less' : 'more';
+            updateDirectionUI(phase.sport_direction);
+        }
+    }
+
+    async function saveStaffResult(participantId, phaseId) {
+        const input = document.getElementById(`staff-input-${participantId}`);
+        const card = document.getElementById(`card-${participantId}`);
         const attempts = parseInt(input.value) || 0;
-        const btn = input.parentElement.nextElementSibling.querySelector('button');
-        const originalText = btn.textContent;
+        const btn = input.parentElement.nextElementSibling;
 
         btn.disabled = true;
+        const originalText = btn.textContent;
         btn.textContent = '...';
 
         try {
             const res = await fetch('/api/staff/sport_result', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ team_id: teamId, phase_id: phaseId, attempts: attempts })
+                body: JSON.stringify({ participant_id: participantId, phase_id: phaseId, attempts: attempts }),
+                credentials: 'include'
             });
 
             if (res.ok) {
+                card.classList.add('saved-success');
                 btn.textContent = '✔ ОК';
-                btn.className = 'w-full bg-neon text-ink font-bold py-2 rounded transition';
-                input.classList.add('border-neon');
+                btn.className = 'w-1/2 bg-neon text-ink font-bold text-xs rounded-lg transition';
 
-                // Обновляем локальные данные
-                const existing = sportData.results.find(r => r.team_id === teamId && r.phase_id === phaseId);
+                const existing = sportData.results.find(r => r.participant_id === participantId && r.phase_id === phaseId);
                 if (existing) existing.attempts = attempts;
-                else sportData.results.push({team_id: teamId, phase_id: phaseId, attempts: attempts});
+                else sportData.results.push({participant_id: participantId, phase_id: phaseId, attempts: attempts});
 
                 setTimeout(() => {
+                    card.classList.remove('saved-success');
                     btn.textContent = originalText;
-                    btn.className = 'w-full bg-warn text-ink font-bold py-2 rounded hover:bg-white transition';
+                    btn.className = 'w-1/2 bg-warn text-ink font-bold text-xs rounded-lg hover:bg-white transition active:scale-95 shadow-[0_0_10px_rgba(255,184,0,0.3)]';
                     btn.disabled = false;
-                    input.classList.remove('border-neon');
                 }, 1500);
             } else {
                 alert('Ошибка сохранения');

@@ -55,48 +55,35 @@
             if (!res.ok) throw new Error('Ошибка загрузки');
             const data = await res.json();
 
-            // Заполняем "моё место"
             if (data.my_place) {
                 const box = document.getElementById('my-place-box');
                 box.classList.remove('hidden');
-                document.getElementById('my-team-name').textContent =
-                    data.teams.find(t => t.is_me)?.name || '';
-                document.getElementById('my-place-number').textContent =
-                    data.my_place;
-                document.getElementById('my-place-total').textContent =
-                    `из ${data.teams.length} команд`;
+                const myName = data.teams.find(t => t.is_me)?.name || '';
+                document.getElementById('my-team-name').textContent = myName;
+                document.getElementById('my-place-number').textContent = data.my_place;
+                document.getElementById('my-place-total').textContent = `из ${data.teams.length} участников`;
             }
 
-            // Таблица
             tbody.innerHTML = data.teams.map(t => {
-                const rowClass = t.is_me
-                    ? 'bg-neon/10 border-l-2 border-neon'
-                    : 'hover:bg-ink';
-                const medal = t.place === 1 ? '🥇' :
-                              t.place === 2 ? '🥈' :
-                              t.place === 3 ? '🥉' : '';
+                const rowClass = t.is_me ? 'bg-neon/10 border-l-2 border-neon' : 'hover:bg-ink';
+                const medal = t.place === 1 ? '🥇' : t.place === 2 ? '🥈' : t.place === 3 ? '🥉' : '';
+
                 return `
                 <tr class="border-b border-line/50 ${rowClass} transition">
-                    <td class="p-3 text-neon font-bold">
-                        ${t.place} ${medal} ${t.is_me ? '<span class="text-warn">← вы</span>' : ''}
+                    <td class="p-3 text-neon font-bold">${t.place} ${medal}</td>
+                    <td class="p-3">
+                        <div class="font-bold text-white">${t.name}</div>
+                        <div class="text-[10px] text-slate-500 font-normal">${t.team_name}</div>
+                        ${t.is_me ? '<span class="text-[10px] text-warn">← вы</span>' : ''}
                     </td>
-                    <td class="p-3 font-bold">
-                        ${t.name}
-                        ${t.school ? `<div class="text-[10px] text-slate-500 font-normal">${t.school}</div>` : ''}
-                    </td>
-                    <td class="p-3 text-center text-cyan font-mono">${t.code_score}</td>
-                    <td class="p-3 text-center text-warn font-mono">${t.sport_score}</td>
                     <td class="p-3 text-right text-neon font-mono font-bold text-lg">${t.total_score}</td>
                 </tr>`;
             }).join('');
         } catch (e) {
-            tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-magenta">Не удалось загрузить таблицу</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="3" class="p-8 text-center text-magenta">Не удалось загрузить таблицу</td></tr>';
         }
     }
-
     loadLeaderboard();
-
-    // Периодически обновляем (если результаты меняются — например, судья поставил баллы)
     setInterval(loadLeaderboard, 15000);
 </script>
 {% endblock %}

@@ -64,6 +64,7 @@
 function registerApp() {
     return {
         name: '', email: '', loading: false, error: '', success: false, code: '', copied: false, teamName: '', teamSize: 0, teamMax: 5,
+
         async submit() {
             this.loading = true; this.error = '';
             try {
@@ -84,13 +85,30 @@ function registerApp() {
             } catch (e) { this.error = 'Сервер недоступен'; }
             finally { this.loading = false; }
         },
+
         async copyCode() {
             try {
-                await navigator.clipboard.writeText(this.code);
+                // Пытаемся использовать современный API
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(this.code);
+                } else {
+                    // Резервный метод для локальной сети (без HTTPS)
+                    const textArea = document.createElement("textarea");
+                    textArea.value = this.code;
+                    textArea.style.position = "absolute";
+                    textArea.style.left = "-999999px";
+                    document.body.prepend(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    textArea.remove();
+                }
                 this.copied = true;
                 setTimeout(() => this.copied = false, 2000);
-            } catch (e) { alert('Код: ' + this.code); }
+            } catch (e) {
+                alert('Ваш код: ' + this.code);
+            }
         },
+
         async autoLogin() {
             await this.copyCode(); // копируем перед входом
             try {

@@ -94,28 +94,28 @@ class Submission(Base):
     __tablename__ = "submissions"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"))
+
+    # ДОБАВИТЬ ЭТУ СТРОКУ:
+    participant_id: Mapped[int] = mapped_column(ForeignKey("participants.id"), nullable=True)
+
     task_id: Mapped[int] = mapped_column(ForeignKey("tasks.id"))
     code: Mapped[str] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(32), default="pending")
-
-    # Баллы за тесты
     score: Mapped[int] = mapped_column(Integer, default=0)
-
-    # Для тай-брейка
-    time_ms: Mapped[float] = mapped_column(Float, default=0.0)  # Время в миллисекундах
-    memory_mb: Mapped[float] = mapped_column(Float, default=0.0)  # Пиковая память в МБ
-
-    time_spent: Mapped[int] = mapped_column(Integer, default=0)  # Общее время от старта олимпиады
+    time_ms: Mapped[float] = mapped_column(Float, default=0.0)
+    memory_mb: Mapped[float] = mapped_column(Float, default=0.0)
+    time_spent: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
 class SportResult(Base):
-    """Ручные баллы за спортивные упражнения."""
     __tablename__ = "sport_results"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"))
 
-    # Привязка к фазе (чтобы видеть, за какое именно упражнение балл)
+    # ДОБАВИТЬ ЭТУ СТРОКУ:
+    participant_id: Mapped[int | None] = mapped_column(ForeignKey("participants.id"), nullable=True)
+
     phase_id: Mapped[int | None] = mapped_column(ForeignKey("phases.id"), nullable=True)
     exercise_name: Mapped[str] = mapped_column(String(128))
     attempts: Mapped[int] = mapped_column(Integer, default=0)

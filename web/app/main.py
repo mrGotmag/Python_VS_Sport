@@ -177,6 +177,17 @@ def get_current_team(request: Request, db: Session):
     return team
 
 
+def get_current_participant(request: Request, db: Session):
+    token = request.cookies.get("access_token")
+    if not token: return None
+    payload = decode_token(token)
+    if not payload: return None
+    pid = payload.get("participant_id")
+    if pid:
+        return db.get(Participant, int(pid))
+    return None
+
+
 def get_current_admin(request: Request, db: Session):
     token = request.cookies.get("access_token")
     if not token: raise HTTPException(401, "Нет токена")
@@ -305,7 +316,8 @@ async def login(request: Request):
             team = db.get(Team, participant.team_id)
             if not team or not team.is_active:
                 raise HTTPException(401, "Команда недоступна")
-            token = create_access_token({"sub": team.id, "role": "team"})
+            # ДОБАВЛЯЕМ participant_id В ТОКЕН:
+            token = create_access_token({"sub": team.id, "participant_id": participant.id, "role": "team"})
             res = JSONResponse({"status": "ok", "role": "team"})
             res.set_cookie("access_token", token, httponly=True)
             return res
@@ -358,9 +370,8 @@ async def get_me(request: Request):
                     "tasks": []
                 }
 
-            # Запускаем
+            # Запускаем таймер ТОЛЬКО СЕЙЧАС
             team.started_at = datetime.utcnow()
-            team.current_phase_index = 0
             team.phase_started_at = datetime.utcnow()
             db.commit()
 
@@ -405,9 +416,15 @@ async def get_me(request: Request):
 
         tasks = db.execute(select(Task).where(Task.is_active == True).order_by(Task.order_index)).scalars().all()
         tasks_out = []
+        participant = get_current_participant(request, db)
         for t in tasks:
-            best_sub = db.query(Submission).filter_by(team_id=team.id, task_id=t.id).order_by(
-                Submission.score.desc()).first()
+            # Ищем лучшую посылку КОНКРЕТНОГО УЧАСТНИКА
+            best_sub = None
+            if participant:
+                best_sub = db.query(Submission).filter_by(
+                    participant_id=participant.id, task_id=t.id
+                ).order_by(Submission.score.desc()).first()
+
             tasks_out.append({
                 "id": t.id, "title": t.title, "order_index": t.order_index, "max_points": t.points_max,
                 "current_score": best_sub.score if best_sub else 0,
@@ -441,13 +458,15 @@ async def get_me(request: Request):
 @app.get("/api/team/leaderboard")
 async def get_leaderboard(request: Request):
     with Session(engine) as db:
-        team = get_current_team(request, db)
-        teams = db.query(Team).all()
+        team_current = get_current_team(request, db)
+        participant_current = get_current_participant(request, db)
+        participants = db.query(Participant).all()
+        teams = {t.id: t.name for t in db.query(Team).all()}
 
         rows = []
-        for t in teams:
-            subs = db.query(Submission).filter_by(team_id=t.id).all()
-            best_scores: dict[int, Submission] = {}
+        for p in participants:
+            subs = db.query(Submission).filter_by(participant_id=p.id).all()
+            best_scores = {}
             for s in subs:
                 cur = best_scores.get(s.task_id)
                 if cur is None:
@@ -459,17 +478,19 @@ async def get_leaderboard(request: Request):
                     best_scores[s.task_id] = s
 
             code_score = sum((s.score or 0) for s in best_scores.values())
-
             rows.append({
-                "id": t.id, "name": t.name, "school": t.school or "",
-                "code_score": code_score,
-                "total_score": code_score,  # для совместимости с фронтом
-                "is_me": (t.id == team.id),
+                "id": p.id, "name": p.name,
+                "team_name": teams.get(p.team_id, "—"),
+                "code_score": code_score, "total_score": code_score,
+                "is_me": (p.id == participant_current.id if participant_current else False)
             })
 
-        rows.sort(key=lambda r: -r["code_score"])
-        for i, r in enumerate(rows, 1):
-            r["place"] = i
+        rows.sort(key=lambda r: -r["total_score"])
+        current_place = 1
+        for i, r in enumerate(rows):
+            if i > 0 and rows[i-1]["total_score"] != r["total_score"]:
+                current_place = i + 1
+            r["place"] = current_place
 
         my_place = next((r["place"] for r in rows if r["is_me"]), None)
         return {"teams": rows, "my_place": my_place}
@@ -499,6 +520,7 @@ async def get_task_detail(task_id: int, request: Request):
 async def submit_code(request: Request):
     with Session(engine) as db:
         team = get_current_team(request, db)
+        participant = get_current_participant(request, db)
         gs = db.query(GlobalSettings).first()
         phases = db.query(Phase).order_by(Phase.order_index).all()
 
@@ -597,23 +619,21 @@ async def submit_code(request: Request):
         # --- РАСЧЕТ ВРЕМЕНИ В ИГРЕ (добавьте эту строку) ---
         time_spent = int((datetime.utcnow() - team.started_at).total_seconds()) if team.started_at else 0
 
-        old_subs = db.query(Submission).filter_by(team_id=team.id, task_id=tid).all()
+        old_subs = db.query(Submission).filter_by(participant_id=participant.id, task_id=tid).all()
         for old_sub in old_subs:
             if (old_sub.score or 0) <= score:
                 db.delete(old_sub)
-            else:
-                old_sub.code = "# Код удален для экономии места (сохранен лучший результат)"
 
-        # --- СОХРАНЕНИЕ В БАЗУ ---
         db.add(Submission(
             team_id=team.id,
+            participant_id=participant.id,
             task_id=tid,
             code=code,
             score=score,
             time_ms=time_ms,
             memory_mb=memory_mb,
             time_spent=time_spent,
-            status=status # <--- ДОБАВИТЬ ЭТУ СТРОКУ
+            status=status
         ))
         db.commit()
         await manager.broadcast("update_rating")
@@ -628,107 +648,92 @@ async def admin_stats(request: Request):
         gs = db.query(GlobalSettings).first()
         teams = db.query(Team).all()
         phases = db.query(Phase).order_by(Phase.order_index).all()
+        participants = db.query(Participant).all()
 
-        # 1. Собираем базовую инфу и баллы по Python
-        teams_data = {}
-        for t in teams:
-            subs = db.execute(select(Submission).where(Submission.team_id == t.id)).scalars().all()
+        participants_data = []
+        for p in participants:
+            subs = db.query(Submission).filter_by(participant_id=p.id).all()
             best_subs = {}
             for s in subs:
                 if s.task_id not in best_subs or (s.score or 0) > (best_subs[s.task_id].score or 0):
                     best_subs[s.task_id] = s
 
             code_score = sum((s.score or 0) for s in best_subs.values())
-            # Время и память лучшей посылки (для тай-брейка Python)
             best_time = min([s.time_ms or 0 for s in best_subs.values()] + [999999])
             best_mem = min([s.memory_mb or 0 for s in best_subs.values()] + [999999])
 
-            total_time = int((datetime.utcnow() - t.started_at).total_seconds()) if t.started_at else 0
-            time_left = 0
+            participants_data.append({
+                "id": p.id, "name": p.name, "team_id": p.team_id,
+                "team_name": next((t.name for t in teams if t.id == p.team_id), "—"),
+                "score": code_score, "best_time": best_time, "best_mem": best_mem,
+            })
+
+        sorted_py = sorted(participants_data, key=lambda p: (-p["score"], p["best_time"], p["best_mem"]))
+        for idx, p in enumerate(sorted_py):
+            p["place_python"] = idx + 1
+
+        sport_phases = [p for p in phases if p.type == "sport"]
+        sport_ranks_sum = {p.id: 0 for p in participants}
+
+        for sp in sport_phases:
+            results = db.query(SportResult).filter_by(phase_id=sp.id).all()
+            res_dict = {r.participant_id: r.attempts for r in results if r.participant_id}
+
+            def sport_sort_key(p):
+                val = res_dict.get(p.id, None)
+                if val is None: return (1, 0)
+                return (0, -val if sp.sport_direction == 'more' else val)
+
+            sorted_sp = sorted(participants, key=sport_sort_key)
+            current_rank = 1
+            for i, p in enumerate(sorted_sp):
+                if i > 0:
+                    prev_val = res_dict.get(sorted_sp[i - 1].id, None)
+                    curr_val = res_dict.get(p.id, None)
+                    if curr_val != prev_val or curr_val is None:
+                        current_rank = i + 1
+                sport_ranks_sum[p.id] += current_rank
+
+        sorted_sport = sorted(participants, key=lambda p: sport_ranks_sum[p.id])
+        participant_place_sport = {p.id: idx + 1 for idx, p in enumerate(sorted_sport)}
+
+        for p in participants_data:
+            p["place_sport"] = participant_place_sport.get(p["id"], 99)
+            p["final_place"] = p["place_python"] + p["place_sport"]
+            p["sport_attempts"] = sum(
+                [r.attempts for r in db.query(SportResult).filter_by(participant_id=p["id"]).all()])
+
+        final_sorted = sorted(participants_data, key=lambda x: (x["final_place"], x["place_python"]))
+
+        teams_data = []
+        for t in teams:
             current_phase = phases[t.current_phase_index] if t.current_phase_index < len(phases) else None
             phase_name = "Ожидание"
+            time_left = 0
             if current_phase:
                 phase_name = current_phase.sport_name if current_phase.type == 'sport' else f"Задача {current_phase.task_id}"
                 if t.phase_started_at:
                     elapsed = (datetime.utcnow() - t.phase_started_at).total_seconds()
                     time_left = max(0, int(current_phase.duration_seconds - elapsed))
 
-            teams_data[t.id] = {
+            total_time = int((datetime.utcnow() - t.started_at).total_seconds()) if t.started_at else 0
+
+            teams_data.append({
                 "id": t.id, "name": t.name,
-                "score": code_score,
-                "best_time": best_time, "best_mem": best_mem,
+                "score": sum(p["score"] for p in participants_data if p["team_id"] == t.id),
                 "is_paused": t.is_paused, "is_active": t.is_active,
-                "finished_at": t.finished_at.isoformat() if t.finished_at else None,
                 "current_phase_index": t.current_phase_index,
                 "phase_name": phase_name, "phase_time_left": time_left, "total_time": total_time,
                 "team_size": db.query(Participant).filter(Participant.team_id == t.id).count(),
                 "team_max": settings.team_size, "is_full": t.is_full, "force_started": t.force_started
-            }
-
-        # 2. Считаем place_python
-        sorted_py = sorted(teams, key=lambda t: (-teams_data[t.id]["score"], teams_data[t.id]["best_time"],
-                                                 teams_data[t.id]["best_mem"]))
-        for idx, t in enumerate(sorted_py):
-            teams_data[t.id]["place_python"] = idx + 1
-
-        # 3. Считаем place_sport (Олимпийская система - сумма мест по фазам)
-        sport_phases = [p for p in phases if p.type == "sport"]
-        sport_ranks_sum = {t.id: 0 for t in teams}
-
-        if sport_phases:
-            for sp in sport_phases:
-                results = db.query(SportResult).filter_by(phase_id=sp.id).all()
-                res_dict = {r.team_id: r.attempts for r in results}
-
-                # Сортируем команды для текущей спорт-фазы
-                def sport_sort_key(t):
-                    val = res_dict.get(t.id, None)
-                    if val is None: return (1, 0)  # Нет результата -> худшие
-                    return (0, -val if sp.sport_direction == 'more' else val)
-
-                sorted_sp = sorted(teams, key=sport_sort_key)
-
-                # Раздаем места (1, 2, 2, 4...)
-                current_rank = 1
-                for i, t in enumerate(sorted_sp):
-                    if i > 0:
-                        prev_val = res_dict.get(sorted_sp[i - 1].id, None)
-                        curr_val = res_dict.get(t.id, None)
-                        if curr_val != prev_val or curr_val is None:
-                            current_rank = i + 1
-
-                    sport_ranks_sum[t.id] += current_rank
-
-        # 4. Считаем place_sport на основе суммы рангов
-        sorted_sport = sorted(teams, key=lambda t: sport_ranks_sum[t.id])
-        for idx, t in enumerate(sorted_sport):
-            teams_data[t.id]["place_sport"] = idx + 1
-            teams_data[t.id]["sport_score"] = sum(
-                [r.attempts for r in db.query(SportResult).filter_by(team_id=t.id).all()])  # Сумма подходов (для инфы)
-
-        # 5. Итоговое место (Сумма мест)
-        for t_id, data in teams_data.items():
-            data["final_place"] = data.get("place_python", 99) + data.get("place_sport", 99)
-
-        # Сортируем итоговый массив для админки (по итоговому месту)
-        # Сортируем итоговый массив для админки (по итоговому месту)
-        final_sorted = sorted(teams_data.values(), key=lambda x: (x["final_place"], x["place_python"]))
-
-        # Определяем «активную» фазу для подсветки в админке:
-        # берём фазу у команды, которая зашла позже всех.
-        current_phase_for_admin = 0
-        latest_start = None
-        for t in teams:
-            if t.phase_started_at and t.current_phase_index < len(phases):
-                if latest_start is None or t.phase_started_at > latest_start:
-                    latest_start = t.phase_started_at
-                    current_phase_for_admin = t.current_phase_index
+            })
 
         return {
-            "teams": final_sorted,
+            "participants": final_sorted,
+            "teams": teams_data,
             "global_is_started": gs.is_started,
             "global_is_paused": gs.is_paused,
-            "current_phase": current_phase_for_admin
+            "current_phase": 0
         }
 
 
@@ -741,21 +746,6 @@ async def toggle_global_timer(request: Request):
 
         if "is_started" in data:
             gs.is_started = data["is_started"]
-            if gs.is_started:
-
-                # Берём первую фазу (или текущую, если уже шла)
-                phases = db.query(Phase).order_by(Phase.order_index).all()
-                first_phase = phases[0] if phases else None
-
-                for t in db.query(Team).all():
-                    if not t.started_at:
-                        t.started_at = datetime.utcnow()
-
-                    # Автоматически ставим команду на первую фазу,
-                    # чтобы её таймер пошёл сразу после глобального старта
-                    if first_phase is not None:
-                        t.current_phase_index = first_phase.order_index
-                        t.phase_started_at = datetime.utcnow()
 
         if "is_paused" in data:
             gs.is_paused = data["is_paused"]
@@ -1094,109 +1084,95 @@ async def admin_delete_phase(phase_id: int, request: Request):
 
 
 # --- ЭКСПОРТ CSV ---
+# --- ЭКСПОРТ CSV ---
 @app.get("/api/admin/export")
 async def export_csv(request: Request):
     with Session(engine) as db:
         get_current_admin(request, db)
-
-        # Получаем те же данные, что и для админки
-        gs = db.query(GlobalSettings).first()
         teams = db.query(Team).all()
         phases = db.query(Phase).order_by(Phase.order_index).all()
+        participants = db.query(Participant).all()
 
-        teams_data = {}
-        for t in teams:
-            subs = db.execute(select(Submission).where(Submission.team_id == t.id)).scalars().all()
+        # 1. Считаем place_python для участников
+        p_data = []
+        for p in participants:
+            subs = db.query(Submission).filter_by(participant_id=p.id).all()
             best_subs = {}
             for s in subs:
                 if s.task_id not in best_subs or (s.score or 0) > (best_subs[s.task_id].score or 0):
                     best_subs[s.task_id] = s
+            p_data.append({
+                "id": p.id, "name": p.name,
+                "team_name": next((t.name for t in teams if t.id == p.team_id), "—"),
+                "score": sum((s.score or 0) for s in best_subs.values()),
+                "best_time": min([s.time_ms or 0 for s in best_subs.values()] + [999999]),
+                "best_mem": min([s.memory_mb or 0 for s in best_subs.values()] + [999999]),
+                "team_id": p.team_id
+            })
 
-            code_score = sum((s.score or 0) for s in best_subs.values())
-            best_time = min([s.time_ms or 0 for s in best_subs.values()] + [999999])
-            best_mem = min([s.memory_mb or 0 for s in best_subs.values()] + [999999])
+        sorted_py = sorted(p_data, key=lambda x: (-x["score"], x["best_time"], x["best_mem"]))
+        for i, x in enumerate(sorted_py): x["place_python"] = i + 1
 
-            teams_data[t.id] = {
-                "name": t.name,
-                "score": code_score,
-                "best_time": best_time,
-                "best_mem": best_mem,
-            }
-
-        # Считаем place_python
-        sorted_py = sorted(teams, key=lambda t: (-teams_data[t.id]["score"], teams_data[t.id]["best_time"],
-                                                 teams_data[t.id]["best_mem"]))
-        for idx, t in enumerate(sorted_py):
-            teams_data[t.id]["place_python"] = idx + 1
-
-        # Считаем place_sport
+        # 2. Считаем place_sport для участников
         sport_phases = [p for p in phases if p.type == "sport"]
-        sport_ranks_sum = {t.id: 0 for t in teams}
+        sport_ranks_sum = {p.id: 0 for p in participants}
 
         for sp in sport_phases:
             results = db.query(SportResult).filter_by(phase_id=sp.id).all()
-            res_dict = {r.team_id: r.attempts for r in results}
+            res_dict = {r.participant_id: r.attempts for r in results if r.participant_id}
 
-            def sport_sort_key(t):
-                val = res_dict.get(t.id, None)
+            def sport_sort_key(p):
+                val = res_dict.get(p.id, None)
                 if val is None: return (1, 0)
                 return (0, -val if sp.sport_direction == 'more' else val)
 
-            sorted_sp = sorted(teams, key=sport_sort_key)
-
+            sorted_sp = sorted(participants, key=sport_sort_key)
             current_rank = 1
-            for i, t in enumerate(sorted_sp):
+            for i, p in enumerate(sorted_sp):
                 if i > 0:
                     prev_val = res_dict.get(sorted_sp[i - 1].id, None)
-                    curr_val = res_dict.get(t.id, None)
+                    curr_val = res_dict.get(p.id, None)
                     if curr_val != prev_val or curr_val is None:
                         current_rank = i + 1
-                sport_ranks_sum[t.id] += current_rank
+                sport_ranks_sum[p.id] += current_rank
 
-        sorted_sport = sorted(teams, key=lambda t: sport_ranks_sum[t.id])
-        for idx, t in enumerate(sorted_sport):
-            teams_data[t.id]["place_sport"] = idx + 1
-            teams_data[t.id]["sport_attempts"] = sum(
-                [r.attempts for r in db.query(SportResult).filter_by(team_id=t.id).all()])
+        sorted_sport = sorted(participants, key=lambda p: sport_ranks_sum[p.id])
+        participant_place_sport = {p.id: idx + 1 for idx, p in enumerate(sorted_sport)}
 
-        # Итоговое место
-        for t_id, data in teams_data.items():
-            data["final_place"] = data.get("place_python", 99) + data.get("place_sport", 99)
+        for x in p_data:
+            x["place_sport"] = participant_place_sport.get(x["id"], 99)
+            x["final_place"] = x["place_python"] + x["place_sport"]
+            x["sport_attempts"] = sum(
+                [r.attempts for r in db.query(SportResult).filter_by(participant_id=x["id"]).all()])
 
-        # Сортируем по итоговому месту
-        final_sorted = sorted(teams_data.values(), key=lambda x: (x["final_place"], x["place_python"]))
+        final_sorted = sorted(p_data, key=lambda x: (x["final_place"], x["place_python"]))
 
         # --- ГЕНЕРАЦИЯ CSV ---
         output = io.StringIO()
         writer = csv.writer(output, delimiter=';', lineterminator='\r\n')
 
-        # Заголовки
+        # Заголовки (Ученик вместо Команды)
         headers = [
-            "Итоговое место", "Команда",
+            "Итоговое место", "Ученик", "Команда",
             "Место (Код)", "Баллы (Код)",
             "Место (Спорт)", "Всего подходов (Спорт)"
         ]
         for sp in sport_phases:
             headers.append(f"{sp.sport_name} (Подходы)")
-
         writer.writerow(headers)
 
         # Данные
         for row in final_sorted:
             line = [
-                row["final_place"], row["name"],
+                row["final_place"], row["name"], row["team_name"],
                 row["place_python"], row["score"],
                 row["place_sport"], row["sport_attempts"]
             ]
 
+            # Добавляем подходы по каждой спортивной фазе
             for sp in sport_phases:
-                # Получаем подходы для конкретной фазы
-                t = next((x for x in teams if x.name == row["name"]), None)
-                if t:
-                    r = db.query(SportResult).filter_by(team_id=t.id, phase_id=sp.id).first()
-                    line.append(r.attempts if r else "-")
-                else:
-                    line.append("-")
+                r = db.query(SportResult).filter_by(participant_id=row["id"], phase_id=sp.id).first()
+                line.append(r.attempts if r else "-")
 
             writer.writerow(line)
 
@@ -1260,10 +1236,10 @@ async def admin_start_phase(phase_id: int, request: Request):
             raise HTTPException(404, "Фаза не найдена")
 
         data = await request.json()
-        team_id = data.get("team_id")  # None, если для всех
+        team_id = data.get("team_id")
 
         if team_id:
-            # Запуск для конкретной команды
+            # Принудительный запуск для ОДНОЙ команды (админ сам решает)
             team = db.get(Team, team_id)
             if not team: raise HTTPException(404, "Команда не найдена")
 
@@ -1277,9 +1253,8 @@ async def admin_start_phase(phase_id: int, request: Request):
             gs.is_paused = False
             for t in db.query(Team).all():
                 t.current_phase_index = phase.order_index
-                t.phase_started_at = datetime.utcnow()
-                if not t.started_at:
-                    t.started_at = datetime.utcnow()
+                # НЕ ставим started_at и phase_started_at!
+                # Таймер запустится, когда участник зайдет на сайт.
 
         db.commit()
         await manager.broadcast("timer_changed")
@@ -1299,17 +1274,19 @@ async def staff_page(request: Request):
 async def get_staff_sport_data(request: Request):
     with Session(engine) as db:
         get_current_judge(request, db)
-        # Отдаем все спортивные фазы
         phases = db.query(Phase).filter(Phase.type == "sport").order_by(Phase.order_index).all()
-        # Отдаем все команды (только активные)
-        teams = db.query(Team).filter(Team.is_active == True).all()
-        # Отдаем все существующие результаты
+        participants = db.query(Participant).all()
+        teams = {t.id: t.name for t in db.query(Team).all()}
         results = db.query(SportResult).all()
 
         return {
             "phases": [{"id": p.id, "sport_name": p.sport_name, "sport_direction": p.sport_direction} for p in phases],
-            "teams": [{"id": t.id, "name": t.name} for t in teams],
-            "results": [{"team_id": r.team_id, "phase_id": r.phase_id, "attempts": r.attempts} for r in results]
+            "participants": [
+                {"id": p.id, "name": p.name, "team_name": teams.get(p.team_id, "—")}
+                for p in participants
+            ],
+            "results": [{"participant_id": r.participant_id, "phase_id": r.phase_id, "attempts": r.attempts} for r in
+                        results if r.participant_id]
         }
 
 
@@ -1318,18 +1295,27 @@ async def save_staff_sport_result(request: Request):
     with Session(engine) as db:
         get_current_judge(request, db)
         data = await request.json()
-        team_id = data.get("team_id")
+        participant_id = data.get("participant_id")
         phase_id = data.get("phase_id")
         attempts = int(data.get("attempts", 0))
+
+        participant = db.get(Participant, participant_id)
+        if not participant: raise HTTPException(404, "Участник не найден")
 
         phase = db.get(Phase, phase_id)
         if not phase: raise HTTPException(404, "Фаза не найдена")
 
-        existing = db.query(SportResult).filter_by(team_id=team_id, phase_id=phase_id).first()
+        existing = db.query(SportResult).filter_by(participant_id=participant_id, phase_id=phase_id).first()
         if existing:
             existing.attempts = attempts
         else:
-            db.add(SportResult(team_id=team_id, phase_id=phase_id, exercise_name=phase.sport_name, attempts=attempts))
+            db.add(SportResult(
+                team_id=participant.team_id,
+                participant_id=participant.id,
+                phase_id=phase_id,
+                exercise_name=phase.sport_name,
+                attempts=attempts
+            ))
 
         db.commit()
         await manager.broadcast("update_rating")
