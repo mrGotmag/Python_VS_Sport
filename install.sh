@@ -31,18 +31,47 @@ info "[0/6] Проверка базовых утилит..."
 
 if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1 || ! command -v gcc >/dev/null 2>&1 || ! command -v make >/dev/null 2>&1; then
     info "Устанавливаем минимальный набор для сборки..."
+
     if command -v apt-get >/dev/null 2>&1; then
+        # Для Debian / Ubuntu
         sudo apt-get update
         sudo apt-get install -y curl git build-essential patch \
             libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
             libffi-dev liblzma-dev libncurses-dev || warn "Некоторые пакеты не установились, но пробуем продолжить..."
+
+    elif command -v dnf >/dev/null 2>&1; then
+        # Для Fedora / RHEL / RedOS / CentOS
+        info "Обнаружена Fedora/RHEL/RedOS. Устанавливаем зависимости через dnf..."
+        sudo dnf install -y --skip-broken curl git gcc make patch zlib-devel bzip2-devel \
+            openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel \
+            gdbm-devel libdb-devel libpcap-devel xz-devel libffi-devel || warn "Некоторые пакеты dnf не установились..."
+
+    elif command -v pacman >/dev/null 2>&1; then
+        # Для Arch Linux / Manjaro
+        info "Обнаружен Arch Linux. Устанавливаем зависимости через pacman..."
+        sudo pacman -Sy --noconfirm curl git base-devel openssl zlib xz readline sqlite tk libffi bzip2 || warn "Некоторые пакеты pacman не установились..."
+
+    elif command -v zypper >/dev/null 2>&1; then
+        # Для openSUSE
+        info "Обнаружен openSUSE. Устанавливаем зависимости через zypper..."
+        sudo zypper --non-interactive install curl git gcc make patch libopenssl-devel zlib-devel libbz2-devel readline-devel sqlite3-devel libffi-devel xz-devel ncurses-devel || warn "Некоторые пакеты zypper не установились..."
+
     elif command -v brew >/dev/null 2>&1; then
+        # Для macOS
         info "Обнаружен macOS (Homebrew). Устанавливаем зависимости..."
         brew install curl git gcc make patch openssl readline sqlite3 xz zlib || warn "Некоторые пакеты brew не установились..."
+
     else
-        fail "Установите curl, git, gcc, make и patch вручную."
+        fail "Не удалось определить ваш пакетный менеджер. Установите curl, git, gcc, make и patch вручную."
     fi
 fi
+
+# Повторная проверка, что всё установилось
+command -v curl >/dev/null 2>&1 || fail "curl не установлен."
+command -v git >/dev/null 2>&1 || fail "git не установлен."
+command -v gcc >/dev/null 2>&1 || fail "gcc не установлен."
+command -v make >/dev/null 2>&1 || fail "make не установлен."
+
 ok "Базовые утилиты готовы."
 
 # ---- 1) Проверка Python 3.12 ----
@@ -210,17 +239,10 @@ echo
 info "============================================================"
 info "  ЗАПУСК СЕРВЕРА"
 info "============================================================"
-echo "  Установка завершена! Запускаем сервер с правами администратора..."
+echo "  Сервер запускается. Браузер откроется автоматически (через run.py)."
+echo "  Для остановки нажмите Ctrl+C."
 echo
 
-# Убедимся, что мы в корне проекта (где лежит start_server.sh)
-cd "$(dirname "$0")" 2>/dev/null || true
+cd web
 
-if [ -f "start_server.sh" ]; then
-    # Запускаем наш стартер, который запросит пароль sudo
-    ./start_server.sh
-else
-    warn "Файл start_server.sh не найден! Запускаем сервер напрямую."
-    cd web
-    "../.venv/bin/python" run.py
-fi
+"../.venv/bin/python" run.py
