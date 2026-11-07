@@ -51,7 +51,8 @@ if not exist "%ZIP_FILE%" (
 )
 
 echo Распаковываем архив...
-tar -xf "%ZIP_FILE%" -C "%~dp0"
+REM --- Убрали -C "%~dp0", так как мы уже в этой папке ---
+tar -xf "%ZIP_FILE%"
 if not exist "Python_VS_Sport-main" (
     echo [ОШИБКА] Архив распаковался, но папка Python_VS_Sport-main не найдена.
     pause
@@ -64,7 +65,6 @@ echo [3/5] Сохранение ваших файлов и обновление
 if exist "%TEMP_BACKUP%" rmdir /S /Q "%TEMP_BACKUP%"
 mkdir "%TEMP_BACKUP%"
 
-REM --- Бэкап файлов, если папка проекта существует ---
 if exist "%PROJECT_DIR%" (
     echo Сохраняем вашу базу данных и настройки...
     if exist "%PROJECT_DIR%\web\contest_web.db" (
@@ -86,7 +86,6 @@ if exist "%PROJECT_DIR%" (
 echo Устанавливаем новую версию...
 ren "Python_VS_Sport-main" "%PROJECT_DIR%"
 
-REM --- Восстановление файлов (только если они есть в PvS_temp) ---
 if exist "%TEMP_BACKUP%\web\contest_web.db" (
     echo Восстанавливаем базу данных...
     copy /Y "%TEMP_BACKUP%\web\contest_web.db" "%PROJECT_DIR%\web\contest_web.db" >nul
@@ -102,7 +101,6 @@ if exist "%TEMP_BACKUP%\orcestrator\tasks" (
     xcopy /E /I /Y /Q "%TEMP_BACKUP%\orcestrator\tasks" "%PROJECT_DIR%\orcestrator\tasks" >nul
 )
 
-REM Удаляем временную папку, если она есть
 if exist "%TEMP_BACKUP%" rmdir /S /Q "%TEMP_BACKUP%"
 echo OK: Обновление завершено.
 
