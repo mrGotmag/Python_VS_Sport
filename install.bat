@@ -68,7 +68,14 @@ goto clean_install
 echo.
 echo [ИНФО] Обнаружена существующая папка %PROJECT_DIR%.
 echo [ИНФО] Обновляем файлы кода, сохраняя вашу базу данных и настройки...
-robocopy "%EXTRACT_DIR%\Python_VS_Sport-main" "%PROJECT_DIR%" /E /XF "contest_web.db" ".env" /XD ".venv" ".git" >nul
+if exist "%PROJECT_DIR%" ren "%PROJECT_DIR%" "%PROJECT_DIR%_old"
+ren "%EXTRACT_DIR%\Python_VS_Sport-main" "%PROJECT_DIR%"
+
+if exist "%PROJECT_DIR%_old\web\contest_web.db" copy /Y "%PROJECT_DIR%_old\web\contest_web.db" "%PROJECT_DIR%\web\contest_web.db" >nul
+if exist "%PROJECT_DIR%_old\.env" copy /Y "%PROJECT_DIR%_old\.env" "%PROJECT_DIR%\.env" >nul
+if exist "%PROJECT_DIR%_old\.venv" move /Y "%PROJECT_DIR%_old\.venv" "%PROJECT_DIR%\.venv" >nul
+
+rmdir /S /Q "%PROJECT_DIR%_old"
 echo OK: Файлы кода обновлены. Ваша база данных не тронута.
 goto clean_temp
 
@@ -88,7 +95,16 @@ echo OK: База данных удалена.
 :clean_temp
 rmdir /S /Q "%EXTRACT_DIR%"
 del /q "%ZIP_FILE%"
-cd "%PROJECT_DIR%"
+
+if not exist "%PROJECT_DIR%\requirements.txt" (
+    echo.
+    echo [ОШИБКА] Файл %PROJECT_DIR%\requirements.txt не найден! 
+    echo Возможно, он отсутствует в репозитории на GitHub.
+    pause
+    exit /b 1
+)
+
+cd /d "%PROJECT_DIR%"
 
 echo.
 echo [4/5] Проверка .venv
@@ -107,8 +123,7 @@ echo OK: .venv готово.
 
 echo.
 echo [5/5] Установка зависимостей
-if not exist "requirements.txt" goto skip_pip
-".venv\Scripts\python.exe" -m pip install --upgrade pip setuptools wheel >nul
+".venv\Scripts\python.exe" -m pip install --upgrade pip setuptools wheel
 ".venv\Scripts\python.exe" -m pip install -r requirements.txt --only-binary=:all:
 if errorlevel 1 (
     echo [ОШИБКА] Не удалось установить зависимости.
@@ -117,13 +132,13 @@ if errorlevel 1 (
 )
 echo OK: зависимости установлены.
 
-:skip_pip
 if exist ".env" goto skip_env
 if not exist ".env.example" goto skip_env
 copy /Y ".env.example" ".env" >nul
 echo OK: .env создан.
 
 :skip_env
+echo.
 echo Проверка импортов...
 ".venv\Scripts\python.exe" -c "import fastapi, uvicorn, sqlalchemy, jwt, bcrypt, markdown, psutil, pydantic_settings, dotenv; print('OK')"
 if errorlevel 1 (
