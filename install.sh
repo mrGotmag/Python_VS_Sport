@@ -61,7 +61,6 @@ else
         curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
     fi
 
-    # Подгружаем pyenv в текущую сессию
     export PATH="$HOME/.pyenv/bin:$PATH"
     eval "$(pyenv init -)"
 
@@ -83,6 +82,18 @@ ok "git найден"
 info "[3/6] Синхронизация файлов с GitHub..."
 if [ -d "${PROJECT_DIR}/.git" ]; then
     echo "  Папка ${PROJECT_DIR} существует. Обновляем..."
+
+    # --- БЭКАП БАЗЫ ДАННЫХ И ЗАДАЧ ---
+    BACKUP_DIR="${PROJECT_DIR}_backup"
+    mkdir -p "$BACKUP_DIR"
+
+    if [ -f "${PROJECT_DIR}/web/contest_web.db" ]; then
+        cp "${PROJECT_DIR}/web/contest_web.db" "$BACKUP_DIR/"
+        ok "База данных сохранена."
+    fi
+    if [ -f "${PROJECT_DIR}/.env" ]; then
+        cp "${PROJECT_DIR}/.env" "$BACKUP_DIR/"
+    fi
 
     # Спрашиваем, синхронизировать ли папку tasks
     SYNC_TASKS=0
@@ -106,26 +117,44 @@ if [ -d "${PROJECT_DIR}/.git" ]; then
         SYNC_TASKS=1
     fi
 
+    if [ "$SYNC_TASKS" -eq 0 ]; then
+        # Сохраняем задачи, если не хотим синхронизировать
+        mkdir -p "$BACKUP_DIR/orcestrator"
+        cp -r "${PROJECT_DIR}/orcestrator/tasks" "$BACKUP_DIR/orcestrator/"
+    fi
+
     cd "${PROJECT_DIR}"
 
+    # ИСПРАВЛЕНИЕ: Добавили исключение для contest_web.db, чтобы git clean не убил базу
     if [ "$SYNC_TASKS" -eq 1 ]; then
-        # Полная синхронизация
         git fetch --all >/dev/null 2>&1 || warn "Не удалось связаться с GitHub"
         git reset --hard origin/main >/dev/null 2>&1 || git reset --hard origin/master >/dev/null 2>&1
-        git clean -fd -e .venv -e .env >/dev/null 2>&1 || true
+        git clean -fd -e .venv -e .env -e web/contest_web.db >/dev/null 2>&1 || true
         ok "Файлы обновлены (включая tasks)"
     else
-        # Сохраняем папку tasks
         echo "  Сохраняем папку tasks..."
         git rm -r --cached --ignore-unmatch "orcestrator/tasks" >/dev/null 2>&1 || true
         git fetch --all >/dev/null 2>&1 || warn "Не удалось связаться с GitHub"
         git reset --hard origin/main >/dev/null 2>&1 || git reset --hard origin/master >/dev/null 2>&1
         git checkout origin/main -- "orcestrator/tasks" >/dev/null 2>&1 || \
             git checkout origin/master -- "orcestrator/tasks" >/dev/null 2>&1 || true
-        git clean -fd -e .venv -e .env -e orcestrator/tasks >/dev/null 2>&1 || true
+        git clean -fd -e .venv -e .env -e web/contest_web.db -e orcestrator/tasks >/dev/null 2>&1 || true
         ok "Файлы обновлены (папка tasks сохранена)"
     fi
 
+    # Восстанавливаем базу данных и настройки
+    if [ -f "$BACKUP_DIR/contest_web.db" ]; then
+        cp "$BACKUP_DIR/contest_web.db" "web/contest_web.db"
+        ok "База данных восстановлена."
+    fi
+    if [ -f "$BACKUP_DIR/.env" ]; then
+        cp "$BACKUP_DIR/.env" ".env"
+    fi
+    if [ "$SYNC_TASKS" -eq 0 ] && [ -d "$BACKUP_DIR/orcestrator/tasks" ]; then
+        cp -r "$BACKUP_DIR/orcestrator/tasks/"* "orcestrator/tasks/" 2>/dev/null || true
+    fi
+
+    rm -rf "$BACKUP_DIR"
     cd ..
 else
     if [ -e "${PROJECT_DIR}" ]; then
@@ -137,6 +166,12 @@ else
 fi
 
 cd "${PROJECT_DIR}"
+
+# ---- Выдача прав на запуск ----
+if [ -f "start_server.sh" ]; then
+    chmod +x start_server.sh
+    ok "Права на запуск start_server.sh установлены."
+fi
 
 # ---- 4) Создание venv ----
 info "[4/6] Создание .venv..."
@@ -153,7 +188,8 @@ ok "venv готов"
 info "[5/6] Установка зависимостей (это может занять пару минут)..."
 if [ -f "requirements.txt" ]; then
     "$VENV_PY" -m pip install --upgrade pip setuptools wheel -q
-    "$VENV_PY" -m pip install -r requirements.txt --only-binary=:all: || fail "Не удалось установить зависимости"
+    # ИСПРАВЛЕНИЕ: Убрали --only-binary=:all:, чтобы не падало на Apple Silicon (M1/M2/M3)
+    "$VENV_PY" -m pip install -r requirements.txt || fail "Не удалось установить зависимости"
     ok "зависимости установлены"
 else
     warn "requirements.txt не найден!"
@@ -167,7 +203,6 @@ if [ ! -f ".env" ] && [ -f ".env.example" ]; then
 fi
 
 # ---- Проверка ----
-# ИСПРАВЛЕНИЕ: Добавлена проверка psutil, pydantic_settings и dotenv
 "$VENV_PY" -c "import fastapi, uvicorn, sqlalchemy, jwt, bcrypt, markdown, psutil, pydantic_settings, dotenv; print('Все зависимости успешно установлены!')" || fail "Проверка импортов не прошла"
 
 # ---- Запуск ----
@@ -181,5 +216,4 @@ echo
 
 cd web
 
-# ИСПРАВЛЕНИЕ: Убрали дублирующий xdg-open, так как run.py сам открывает браузер
 "../.venv/bin/python" run.py
