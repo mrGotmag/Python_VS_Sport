@@ -62,45 +62,74 @@ del /q "%ZIP_FILE%"
 echo.
 echo [3/5] Обновление файлов и сохранение базы
 if exist "%TEMP_BACKUP%" rmdir /S /Q "%TEMP_BACKUP%"
+
+if not exist "%PROJECT_DIR%" goto no_old_project
+
+echo Обнаружена существующая установка. Останавливаем сервер...
+taskkill /F /IM python.exe /T >nul 2>&1
+timeout /t 2 /nobreak >nul
+
 mkdir "%TEMP_BACKUP%"
 
-if exist "%PROJECT_DIR%" (
-    echo Сохраняем вашу базу данных и настройки...
-    if exist "%PROJECT_DIR%\web\contest_web.db" (
-        mkdir "%TEMP_BACKUP%\web"
-        copy /Y "%PROJECT_DIR%\web\contest_web.db" "%TEMP_BACKUP%\web\contest_web.db" >nul
-    )
-    if exist "%PROJECT_DIR%\.env" (
-        copy /Y "%PROJECT_DIR%\.env" "%TEMP_BACKUP%\.env" >nul
-    )
-    if exist "%PROJECT_DIR%\orcestrator\tasks" (
-        mkdir "%TEMP_BACKUP%\orcestrator"
-        xcopy /E /I /Y /Q "%PROJECT_DIR%\orcestrator\tasks" "%TEMP_BACKUP%\orcestrator\tasks" >nul
-    )
-    
-    echo Удаляем старую папку проекта...
-    rmdir /S /Q "%PROJECT_DIR%"
+echo Сохраняем вашу базу данных...
+if exist "%PROJECT_DIR%\web\contest_web.db" (
+    mkdir "%TEMP_BACKUP%\web"
+    copy /Y "%PROJECT_DIR%\web\contest_web.db" "%TEMP_BACKUP%\web\contest_web.db" >nul
 )
 
+echo Сохраняем настройки .env...
+if exist "%PROJECT_DIR%\.env" (
+    copy /Y "%PROJECT_DIR%\.env" "%TEMP_BACKUP%\.env" >nul
+)
+
+echo.
+choice /C YN /M "Синхронизировать папку задач tasks с GitHub"
+if errorlevel 2 goto skip_tasks
+if errorlevel 1 goto copy_tasks
+
+:copy_tasks
+echo Копируем папку задач...
+if exist "%PROJECT_DIR%\orcestrator\tasks" (
+    mkdir "%TEMP_BACKUP%\orcestrator"
+    xcopy /E /I /Y /Q "%PROJECT_DIR%\orcestrator\tasks" "%TEMP_BACKUP%\orcestrator\tasks" >nul
+)
+goto remove_old
+
+:skip_tasks
+echo Папка задач не сохраняется, будут загружены задачи из GitHub.
+goto remove_old
+
+:remove_old
+echo Удаляем старую папку проекта...
+rmdir /S /Q "%PROJECT_DIR%"
+if exist "%PROJECT_DIR%" (
+    echo [ОШИБКА] Не удалось удалить папку. Возможно, она открыта в проводнике.
+    pause
+    exit /b 1
+)
+
+:no_old_project
 echo Устанавливаем новую версию...
 ren "Python_VS_Sport-main" "%PROJECT_DIR%"
 
+if not exist "%TEMP_BACKUP%" goto update_done
+
+echo Восстанавливаем сохраненные файлы...
 if exist "%TEMP_BACKUP%\web\contest_web.db" (
-    echo Восстанавливаем базу данных...
     copy /Y "%TEMP_BACKUP%\web\contest_web.db" "%PROJECT_DIR%\web\contest_web.db" >nul
 )
 
 if exist "%TEMP_BACKUP%\.env" (
-    echo Восстанавливаем настройки .env...
     copy /Y "%TEMP_BACKUP%\.env" "%PROJECT_DIR%\.env" >nul
 )
 
 if exist "%TEMP_BACKUP%\orcestrator\tasks" (
-    echo Восстанавливаем папку с задачами...
     xcopy /E /I /Y /Q "%TEMP_BACKUP%\orcestrator\tasks" "%PROJECT_DIR%\orcestrator\tasks" >nul
 )
 
-if exist "%TEMP_BACKUP%" rmdir /S /Q "%TEMP_BACKUP%"
+rmdir /S /Q "%TEMP_BACKUP%"
+
+:update_done
 echo OK: Обновление завершено.
 
 cd /d "%PROJECT_DIR%"
