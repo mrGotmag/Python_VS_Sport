@@ -13,9 +13,10 @@ if errorlevel 1 (
 )
 
 cd /d "%USERPROFILE%\Desktop"
+echo [ИНФО] Мы находимся в папке: %CD%
 
-set "REPO_URL=https://github.com/mrGotmag/Python_VS_Sport.git"
 set "PROJECT_DIR=Python_VS_Sport"
+set "ZIP_URL=https://github.com/mrGotmag/Python_VS_Sport/archive/refs/heads/main.zip"
 
 echo.
 echo ============================================================
@@ -24,20 +25,17 @@ echo ============================================================
 echo.
 
 REM ---- 1) Проверка Python 3.12 ----
-echo [1/6] Проверка Python 3.12...
+echo [1/5] Проверка Python 3.12...
 set "PYTHON_EXE=%LocalAppData%\Programs\Python\Python312\python.exe"
 
 if exist "%PYTHON_EXE%" (
-    echo   Python 3.12 уже установлен по пути: %PYTHON_EXE%
+    echo   Python 3.12 уже установлен.
     goto :python_ok
 )
 
 echo   Python 3.12 не найден. Скачиваем...
-set "PY_URL=https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe"
 set "PY_INSTALLER=%TEMP%\python_install.exe"
-
-if exist "%PY_INSTALLER%" del /q "%PY_INSTALLER%"
-curl -L -o "%PY_INSTALLER%" "%PY_URL%"
+curl -L -o "%PY_INSTALLER%" "https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe"
 
 if not exist "%PY_INSTALLER%" (
     echo ОШИБКА: Не удалось скачать установщик Python.
@@ -45,7 +43,7 @@ if not exist "%PY_INSTALLER%" (
     exit /b 1
 )
 
-echo   Устанавливаем Python 3.12...
+echo   Устанавливаем Python 3.12 (займет пару минут)...
 start /wait "" "%PY_INSTALLER%" /quiet InstallAllUsers=0 PrependPath=1 Include_test=0 Include_pip=1 Include_launcher=1
 del /q "%PY_INSTALLER%"
 
@@ -62,105 +60,47 @@ if not exist "%PYTHON_EXE%" (
 :python_ok
 echo   OK: Python 3.12 готов.
 
-REM ---- 2) Проверка git ----
+REM ---- 2) Скачивание файлов проекта ----
 echo.
-echo [2/6] Проверка git...
-where git >nul 2>nul
-if not errorlevel 1 goto :git_ok
-
-echo   Git не найден. Скачиваем...
-set "GIT_URL=https://github.com/git-for-windows/git/releases/download/v2.45.2.windows.1/Git-2.45.2-64-bit.exe"
-set "GIT_INSTALLER=%TEMP%\git_install.exe"
-
-if exist "%GIT_INSTALLER%" del /q "%GIT_INSTALLER%"
-echo   Скачиваем Git...
-curl -L -o "%GIT_INSTALLER%" "%GIT_URL%"
-
-if not exist "%GIT_INSTALLER%" (
-    echo [ОШИБКА] Не удалось скачать установщик Git.
-    pause
-    exit /b 1
-)
-
-echo   Устанавливаем Git (тихий режим)...
-start /wait "" "%GIT_INSTALLER%" /VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /COMPONENTS="icons,ext\reg\shellhere,assoc,assoc_sh"
-del /q "%GIT_INSTALLER%"
-set "PATH=%ProgramFiles%\Git\cmd;%PATH%"
-
-where git >nul 2>nul
-if errorlevel 1 (
-    echo [ОШИБКА] Git установился, но консоль его не видит.
-    pause
-    exit /b 1
-)
-
-:git_ok
-echo   OK: git найден.
-
-REM ---- 3) Клонирование и СИНХРОНИЗАЦИЯ ----
-echo.
-echo [3/6] Синхронизация файлов с GitHub...
-set "SYNC_TASKS=0"
-
-if exist "%PROJECT_DIR%\.git" (
-    echo   Папка существует. Обновляем...
-
-    set "TASKS_DIR_EXISTS=0"
-    if exist "%PROJECT_DIR%\orcestrator\tasks" set "TASKS_DIR_EXISTS=1"
-
-    if "!TASKS_DIR_EXISTS!"=="1" (
-        echo.
-        echo   Обнаружена папка с задачами: %PROJECT_DIR%\orcestrator\tasks
-        echo   ВНИМАНИЕ: синхронизация с GitHub перезапишет и/или удалит файлы задач.
-        echo.
-        set /p "SYNC_TASKS_ANSWER=  Синхронизировать папку tasks с GitHub? (y/n): "
-        if /I "!SYNC_TASKS_ANSWER!"=="y" set "SYNC_TASKS=1"
-        echo.
-    ) else (
-        echo   Папки tasks нет — синхронизируем всё.
-        set "SYNC_TASKS=1"
-    )
-
-    cd "%PROJECT_DIR%"
-
-    REM --- ИСПРАВЛЕНИЕ: Добавлена поддержка ветки master, если main не найдена
-    if "!SYNC_TASKS!"=="1" (
-        git fetch --all >nul 2>&1
-        git reset --hard origin/main >nul 2>&1 || git reset --hard origin/master >nul 2>&1
-        git clean -fd -e .venv -e .env >nul 2>&1
-        echo   OK: файлы обновлены (включая tasks).
-    ) else (
-        echo   Сохраняем папку tasks...
-        git rm -r --cached --ignore-unmatch "orcestrator/tasks" >nul 2>&1
-        git fetch --all >nul 2>&1
-        git reset --hard origin/main >nul 2>&1 || git reset --hard origin/master >nul 2>&1
-        git checkout origin/main -- "orcestrator/tasks" >nul 2>&1 || git checkout origin/master -- "orcestrator/tasks" >nul 2>&1
-        git clean -fd -e .venv -e .env -e orcestrator/tasks >nul 2>&1
-        echo   OK: файлы обновлены (папка tasks сохранена).
-    )
-
-    cd ..
-    goto :check_venv
-)
+echo [2/5] Скачивание файлов с GitHub...
 
 if exist "%PROJECT_DIR%" (
     echo   Удаляем старую папку...
     rmdir /S /Q "%PROJECT_DIR%"
 )
 
-echo   Клонируем репозиторий...
-git clone "%REPO_URL%" "%PROJECT_DIR%"
-if errorlevel 1 (
-    echo [ОШИБКА] Не удалось клонировать репозиторий. Проверьте интернет.
+set "ZIP_FILE=%TEMP%\project.zip"
+echo   Скачиваем архив (пожалуйста, подождите)...
+curl -L -o "%ZIP_FILE%" "%ZIP_URL%"
+
+if not exist "%ZIP_FILE%" (
+    echo [ОШИБКА] Не удалось скачать архив. Проверьте интернет.
     pause
     exit /b 1
 )
-echo   OK: репозиторий склонирован.
 
-:check_venv
+echo   Распаковываем через PowerShell...
+REM Используем PowerShell для распаковки, так как он работает 100% стабильно на всех Windows
+powershell -command "Expand-Archive -Path '%ZIP_FILE%' -DestinationPath '%CD%' -Force"
+
+REM Переименовываем папку (GitHub добавляет -main к имени)
+if exist "Python_VS_Sport-main" (
+    ren "Python_VS_Sport-main" "%PROJECT_DIR%"
+) else (
+    echo [ОШИБКА] Архив скачался, но папка Python_VS_Sport-main не найдена!
+    echo Возможно, вы поменяли название ветки на GitHub (вместо main используется master).
+    pause
+    exit /b 1
+)
+
+del /q "%ZIP_FILE%"
+echo   OK: файлы готовы. Они лежат в: %CD%\%PROJECT_DIR%
+
 cd "%PROJECT_DIR%"
+
+REM ---- 3) Создание venv ----
 echo.
-echo [4/6] Проверка .venv...
+echo [3/5] Проверка .venv...
 
 if exist ".venv\Scripts\python.exe" (
     echo   Удаляем старый .venv для чистой установки...
@@ -177,8 +117,9 @@ if not exist ".venv\Scripts\python.exe" (
 )
 echo   OK: .venv создано.
 
+REM ---- 4) Установка зависимостей ----
 echo.
-echo [5/6] Установка зависимостей (займет 1-2 минуты)...
+echo [4/5] Установка зависимостей (займет 1-2 минуты)...
 if exist "requirements.txt" (
     ".venv\Scripts\python.exe" -m pip install --upgrade pip setuptools wheel >nul
     ".venv\Scripts\python.exe" -m pip install -r requirements.txt --only-binary=:all:
@@ -192,8 +133,9 @@ if exist "requirements.txt" (
     echo   ВНИМАНИЕ: requirements.txt не найден.
 )
 
+REM ---- 5) Подготовка .env ----
 echo.
-echo [6/6] Подготовка .env...
+echo [5/5] Подготовка .env...
 if exist ".env" (
     echo   .env существует.
 ) else if exist ".env.example" (
@@ -203,10 +145,9 @@ if exist ".env" (
 
 echo.
 echo Проверка импортов...
-REM --- ИСПРАВЛЕНИЕ: Добавлена проверка psutil и pydantic_settings
 ".venv\Scripts\python.exe" -c "import fastapi, uvicorn, sqlalchemy, jwt, bcrypt, markdown, psutil, pydantic_settings, dotenv; print('OK')"
 if errorlevel 1 (
-    echo [ОШИБКА] Зависимости не установились (проверьте консоль выше).
+    echo [ОШИБКА] Зависимости не установились.
     pause
     exit /b 1
 )
@@ -219,7 +160,6 @@ echo.
 echo   Запускаем сервер (браузер откроется автоматически)...
 
 cd web
-REM --- ИСПРАВЛЕНИЕ: Убрали start explorer, так как run.py сам открывает браузер
 start "Python vs Sport Server" cmd /k "..\.venv\Scripts\python.exe run.py"
 cd ..
 
