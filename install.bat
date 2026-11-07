@@ -2,18 +2,8 @@
 chcp 65001 >nul
 setlocal EnableDelayedExpansion
 
-REM --- Проверка прав Администратора (для брандмауэра) ---
-net session >nul 2>&1
-if errorlevel 1 (
-    echo [ПРЕДУПРЕЖДЕНИЕ] Вы запустили установщик без прав Администратора.
-    echo Брандмауэр Windows может заблокировать доступ участников к сайту.
-    echo Рекомендуется закрыть это окно и запустить install.bat от имени Администратора.
-    echo.
-    pause
-)
-
-cd /d "%USERPROFILE%\Desktop"
-echo [ИНФО] Мы находимся в папке: %CD%
+REM --- Переход в папку, где лежит этот скрипт ---
+cd /d "%~dp0"
 
 set "PROJECT_DIR=Python_VS_Sport"
 set "ZIP_URL=https://github.com/mrGotmag/Python_VS_Sport/archive/refs/heads/main.zip"
@@ -79,15 +69,14 @@ if not exist "%ZIP_FILE%" (
     exit /b 1
 )
 
-echo   Распаковываем через PowerShell...
-powershell -command "Expand-Archive -Path '%ZIP_FILE%' -DestinationPath '%CD%' -Force"
+echo   Распаковываем...
+tar -xf "%ZIP_FILE%" -C "%CD%"
 
-REM Переименовываем папку (GitHub добавляет -main к имени)
 if exist "Python_VS_Sport-main" (
     ren "Python_VS_Sport-main" "%PROJECT_DIR%"
 ) else (
-    echo [ОШИБКА] Архив скачался, но папка Python_VS_Sport-main не найдена!
-    echo Возможно, у вас на GitHub ветка называется master, а не main.
+    echo [ОШИБКА] Архив скачался, но папка не найдена.
+    echo Убедитесь, что в репозитории ветка называется main.
     pause
     exit /b 1
 )
