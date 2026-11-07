@@ -3,6 +3,7 @@ chcp 65001 >nul
 cd /d "%~dp0"
 
 set "PROJECT_DIR=Python_VS_Sport"
+set "TEMP_BACKUP=%~dp0PvS_temp"
 set "ZIP_URL=https://github.com/mrGotmag/Python_VS_Sport/archive/refs/heads/main.zip"
 
 echo ============================================================
@@ -39,27 +40,7 @@ if not exist "%PYTHON_EXE%" (
 echo OK: Python 3.12 готов.
 
 echo.
-echo [2/5] Скачивание файлов с GitHub
-
-REM --- БЭКАП БАЗЫ И НАСТРОЕК ---
-if exist "%PROJECT_DIR%\web\contest_web.db" (
-    echo Сохраняем текущую базу данных...
-    if not exist "%TEMP%\sport_backup" mkdir "%TEMP%\sport_backup"
-    copy /Y "%PROJECT_DIR%\web\contest_web.db" "%TEMP%\sport_backup\contest_web.db" >nul
-)
-if exist "%PROJECT_DIR%\.env" (
-    echo Сохраняем файл настроек .env...
-    if not exist "%TEMP%\sport_backup" mkdir "%TEMP%\sport_backup"
-    copy /Y "%PROJECT_DIR%\.env" "%TEMP%\sport_backup\.env" >nul
-)
-
-REM --- УДАЛЕНИЕ СТАРОЙ ПАПКИ ---
-if exist "%PROJECT_DIR%" (
-    echo Удаляем старую папку проекта...
-    rmdir /S /Q "%PROJECT_DIR%"
-)
-
-REM --- СКАЧИВАНИЕ И РАСПАКОВКА ---
+echo [2/5] Скачивание и распаковка нового кода
 set "ZIP_FILE=%TEMP%\project.zip"
 echo Скачиваем архив...
 curl -L -o "%ZIP_FILE%" "%ZIP_URL%"
@@ -69,47 +50,70 @@ if not exist "%ZIP_FILE%" (
     exit /b 1
 )
 
-echo Распаковываем архив...
-tar -xf "%ZIP_FILE%" -C "%CD%"
-
+echo Распаковываем архив во временную папку...
+tar -xf "%ZIP_FILE%" -C "%~dp0"
 if not exist "Python_VS_Sport-main" (
     echo [ОШИБКА] Архив распаковался, но папка Python_VS_Sport-main не найдена.
     pause
     exit /b 1
 )
-
-ren "Python_VS_Sport-main" "%PROJECT_DIR%"
 del /q "%ZIP_FILE%"
-echo OK: Файлы успешно скопированы.
 
-REM --- ВОССТАНОВЛЕНИЕ БАЗЫ И НАСТРОЕК ---
-if exist "%TEMP%\sport_backup\contest_web.db" (
-    copy /Y "%TEMP%\sport_backup\contest_web.db" "%PROJECT_DIR%\web\contest_web.db" >nul
-    echo OK: База данных восстановлена.
+echo.
+echo [3/5] Сохранение ваших файлов и обновление
+if exist "%TEMP_BACKUP%" rmdir /S /Q "%TEMP_BACKUP%"
+mkdir "%TEMP_BACKUP%"
+
+if exist "%PROJECT_DIR%\web\contest_web.db" (
+    echo Сохраняем базу данных...
+    mkdir "%TEMP_BACKUP%\web"
+    copy /Y "%PROJECT_DIR%\web\contest_web.db" "%TEMP_BACKUP%\web\contest_web.db" >nul
 )
-if exist "%TEMP%\sport_backup\.env" (
-    copy /Y "%TEMP%\sport_backup\.env" "%PROJECT_DIR%\.env" >nul
-    echo OK: Файл .env восстановлен.
+
+if exist "%PROJECT_DIR%\.env" (
+    echo Сохраняем файл настроек .env...
+    copy /Y "%PROJECT_DIR%\.env" "%TEMP_BACKUP%\.env" >nul
 )
-if exist "%TEMP%\sport_backup" rmdir /S /Q "%TEMP%\sport_backup"
+
+if exist "%PROJECT_DIR%\orcestrator\tasks" (
+    echo Сохраняем папку с задачами...
+    mkdir "%TEMP_BACKUP%\orcestrator"
+    xcopy /E /I /Y /Q "%PROJECT_DIR%\orcestrator\tasks" "%TEMP_BACKUP%\orcestrator\tasks" >nul
+)
+
+echo Удаляем старую папку проекта...
+if exist "%PROJECT_DIR%" rmdir /S /Q "%PROJECT_DIR%"
+
+echo Переименовываем новую папку...
+ren "Python_VS_Sport-main" "%PROJECT_DIR%"
+
+echo Восстанавливаем ваши файлы...
+if exist "%TEMP_BACKUP%\web\contest_web.db" copy /Y "%TEMP_BACKUP%\web\contest_web.db" "%PROJECT_DIR%\web\contest_web.db" >nul
+if exist "%TEMP_BACKUP%\.env" copy /Y "%TEMP_BACKUP%\.env" "%PROJECT_DIR%\.env" >nul
+if exist "%TEMP_BACKUP%\orcestrator\tasks" xcopy /E /I /Y /Q "%TEMP_BACKUP%\orcestrator\tasks" "%PROJECT_DIR%\orcestrator\tasks" >nul
+
+rmdir /S /Q "%TEMP_BACKUP%"
+echo OK: Обновление завершено. Ваши данные на месте.
 
 cd /d "%PROJECT_DIR%"
 
 echo.
-echo [3/5] Проверка зависимостей и создание .venv
-if exist ".venv" rmdir /S /Q ".venv"
+echo [4/5] Проверка окружения .venv
+if exist ".venv\Scripts\python.exe" goto venv_ok
 
-echo Создаем чистое окружение .venv...
+echo Создаем новое окружение .venv, пожалуйста подождите...
 "%PYTHON_EXE%" -m venv .venv
 if not exist ".venv\Scripts\python.exe" (
     echo [ОШИБКА] Не удалось создать .venv.
     pause
     exit /b 1
 )
-echo OK: .venv создано.
+
+:venv_ok
+echo OK: .venv готово.
 
 echo.
-echo [4/5] Установка библиотек
+echo [5/5] Установка зависимостей
 if not exist "requirements.txt" (
     echo [ОШИБКА] Файл requirements.txt не найден!
     pause
@@ -123,12 +127,29 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
-echo OK: Библиотеки установлены.
+echo OK: Зависимости установлены.
+
+if exist ".env" goto skip_env
+if not exist ".env.example" goto skip_env
+copy /Y ".env.example" ".env" >nul
+echo OK: .env создан.
+
+:skip_env
+echo.
+echo Проверка импортов...
+".venv\Scripts\python.exe" -c "import fastapi, uvicorn, sqlalchemy, jwt, bcrypt, markdown, psutil, pydantic_settings, dotenv; print('OK')"
+if errorlevel 1 (
+    echo [ОШИБКА] Зависимости не установились.
+    pause
+    exit /b 1
+)
 
 echo.
-echo [5/5] Запуск сервера
+echo ============================================================
+echo   ЗАПУСК СЕРВЕРА
+echo ============================================================
 echo.
-echo Сервер запускается, браузер откроется автоматически...
+echo Запускаем сервер, браузер откроется автоматически...
 
 cd web
 start "Python vs Sport Server" cmd /k "..\.venv\Scripts\python.exe run.py"
@@ -136,6 +157,6 @@ cd ..
 cd ..
 
 echo.
-echo Установка завершена. Нажмите любую клавишу для выхода.
+echo Готово. Нажмите любую клавишу, чтобы закрыть это окно.
 pause
 exit /b 0
