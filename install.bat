@@ -40,7 +40,7 @@ if not exist "%PYTHON_EXE%" (
 echo OK: Python 3.12 готов.
 
 echo.
-echo [2/5] Скачивание и распаковка нового кода
+echo [2/5] Скачивание файлов с GitHub
 set "ZIP_FILE=%TEMP%\project.zip"
 echo Скачиваем архив...
 curl -L -o "%ZIP_FILE%" "%ZIP_URL%"
@@ -51,17 +51,16 @@ if not exist "%ZIP_FILE%" (
 )
 
 echo Распаковываем архив...
-REM --- Убрали -C "%~dp0", так как мы уже в этой папке ---
 tar -xf "%ZIP_FILE%"
 if not exist "Python_VS_Sport-main" (
-    echo [ОШИБКА] Архив распаковался, но папка Python_VS_Sport-main не найдена.
+    echo [ОШИБКА] Папка Python_VS_Sport-main не найдена после распаковки.
     pause
     exit /b 1
 )
 del /q "%ZIP_FILE%"
 
 echo.
-echo [3/5] Сохранение ваших файлов и обновление
+echo [3/5] Обновление файлов и сохранение базы
 if exist "%TEMP_BACKUP%" rmdir /S /Q "%TEMP_BACKUP%"
 mkdir "%TEMP_BACKUP%"
 
