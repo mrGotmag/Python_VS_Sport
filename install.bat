@@ -80,7 +80,6 @@ if not exist "%ZIP_FILE%" (
 )
 
 echo   Распаковываем через PowerShell...
-REM Используем PowerShell для распаковки, так как он работает 100% стабильно на всех Windows
 powershell -command "Expand-Archive -Path '%ZIP_FILE%' -DestinationPath '%CD%' -Force"
 
 REM Переименовываем папку (GitHub добавляет -main к имени)
@@ -88,7 +87,7 @@ if exist "Python_VS_Sport-main" (
     ren "Python_VS_Sport-main" "%PROJECT_DIR%"
 ) else (
     echo [ОШИБКА] Архив скачался, но папка Python_VS_Sport-main не найдена!
-    echo Возможно, вы поменяли название ветки на GitHub (вместо main используется master).
+    echo Возможно, у вас на GitHub ветка называется master, а не main.
     pause
     exit /b 1
 )
