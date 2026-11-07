@@ -50,7 +50,7 @@ if not exist "%ZIP_FILE%" (
     exit /b 1
 )
 
-echo Распаковываем архив во временную папку...
+echo Распаковываем архив...
 tar -xf "%ZIP_FILE%" -C "%~dp0"
 if not exist "Python_VS_Sport-main" (
     echo [ОШИБКА] Архив распаковался, но папка Python_VS_Sport-main не найдена.
@@ -64,36 +64,47 @@ echo [3/5] Сохранение ваших файлов и обновление
 if exist "%TEMP_BACKUP%" rmdir /S /Q "%TEMP_BACKUP%"
 mkdir "%TEMP_BACKUP%"
 
-if exist "%PROJECT_DIR%\web\contest_web.db" (
-    echo Сохраняем базу данных...
-    mkdir "%TEMP_BACKUP%\web"
-    copy /Y "%PROJECT_DIR%\web\contest_web.db" "%TEMP_BACKUP%\web\contest_web.db" >nul
+REM --- Бэкап файлов, если папка проекта существует ---
+if exist "%PROJECT_DIR%" (
+    echo Сохраняем вашу базу данных и настройки...
+    if exist "%PROJECT_DIR%\web\contest_web.db" (
+        mkdir "%TEMP_BACKUP%\web"
+        copy /Y "%PROJECT_DIR%\web\contest_web.db" "%TEMP_BACKUP%\web\contest_web.db" >nul
+    )
+    if exist "%PROJECT_DIR%\.env" (
+        copy /Y "%PROJECT_DIR%\.env" "%TEMP_BACKUP%\.env" >nul
+    )
+    if exist "%PROJECT_DIR%\orcestrator\tasks" (
+        mkdir "%TEMP_BACKUP%\orcestrator"
+        xcopy /E /I /Y /Q "%PROJECT_DIR%\orcestrator\tasks" "%TEMP_BACKUP%\orcestrator\tasks" >nul
+    )
+    
+    echo Удаляем старую папку проекта...
+    rmdir /S /Q "%PROJECT_DIR%"
 )
 
-if exist "%PROJECT_DIR%\.env" (
-    echo Сохраняем файл настроек .env...
-    copy /Y "%PROJECT_DIR%\.env" "%TEMP_BACKUP%\.env" >nul
-)
-
-if exist "%PROJECT_DIR%\orcestrator\tasks" (
-    echo Сохраняем папку с задачами...
-    mkdir "%TEMP_BACKUP%\orcestrator"
-    xcopy /E /I /Y /Q "%PROJECT_DIR%\orcestrator\tasks" "%TEMP_BACKUP%\orcestrator\tasks" >nul
-)
-
-echo Удаляем старую папку проекта...
-if exist "%PROJECT_DIR%" rmdir /S /Q "%PROJECT_DIR%"
-
-echo Переименовываем новую папку...
+echo Устанавливаем новую версию...
 ren "Python_VS_Sport-main" "%PROJECT_DIR%"
 
-echo Восстанавливаем ваши файлы...
-if exist "%TEMP_BACKUP%\web\contest_web.db" copy /Y "%TEMP_BACKUP%\web\contest_web.db" "%PROJECT_DIR%\web\contest_web.db" >nul
-if exist "%TEMP_BACKUP%\.env" copy /Y "%TEMP_BACKUP%\.env" "%PROJECT_DIR%\.env" >nul
-if exist "%TEMP_BACKUP%\orcestrator\tasks" xcopy /E /I /Y /Q "%TEMP_BACKUP%\orcestrator\tasks" "%PROJECT_DIR%\orcestrator\tasks" >nul
+REM --- Восстановление файлов (только если они есть в PvS_temp) ---
+if exist "%TEMP_BACKUP%\web\contest_web.db" (
+    echo Восстанавливаем базу данных...
+    copy /Y "%TEMP_BACKUP%\web\contest_web.db" "%PROJECT_DIR%\web\contest_web.db" >nul
+)
 
-rmdir /S /Q "%TEMP_BACKUP%"
-echo OK: Обновление завершено. Ваши данные на месте.
+if exist "%TEMP_BACKUP%\.env" (
+    echo Восстанавливаем настройки .env...
+    copy /Y "%TEMP_BACKUP%\.env" "%PROJECT_DIR%\.env" >nul
+)
+
+if exist "%TEMP_BACKUP%\orcestrator\tasks" (
+    echo Восстанавливаем папку с задачами...
+    xcopy /E /I /Y /Q "%TEMP_BACKUP%\orcestrator\tasks" "%PROJECT_DIR%\orcestrator\tasks" >nul
+)
+
+REM Удаляем временную папку, если она есть
+if exist "%TEMP_BACKUP%" rmdir /S /Q "%TEMP_BACKUP%"
+echo OK: Обновление завершено.
 
 cd /d "%PROJECT_DIR%"
 
