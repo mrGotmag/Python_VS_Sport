@@ -3,54 +3,50 @@ chcp 65001 >nul
 setlocal EnableDelayedExpansion
 
 :: --- Проверка: запущен ли скрипт изнутри проекта? ---
-if exist "%~dp0web\run.py" if exist "%~dp0orcestrator" (
+if exist "%~dp0web\run.py" (
     echo [ИНФО] Скрипт запущен изнутри папки проекта.
-    echo [ИНФО] Перемещаем удаление в родительскую папку...
+    echo [ИНФО] Копируем скрипт во временную папку Windows для удаления...
     
-    :: Запоминаем имя текущей папки (это будет имя проекта)
-    for %%I in ("%~dp0.") do set "PROJECT_FOLDER=%%~nxI"
+    :: Запоминаем путь к проекту (убираем слэш в конце, если есть)
+    set "PROJ_PATH=%~dp0"
+    if "!PROJ_PATH:~-1!"=="\" set "PROJ_PATH=!PROJ_PATH:~0,-1!"
     
-    :: Переходим на уровень выше
-    pushd "%~dp0.."
+    :: Копируем этот скрипт в TEMP
+    copy /Y "%~f0" "%TEMP%\uninstall_temp.bat" >nul
     
-    :: Копируем скрипт сюда под именем uninstall_temp.bat
-    copy /Y "%~f0" "uninstall_temp.bat" >nul
-    
-    :: Запускаем его и передаем имя папки проекта
-    start "" cmd /c "uninstall_temp.bat" "!PROJECT_FOLDER!"
-    
-    popd
+    :: Запускаем копию, передавая ей путь к проекту
+    call "%TEMP%\uninstall_temp.bat" "!PROJ_PATH!"
     exit /b
 )
 
-:: --- Мы запущены извне ---
+:: --- Мы запущены из временной папки TEMP ---
 title Удаление Python vs Sport
 
-:: Если имя проекта передано аргументом (из первого блока), используем его
-set "PROJECT_DIR=Python_VS_Sport"
-if not "%~1"=="" set "PROJECT_DIR=%~1"
+:: Получаем путь к проекту из аргумента
+set "TARGET_DIR=%~1"
+if "%TARGET_DIR%"=="" set "TARGET_DIR=%~dp0Python_VS_Sport"
 
 :: --- Проверка прав Администратора ---
 net session >nul 2>&1
 if %errorLevel% neq 0 (
+    echo.
     echo ============================================================
     echo   ТРЕБУЮТСЯ ПРАВА АДМИНИСТРАТОРА
     echo ============================================================
-    echo   Для удаления правила брандмауэра нужны права админа.
     echo   Сейчас появится окно запроса прав. Нажмите "Да".
     echo.
-    powershell -Command "Start-Process -FilePath '%~f0' -ArgumentList '%PROJECT_DIR%' -Verb RunAs"
+    :: Перезапускаем эту же копию из TEMP, но с правами админа
+    powershell -Command "Start-Process -FilePath '%~f0' -ArgumentList '%TARGET_DIR%' -Verb RunAs"
     exit /b
 )
-
-cd /d "%~dp0"
 
 echo ============================================================
 echo   УДАЛЕНИЕ ПРОЕКТА PYTHON VS SPORT
 echo ============================================================
 echo.
-echo ВНИМАНИЕ: Это действие полностью удалит папку "%PROJECT_DIR%".
-echo Вся база данных (результаты) и задачи будут УДАЛЕНЫ безвозвратно!
+echo ВНИМАНИЕ: Это действие полностью удалит папку:
+echo %TARGET_DIR%
+echo Вся база данных и задачи будут УДАЛЕНЫ безвозвратно!
 echo.
 
 choice /C YN /M "Вы уверены, что хотите удалить проект"
@@ -68,15 +64,15 @@ netsh advfirewall firewall delete rule name="Python vs Sport 8000" >nul 2>&1
 echo   OK: Правило удалено.
 
 echo [3/3] Удаляем папку проекта...
-if exist "%PROJECT_DIR%" (
-    rmdir /S /Q "%PROJECT_DIR%"
-    echo   OK: Папка %PROJECT_DIR% удалена.
+if exist "%TARGET_DIR%" (
+    rmdir /S /Q "%TARGET_DIR%"
+    echo   OK: Папка проекта удалена.
 ) else (
-    echo   [ИНФО] Папка %PROJECT_DIR% не найдена.
+    echo   [ИНФО] Папка проекта не найдена (возможно, уже удалена).
 )
 
-:: Удаляем временный файл, если он был создан
-if exist "%~dp0uninstall_temp.bat" del /q "%~dp0uninstall_temp.bat"
+:: Удаляем временный файл скрипта
+if exist "%TEMP%\uninstall_temp.bat" del /q "%TEMP%\uninstall_temp.bat"
 
 echo.
 echo ============================================================
@@ -88,6 +84,6 @@ exit /b 0
 :cancel
 echo.
 echo Удаление отменено пользователем.
-if exist "%~dp0uninstall_temp.bat" del /q "%~dp0uninstall_temp.bat"
+if exist "%TEMP%\uninstall_temp.bat" del /q "%TEMP%\uninstall_temp.bat"
 pause
 exit /b 0
