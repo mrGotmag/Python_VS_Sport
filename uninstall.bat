@@ -5,18 +5,21 @@ setlocal EnableDelayedExpansion
 :: --- Проверка: запущен ли скрипт изнутри проекта? ---
 if exist "%~dp0web\run.py" if exist "%~dp0orcestrator" (
     echo [ИНФО] Скрипт запущен изнутри папки проекта.
-    echo [ИНФО] Перемещаем удаление в родительскую папку, чтобы Windows разблокировал файлы...
-
-    :: Получаем путь к родительской папке и имя текущей папки
-    for %%A in ("%~dp0..") do set "PARENT_DIR=%%~fA"
-    for %%A in ("%~dp0.") do set "PROJECT_FOLDER=%%~nxA"
-
-    :: Копируем этот скрипт в родительскую папку
-    copy "%~f0" "%PARENT_DIR%\uninstall_temp.bat" >nul
-
-    :: Запускаем копию из родительской папки, передавая имя проекта как аргумент
-    cd /d "%PARENT_DIR%"
-    start "" cmd /c "uninstall_temp.bat" "%PROJECT_FOLDER%"
+    echo [ИНФО] Перемещаем удаление в родительскую папку...
+    
+    :: Запоминаем имя текущей папки (это будет имя проекта)
+    for %%I in ("%~dp0.") do set "PROJECT_FOLDER=%%~nxI"
+    
+    :: Переходим на уровень выше
+    pushd "%~dp0.."
+    
+    :: Копируем скрипт сюда под именем uninstall_temp.bat
+    copy /Y "%~f0" "uninstall_temp.bat" >nul
+    
+    :: Запускаем его и передаем имя папки проекта
+    start "" cmd /c "uninstall_temp.bat" "!PROJECT_FOLDER!"
+    
+    popd
     exit /b
 )
 
