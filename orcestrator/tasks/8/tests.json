@@ -1,0 +1,128 @@
+{
+  "task": {
+    "title": "Компоненты связности в двоичном числе",
+    "time_limit_sec": 1.0
+  },
+  "tests": [
+    {
+      "id": 1,
+      "input": "1\n",
+      "expected_output": "1\n",
+      "points": 1
+    },
+    {
+      "id": 2,
+      "input": "2\n",
+      "expected_output": "1\n",
+      "points": 1
+    },
+    {
+      "id": 3,
+      "input": "4\n",
+      "expected_output": "1\n",
+      "points": 1
+    },
+    {
+      "id": 4,
+      "input": "5\n",
+      "expected_output": "2\n",
+      "points": 1
+    },
+    {
+      "id": 5,
+      "input": "6\n",
+      "expected_output": "1\n",
+      "points": 1
+    },
+    {
+      "id": 6,
+      "input": "7\n",
+      "expected_output": "1\n",
+      "points": 2
+    },
+    {
+      "id": 7,
+      "input": "8\n",
+      "expected_output": "1\n",
+      "points": 2
+    },
+    {
+      "id": 8,
+      "input": "9\n",
+      "expected_output": "2\n",
+      "points": 2
+    },
+    {
+      "id": 9,
+      "input": "10\n",
+      "expected_output": "2\n",
+      "points": 2
+    },
+    {
+      "id": 10,
+      "input": "11\n",
+      "expected_output": "2\n",
+      "points": 2
+    },
+    {
+      "id": 11,
+      "input": "15\n",
+      "expected_output": "1\n",
+      "points": 3
+    },
+    {
+      "id": 12,
+      "input": "21\n",
+      "expected_output": "3\n",
+      "points": 3
+    },
+    {
+      "id": 13,
+      "input": "27\n",
+      "expected_output": "2\n",
+      "points": 3
+    },
+    {
+      "id": 14,
+      "input": "31\n",
+      "expected_output": "1\n",
+      "points": 3
+    },
+    {
+      "id": 15,
+      "input": "42\n",
+      "expected_output": "3\n",
+      "points": 3
+    },
+    {
+      "id": 16,
+      "input": "85\n",
+      "expected_output": "4\n",
+      "points": 4
+    },
+    {
+      "id": 17,
+      "input": "255\n",
+      "expected_output": "1\n",
+      "points": 4
+    },
+    {
+      "id": 18,
+      "input": "1023\n",
+      "expected_output": "1\n",
+      "points": 4
+    },
+    {
+      "id": 19,
+      "input": "123456789\n",
+      "expected_output": "9\n",
+      "points": 4
+    },
+    {
+      "id": 20,
+      "input": "987654321\n",
+      "expected_output": "9\n",
+      "points": 4
+    }
+  ]
+}

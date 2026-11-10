@@ -1,0 +1,128 @@
+{
+  "task": {
+    "title": "Длина повторяющейся последовательности",
+    "time_limit_sec": 1.0
+  },
+  "tests": [
+    {
+      "id": 1,
+      "input": "2\n",
+      "expected_output": "3\n",
+      "points": 1
+    },
+    {
+      "id": 2,
+      "input": "3\n",
+      "expected_output": "8\n",
+      "points": 1
+    },
+    {
+      "id": 3,
+      "input": "4\n",
+      "expected_output": "6\n",
+      "points": 1
+    },
+    {
+      "id": 4,
+      "input": "5\n",
+      "expected_output": "20\n",
+      "points": 1
+    },
+    {
+      "id": 5,
+      "input": "6\n",
+      "expected_output": "24\n",
+      "points": 1
+    },
+    {
+      "id": 6,
+      "input": "7\n",
+      "expected_output": "16\n",
+      "points": 2
+    },
+    {
+      "id": 7,
+      "input": "8\n",
+      "expected_output": "12\n",
+      "points": 2
+    },
+    {
+      "id": 8,
+      "input": "9\n",
+      "expected_output": "24\n",
+      "points": 2
+    },
+    {
+      "id": 9,
+      "input": "10\n",
+      "expected_output": "60\n",
+      "points": 2
+    },
+    {
+      "id": 10,
+      "input": "11\n",
+      "expected_output": "10\n",
+      "points": 2
+    },
+    {
+      "id": 11,
+      "input": "12\n",
+      "expected_output": "24\n",
+      "points": 3
+    },
+    {
+      "id": 12,
+      "input": "13\n",
+      "expected_output": "28\n",
+      "points": 3
+    },
+    {
+      "id": 13,
+      "input": "14\n",
+      "expected_output": "48\n",
+      "points": 3
+    },
+    {
+      "id": 14,
+      "input": "15\n",
+      "expected_output": "40\n",
+      "points": 3
+    },
+    {
+      "id": 15,
+      "input": "16\n",
+      "expected_output": "24\n",
+      "points": 3
+    },
+    {
+      "id": 16,
+      "input": "17\n",
+      "expected_output": "36\n",
+      "points": 4
+    },
+    {
+      "id": 17,
+      "input": "18\n",
+      "expected_output": "24\n",
+      "points": 4
+    },
+    {
+      "id": 18,
+      "input": "19\n",
+      "expected_output": "18\n",
+      "points": 4
+    },
+    {
+      "id": 19,
+      "input": "20\n",
+      "expected_output": "60\n",
+      "points": 4
+    },
+    {
+      "id": 20,
+      "input": "21\n",
+      "expected_output": "16\n",
+      "points": 4
+    }
+  ]
+}

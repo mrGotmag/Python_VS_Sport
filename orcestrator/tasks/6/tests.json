@@ -1,0 +1,128 @@
+{
+  "task": {
+    "title": "Первый день в МИВЛГУ: эмблема бобра",
+    "time_limit_sec": 1.0
+  },
+  "tests": [
+    {
+      "id": 1,
+      "input": "2 1\n",
+      "expected_output": "12\n",
+      "points": 1
+    },
+    {
+      "id": 2,
+      "input": "3 1\n",
+      "expected_output": "28\n",
+      "points": 1
+    },
+    {
+      "id": 3,
+      "input": "3 2\n",
+      "expected_output": "20\n",
+      "points": 1
+    },
+    {
+      "id": 4,
+      "input": "4 2\n",
+      "expected_output": "40\n",
+      "points": 1
+    },
+    {
+      "id": 5,
+      "input": "5 2\n",
+      "expected_output": "72\n",
+      "points": 1
+    },
+    {
+      "id": 6,
+      "input": "5 3\n",
+      "expected_output": "56\n",
+      "points": 2
+    },
+    {
+      "id": 7,
+      "input": "6 4\n",
+      "expected_output": "68\n",
+      "points": 2
+    },
+    {
+      "id": 8,
+      "input": "8 5\n",
+      "expected_output": "128\n",
+      "points": 2
+    },
+    {
+      "id": 9,
+      "input": "10 3\n",
+      "expected_output": "292\n",
+      "points": 2
+    },
+    {
+      "id": 10,
+      "input": "10 7\n",
+      "expected_output": "172\n",
+      "points": 2
+    },
+    {
+      "id": 11,
+      "input": "15 8\n",
+      "expected_output": "516\n",
+      "points": 3
+    },
+    {
+      "id": 12,
+      "input": "20 10\n",
+      "expected_output": "952\n",
+      "points": 3
+    },
+    {
+      "id": 13,
+      "input": "25 15\n",
+      "expected_output": "1264\n",
+      "points": 3
+    },
+    {
+      "id": 14,
+      "input": "30 20\n",
+      "expected_output": "1576\n",
+      "points": 3
+    },
+    {
+      "id": 15,
+      "input": "50 25\n",
+      "expected_output": "5904\n",
+      "points": 3
+    },
+    {
+      "id": 16,
+      "input": "75 50\n",
+      "expected_output": "9840\n",
+      "points": 4
+    },
+    {
+      "id": 17,
+      "input": "100 60\n",
+      "expected_output": "20140\n",
+      "points": 4
+    },
+    {
+      "id": 18,
+      "input": "250 150\n",
+      "expected_output": "125660\n",
+      "points": 4
+    },
+    {
+      "id": 19,
+      "input": "500 300\n",
+      "expected_output": "502672\n",
+      "points": 4
+    },
+    {
+      "id": 20,
+      "input": "1000 500\n",
+      "expected_output": "2356228\n",
+      "points": 4
+    }
+  ]
+}

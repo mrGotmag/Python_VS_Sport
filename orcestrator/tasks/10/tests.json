@@ -1,0 +1,128 @@
+{
+  "task": {
+    "title": "Почти красивое число",
+    "time_limit_sec": 1.0
+  },
+  "tests": [
+    {
+      "id": 1,
+      "input": "1\n",
+      "expected_output": "1\n",
+      "points": 1
+    },
+    {
+      "id": 2,
+      "input": "9\n",
+      "expected_output": "9\n",
+      "points": 1
+    },
+    {
+      "id": 3,
+      "input": "10\n",
+      "expected_output": "10\n",
+      "points": 1
+    },
+    {
+      "id": 4,
+      "input": "12\n",
+      "expected_output": "12\n",
+      "points": 1
+    },
+    {
+      "id": 5,
+      "input": "25\n",
+      "expected_output": "25\n",
+      "points": 1
+    },
+    {
+      "id": 6,
+      "input": "99\n",
+      "expected_output": "99\n",
+      "points": 2
+    },
+    {
+      "id": 7,
+      "input": "100\n",
+      "expected_output": "100\n",
+      "points": 2
+    },
+    {
+      "id": 8,
+      "input": "101\n",
+      "expected_output": "101\n",
+      "points": 2
+    },
+    {
+      "id": 9,
+      "input": "123\n",
+      "expected_output": "131\n",
+      "points": 2
+    },
+    {
+      "id": 10,
+      "input": "234\n",
+      "expected_output": "242\n",
+      "points": 2
+    },
+    {
+      "id": 11,
+      "input": "555\n",
+      "expected_output": "555\n",
+      "points": 3
+    },
+    {
+      "id": 12,
+      "input": "567\n",
+      "expected_output": "575\n",
+      "points": 3
+    },
+    {
+      "id": 13,
+      "input": "987\n",
+      "expected_output": "988\n",
+      "points": 3
+    },
+    {
+      "id": 14,
+      "input": "1000\n",
+      "expected_output": "1000\n",
+      "points": 3
+    },
+    {
+      "id": 15,
+      "input": "1234\n",
+      "expected_output": "1311\n",
+      "points": 3
+    },
+    {
+      "id": 16,
+      "input": "2026\n",
+      "expected_output": "2111\n",
+      "points": 4
+    },
+    {
+      "id": 17,
+      "input": "9876\n",
+      "expected_output": "9888\n",
+      "points": 4
+    },
+    {
+      "id": 18,
+      "input": "12345\n",
+      "expected_output": "13111\n",
+      "points": 4
+    },
+    {
+      "id": 19,
+      "input": "543210\n",
+      "expected_output": "544444\n",
+      "points": 4
+    },
+    {
+      "id": 20,
+      "input": "123456789\n",
+      "expected_output": "131111111\n",
+      "points": 4
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "task": {
+    "title": "Преобразование числа",
+    "time_limit_sec": 1.0
+  },
+  "tests": [
+    {
+      "id": 1,
+      "input": "1\n",
+      "expected_output": "-\n",
+      "points": 1
+    },
+    {
+      "id": 2,
+      "input": "2\n",
+      "expected_output": ".\n",
+      "points": 1
+    },
+    {
+      "id": 3,
+      "input": "8\n",
+      "expected_output": ".\n",
+      "points": 1
+    },
+    {
+      "id": 4,
+      "input": "9\n",
+      "expected_output": "-\n",
+      "points": 1
+    },
+    {
+      "id": 5,
+      "input": "10\n",
+      "expected_output": ".\n",
+      "points": 1
+    },
+    {
+      "id": 6,
+      "input": "24\n",
+      "expected_output": ".\n",
+      "points": 2
+    },
+    {
+      "id": 7,
+      "input": "35\n",
+      "expected_output": "--\n",
+      "points": 2
+    },
+    {
+      "id": 8,
+      "input": "123\n",
+      "expected_output": ".\n",
+      "points": 2
+    },
+    {
+      "id": 9,
+      "input": "246\n",
+      "expected_output": ".\n",
+      "points": 2
+    },
+    {
+      "id": 10,
+      "input": "135\n",
+      "expected_output": "---\n",
+      "points": 2
+    },
+    {
+      "id": 11,
+      "input": "802\n",
+      "expected_output": ".\n",
+      "points": 3
+    },
+    {
+      "id": 12,
+      "input": "999\n",
+      "expected_output": "---\n",
+      "points": 3
+    },
+    {
+      "id": 13,
+      "input": "1024\n",
+      "expected_output": "-...\n",
+      "points": 3
+    },
+    {
+      "id": 14,
+      "input": "56789\n",
+      "expected_output": "-.-.-\n",
+      "points": 3
+    },
+    {
+      "id": 15,
+      "input": "11223344\n",
+      "expected_output": "--..--..\n",
+      "points": 3
+    },
+    {
+      "id": 16,
+      "input": "9876543210\n",
+      "expected_output": "⸭⸭⸭⸭⸭\n",
+      "points": 4
+    },
+    {
+      "id": 17,
+      "input": "135792468013579\n",
+      "expected_output": "-----.....-----\n",
+      "points": 4
+    },
+    {
+      "id": 18,
+      "input": "24680246802468024680\n",
+      "expected_output": "....................\n",
+      "points": 4
+    },
+    {
+      "id": 19,
+      "input": "85459845825456692334734277698714771781657799484578\n",
+      "expected_output": ".-.--..-..-.-..-.--.--..--.-.--.----.-.-----...--.\n",
+      "points": 4
+    },
+    {
+      "id": 20,
+      "input": "65627298069901627204653755646417080531003309232719374529912419049663193149190586518506716572628498\n",
+      "expected_output": ".-..-.-...--.-..-....-----....--...---..--.-.-.-----.-.---..--..-..-----.---.-..--.-..--.--.....-.\n",
+      "points": 4
+    }
+  ]
+}

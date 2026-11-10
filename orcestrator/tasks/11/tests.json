@@ -1,0 +1,128 @@
+{
+  "task": {
+    "title": "Степень числа",
+    "time_limit_sec": 1.0
+  },
+  "tests": [
+    {
+      "id": 1,
+      "input": "3\n",
+      "expected_output": "1\n",
+      "points": 1
+    },
+    {
+      "id": 2,
+      "input": "5\n",
+      "expected_output": "2\n",
+      "points": 1
+    },
+    {
+      "id": 3,
+      "input": "6\n",
+      "expected_output": "2\n",
+      "points": 1
+    },
+    {
+      "id": 4,
+      "input": "7\n",
+      "expected_output": "2\n",
+      "points": 1
+    },
+    {
+      "id": 5,
+      "input": "9\n",
+      "expected_output": "3\n",
+      "points": 1
+    },
+    {
+      "id": 6,
+      "input": "12\n",
+      "expected_output": "3\n",
+      "points": 2
+    },
+    {
+      "id": 7,
+      "input": "15\n",
+      "expected_output": "3\n",
+      "points": 2
+    },
+    {
+      "id": 8,
+      "input": "17\n",
+      "expected_output": "4\n",
+      "points": 2
+    },
+    {
+      "id": 9,
+      "input": "25\n",
+      "expected_output": "4\n",
+      "points": 2
+    },
+    {
+      "id": 10,
+      "input": "31\n",
+      "expected_output": "4\n",
+      "points": 2
+    },
+    {
+      "id": 11,
+      "input": "33\n",
+      "expected_output": "5\n",
+      "points": 3
+    },
+    {
+      "id": 12,
+      "input": "63\n",
+      "expected_output": "5\n",
+      "points": 3
+    },
+    {
+      "id": 13,
+      "input": "65\n",
+      "expected_output": "6\n",
+      "points": 3
+    },
+    {
+      "id": 14,
+      "input": "100\n",
+      "expected_output": "6\n",
+      "points": 3
+    },
+    {
+      "id": 15,
+      "input": "255\n",
+      "expected_output": "7\n",
+      "points": 3
+    },
+    {
+      "id": 16,
+      "input": "500\n",
+      "expected_output": "8\n",
+      "points": 4
+    },
+    {
+      "id": 17,
+      "input": "1023\n",
+      "expected_output": "9\n",
+      "points": 4
+    },
+    {
+      "id": 18,
+      "input": "10000\n",
+      "expected_output": "13\n",
+      "points": 4
+    },
+    {
+      "id": 19,
+      "input": "1000000\n",
+      "expected_output": "19\n",
+      "points": 4
+    },
+    {
+      "id": 20,
+      "input": "999999999\n",
+      "expected_output": "29\n",
+      "points": 4
+    }
+  ]
+}
