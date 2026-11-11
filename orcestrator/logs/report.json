@@ -1,0 +1,174 @@
+[
+  {
+    "id": "14",
+    "title": "Арифметическое выражение",
+    "status": "ok",
+    "score": 50,
+    "total": 50,
+    "tests": [
+      {
+        "id": 1,
+        "status": "ok",
+        "points": 1,
+        "max_points": 1,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 2,
+        "status": "ok",
+        "points": 1,
+        "max_points": 1,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 3,
+        "status": "ok",
+        "points": 1,
+        "max_points": 1,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 4,
+        "status": "ok",
+        "points": 1,
+        "max_points": 1,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 5,
+        "status": "ok",
+        "points": 1,
+        "max_points": 1,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 6,
+        "status": "ok",
+        "points": 2,
+        "max_points": 2,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 7,
+        "status": "ok",
+        "points": 2,
+        "max_points": 2,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 8,
+        "status": "ok",
+        "points": 2,
+        "max_points": 2,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 9,
+        "status": "ok",
+        "points": 2,
+        "max_points": 2,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 10,
+        "status": "ok",
+        "points": 2,
+        "max_points": 2,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 11,
+        "status": "ok",
+        "points": 3,
+        "max_points": 3,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 12,
+        "status": "ok",
+        "points": 3,
+        "max_points": 3,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 13,
+        "status": "ok",
+        "points": 3,
+        "max_points": 3,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 14,
+        "status": "ok",
+        "points": 3,
+        "max_points": 3,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 15,
+        "status": "ok",
+        "points": 3,
+        "max_points": 3,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 16,
+        "status": "ok",
+        "points": 4,
+        "max_points": 4,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 17,
+        "status": "ok",
+        "points": 4,
+        "max_points": 4,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 18,
+        "status": "ok",
+        "points": 4,
+        "max_points": 4,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 19,
+        "status": "ok",
+        "points": 4,
+        "max_points": 4,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      },
+      {
+        "id": 20,
+        "status": "ok",
+        "points": 4,
+        "max_points": 4,
+        "time_ms": 3.5163100001227576,
+        "memory_mb": 3.890625
+      }
+    ],
+    "error": null,
+    "time_ms": 70.32620000245515,
+    "memory_mb": 3.890625
+  }
+]

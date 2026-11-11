@@ -94,6 +94,19 @@
 </div>
 
 <script>
+    function escapeHTML(str) {
+        if (!str) return '';
+        return str.replace(/[&<>'"]/g,
+            tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag] || tag)
+        );
+    }
+
     let sportData = { phases: [], participants: [], results: [] };
     let currentPhaseId = null;
 
@@ -326,6 +339,8 @@
             btn.disabled = false;
         }
     }
+
+    setInterval(loadStaffData, 15000);
 
     loadStaffData();
 </script>

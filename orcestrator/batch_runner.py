@@ -27,7 +27,7 @@ ALLOWED_IMPORTS_STR = (
     "math statistics decimal fractions itertools functools "
     "collections datetime random re json string copy "
     "enum operator typing dataclasses heapq bisect "
-    "array numbers time"
+    "array numbers time weakref os"
 )
 
 # ---------- шаблоны раннеров ----------
@@ -39,7 +39,6 @@ import builtins
 ALLOWED = "__ALLOWED__".split()
 
 _original_import = builtins.__import__
-# Сохраняем ссылки на exec и compile ПЕРЕД тем, как удалить их из builtins
 _safe_exec = exec
 _safe_compile = compile
 
@@ -53,11 +52,11 @@ def _safe_import(name, globals=None, locals=None, fromlist=(), level=0):
 def _safe_open(*args, **kwargs):
     raise PermissionError("Открытие файлов запрещено правилами олимпиады.")
 
+# Подменяем импорт на безопасный
 builtins.__import__ = _safe_import
 builtins.open = _safe_open
 
-# Удаляем опасные встроенные функции
-_DANGEROUS = ("eval", "exec", "compile", "breakpoint", "globals", "locals", "vars", "__import__")
+_DANGEROUS = ("eval", "exec", "compile", "breakpoint", "globals", "locals", "vars")
 for _name in _DANGEROUS:
     try:
         delattr(builtins, _name)

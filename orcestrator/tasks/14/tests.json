@@ -1,6 +1,6 @@
 {
   "task": {
-    "title": "Формат выходных данных",
+    "title": "Арифметическое выражение",
     "time_limit_sec": 1.0
   },
   "tests": [
@@ -12,8 +12,8 @@
     },
     {
       "id": 2,
-      "input": "5-3\n",
-      "expected_output": "2\n",
+      "input": "10-15\n",
+      "expected_output": "-5\n",
       "points": 1
     },
     {

@@ -26,14 +26,12 @@
                 <thead class="sticky top-0 bg-ink border-b border-line z-10">
                     <tr class="text-slate-500 text-xs uppercase tracking-widest">
                         <th class="p-3 w-14">#</th>
-                        <th class="p-3">Команда</th>
-                        <th class="p-3 text-center">Код</th>
-                        <th class="p-3 text-center">Спорт</th>
-                        <th class="p-3 text-right">Итого</th>
+                        <th class="p-3">Участник</th>
+                        <th class="p-3 text-right">Баллы (Код)</th>
                     </tr>
                 </thead>
                 <tbody id="leaderboard-body">
-                    <tr><td colspan="5" class="p-8 text-center text-slate-500 animate-pulse">Загрузка...</td></tr>
+                    <tr><td colspan="3" class="p-8 text-center text-slate-500 animate-pulse">Загрузка...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -47,6 +45,18 @@
 </div>
 
 <script>
+    function escapeHTML(str) {
+        if (!str) return '';
+        return str.replace(/[&<>'"]/g,
+            tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag] || tag)
+        );
+    }
     async function loadLeaderboard() {
         const tbody = document.getElementById('leaderboard-body');
         try {
@@ -72,8 +82,8 @@
                 <tr class="border-b border-line/50 ${rowClass} transition">
                     <td class="p-3 text-neon font-bold">${t.place} ${medal}</td>
                     <td class="p-3">
-                        <div class="font-bold text-white">${t.name}</div>
-                        <div class="text-[10px] text-slate-500 font-normal">${t.team_name}</div>
+                        <div class="font-bold text-white">${escapeHTML(t.name)}</div>
+                        <div class="text-[10px] text-slate-500 font-normal">${escapeHTML(t.team_name)}</div>
                         ${t.is_me ? '<span class="text-[10px] text-warn">← вы</span>' : ''}
                     </td>
                     <td class="p-3 text-right text-neon font-mono font-bold text-lg">${t.total_score}</td>

@@ -3,10 +3,9 @@ import socket
 import webbrowser
 import threading
 import subprocess
-import sys
 import os
+import sys
 from pathlib import Path
-
 # Загружаем .env вручную, чтобы получить PORT и HOST до старта FastAPI
 try:
     from dotenv import load_dotenv

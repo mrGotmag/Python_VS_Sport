@@ -22,7 +22,7 @@ class GlobalSettings(Base):
     # Индекс текущей фазы (0 = первая фаза)
     current_phase_index: Mapped[int] = mapped_column(Integer, default=0)
     phase_started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-
+    paused_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 class Phase(Base):
     """Фаза соревнования: либо задача, либо спортивное упражнение."""
@@ -76,6 +76,7 @@ class Team(Base):
 
     is_full: Mapped[bool] = mapped_column(Boolean, default=False)
     force_started: Mapped[bool] = mapped_column(Boolean, default=False)
+    phase_limit: Mapped[int] = mapped_column(Integer, default=0)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
@@ -94,8 +95,6 @@ class Submission(Base):
     __tablename__ = "submissions"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"))
-
-    # ДОБАВИТЬ ЭТУ СТРОКУ:
     participant_id: Mapped[int] = mapped_column(ForeignKey("participants.id"), nullable=True)
 
     task_id: Mapped[int] = mapped_column(ForeignKey("tasks.id"))
@@ -112,8 +111,6 @@ class SportResult(Base):
     __tablename__ = "sport_results"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"))
-
-    # ДОБАВИТЬ ЭТУ СТРОКУ:
     participant_id: Mapped[int | None] = mapped_column(ForeignKey("participants.id"), nullable=True)
 
     phase_id: Mapped[int | None] = mapped_column(ForeignKey("phases.id"), nullable=True)

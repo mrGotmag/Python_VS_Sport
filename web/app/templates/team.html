@@ -346,6 +346,9 @@
             teamPaused = data.team.is_paused;
             teamFinished = data.team.finished_at !== null;
 
+            // Устанавливаем имя команды сразу (даже если она ждет)
+            document.getElementById('team-name').textContent = data.team.name;
+
             // Команда финишировала — уводим на страницу результатов
             if (teamFinished || data.team.finished_by_phases) {
                 window.location.href = '/results';
@@ -486,7 +489,7 @@
         const taskRes = await fetch(`/api/team/tasks/${id}`);
         const task = await taskRes.json();
         document.getElementById('task-title').textContent = task.title;
-        document.getElementById('task-statement').innerHTML = marked.parse(task.statement);
+        document.getElementById('task-statement').innerHTML = task.statement;
 
         if (!editor) {
             editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {

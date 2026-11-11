@@ -307,6 +307,19 @@
 </div>
 
 <script>
+
+    function escapeHTML(str) {
+        if (!str) return '';
+        return str.replace(/[&<>'"]/g,
+            tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag] || tag)
+        );
+    }
     let globalStarted = false;
     let globalPaused = false;
     let currentPhaseIndex = 0;
@@ -356,28 +369,25 @@
 
     async function loadPhases() {
         const tbody = document.getElementById('phases-body');
+        try {
+            const [phasesRes, tasksRes] = await Promise.all([
+                fetch('/api/admin/phases'),
+                fetch('/api/admin/tasks')
+            ]);
 
-        const [phasesRes, tasksRes] = await Promise.all([
-            fetch('/api/admin/phases'),
-            fetch('/api/admin/tasks')
-        ]);
+            if (phasesRes.status === 401 || phasesRes.status === 403) return window.location.href = '/logout';
 
-        const newPhases = await phasesRes.json();
-        allTasks = await tasksRes.json();
+            const newPhases = await phasesRes.json();
+            allTasks = await tasksRes.json();
 
-        const options = allTasks.map(t => `<option value="${t.id}">Задача ${t.id}: ${t.title}</option>`).join('');
-        if (document.getElementById('phase-task-id').innerHTML !== options) {
-            document.getElementById('phase-task-id').innerHTML = options;
-            document.getElementById('edit-phase-task-id').innerHTML = options;
-        }
+            const options = allTasks.map(t => `<option value="${t.id}">Задача ${t.id}: ${t.title}</option>`).join('');
+            if (document.getElementById('phase-task-id').innerHTML !== options) {
+                document.getElementById('phase-task-id').innerHTML = options;
+                document.getElementById('edit-phase-task-id').innerHTML = options;
+            }
 
-        const needsRedraw = allPhases.length !== newPhases.length ||
-                            JSON.stringify(allPhases) !== JSON.stringify(newPhases);
-
-        allPhases = newPhases;
-
-        if (needsRedraw) {
-            if (allPhases.length === 0) {
+            allPhases = newPhases;
+            if (!allPhases || allPhases.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-slate-500">Фаз нет. Добавьте первую выше.</td></tr>';
                 return;
             }
@@ -390,12 +400,17 @@
                 let what = p.type === 'task' ? `Задача ${p.task_id}` : p.sport_name;
                 let typeLabel = p.type === 'task' ? '<span class="text-cyan">ЗАДАЧА</span>' : '<span class="text-warn">СПОРТ</span>';
 
+                let dirLabel = "";
+                if (p.type === 'sport') {
+                    dirLabel = p.sport_direction === 'more' ? ' <span class="text-[10px] text-cyan">(Больше)</span>' : ' <span class="text-[10px] text-magenta">(Меньше)</span>';
+                }
+
                 return `
                     <tr class="border-b border-line/50 transition ${rowClass}" draggable="true" data-id="${p.id}">
                         <td class="py-3 drag-handle text-center">≡</td>
                         <td class="text-neon font-bold">${i+1} ${activeIcon}</td>
                         <td>${typeLabel}</td>
-                        <td class="font-bold">${what}</td>
+                        <td class="font-bold">${what}${dirLabel}</td>
                         <td class="font-mono text-slate-300">${Math.floor(p.duration_seconds / 60)} мин</td>
                         <td class="space-x-2">
                             <button onclick="startPhase(${p.id})" class="text-xs bg-neon/20 text-neon border border-neon px-2 py-1 rounded hover:bg-neon hover:text-black transition">▶ Запустить</button>
@@ -406,25 +421,8 @@
             }).join('');
 
             setupDragAndDrop();
-        } else {
-            const rows = tbody.querySelectorAll('tr[data-id]');
-            rows.forEach((row, i) => {
-                const isActive = (i === currentPhaseIndex && globalStarted);
-
-                if (isActive) {
-                    row.classList.add('bg-neon/10', 'border-l-2', 'border-neon');
-                    row.classList.remove('hover:bg-ink');
-                    const numCell = row.children[1];
-                    if (!numCell.innerHTML.includes('🔥')) {
-                        numCell.innerHTML = `${i+1} <span class="text-neon text-lg ml-2 animate-pulse">🔥</span>`;
-                    }
-                } else {
-                    row.classList.remove('bg-neon/10', 'border-l-2', 'border-neon');
-                    row.classList.add('hover:bg-ink');
-                    const numCell = row.children[1];
-                    numCell.innerHTML = i+1;
-                }
-            });
+        } catch (e) {
+            console.error("Ошибка при загрузке фаз:", e);
         }
     }
 
@@ -675,8 +673,8 @@
                     return `
                     <tr class="border-b border-line/50 hover:bg-ink transition">
                         <td class="py-3 ${placeColor}">${finalPlace}</td>
-                        <td class="font-bold">${p.name}</td>
-                        <td class="text-slate-400 text-xs">${p.team_name}</td>
+                        <td class="font-bold">${escapeHTML(p.name)}</td>
+                        <td class="text-slate-400 text-xs">${escapeHTML(p.team_name)}</td>
                         <td class="text-slate-400 font-mono">${p.place_python}</td>
                         <td class="text-neon font-mono font-bold">${p.score || 0}</td>
                         <td class="text-warn font-mono">${p.place_sport} <span class="text-[10px] text-slate-500">(${p.sport_attempts} поп.)</span></td>
@@ -688,29 +686,44 @@
             const monitor = document.getElementById('team-monitor');
             if (data.teams && data.teams.length > 0) {
                 monitor.innerHTML = data.teams.map(t => {
-                    const phaseName = t.phase_name || '—';
-                    const phaseTimeLeft = t.phase_time_left > 0 ? formatTime(t.phase_time_left) : '00:00:00';
-                    const totalTimeStr = t.total_time > 0 ? formatTime(t.total_time) : 'не начато';
                     const isWaiting = t.total_time === 0;
 
-                    // НОВОЕ: инфо о команде
-                    const teamInfo = `👥 ${t.team_size}/${t.team_max}`;
+                    // Вычисляем номер текущей фазы
+                    const currentPhaseNum = t.current_phase_index + 1;
+                    const maxPhaseNum = t.phase_limit;
+
+                    let phaseDisplay = "Ждет входа";
+                    if (!isWaiting) {
+                        if (t.finished_at) {
+                            phaseDisplay = "ЗАВЕРШЕНО";
+                        } else {
+                            phaseDisplay = `${t.phase_name} (Фаза ${currentPhaseNum}/${maxPhaseNum})`;
+                        }
+                    }
+
+                    const phaseTimeLeft = t.phase_time_left > 0 ? formatTime(t.phase_time_left) : '00:00:00';
+                    const totalTimeStr = t.total_time > 0 ? formatTime(t.total_time) : 'не начато';
+
+                    const cardBg = isWaiting ? 'bg-panel opacity-50' : 'bg-panel';
+                    const phaseColor = isWaiting ? 'text-slate-500' : (t.finished_at ? 'text-magenta' : (t.phase_name.includes('Задача') ? 'text-neon' : 'text-warn'));
+
+                    // ЛОГИКА КНОПКИ ЗАПУСКА (возвращаем)
                     const forceStartBtn = (!t.is_full && !t.force_started && !t.finished_at)
                         ? `<button onclick="forceStartTeam(${t.id})" class="mt-2 w-full bg-magenta/20 text-magenta border border-magenta text-[10px] py-1 rounded hover:bg-magenta hover:text-white transition">▶ ЗАПУСТИТЬ ПРИНУДИТЕЛЬНО</button>`
                         : '';
 
                     return `
-                    <div class="border border-line rounded p-3 mb-2 ${isWaiting ? 'bg-panel opacity-50' : 'bg-panel'}">
+                    <div class="border border-line rounded p-3 mb-2 ${cardBg}">
                         <div class="flex justify-between items-center mb-2">
-                            <div class="font-bold text-white text-sm">${t.name}</div>
+                            <div class="font-bold text-white text-sm">${escapeHTML(t.name)}</div>
                             <div class="text-[10px] text-cyan font-mono" title="Общее время в олимпиаде">⏱ ${totalTimeStr}</div>
                         </div>
                         <div class="flex justify-between items-center text-[10px] text-slate-400 border-t border-line/50 pt-1 mb-1">
-                            <span>${teamInfo}</span>
+                            <span>👥 ${t.team_size}/${t.team_max}</span>
                         </div>
                         <div class="flex justify-between items-center text-xs border-t border-line/50 pt-2">
-                            <div class="${isWaiting ? 'text-slate-500' : (phaseName.includes('Задача') ? 'text-neon' : 'text-warn')} font-bold">${isWaiting ? 'Ждет входа' : phaseName}</div>
-                            <div class="text-slate-400 font-mono">${isWaiting ? '--:--:--' : phaseTimeLeft}</div>
+                            <div class="${phaseColor} font-bold">${phaseDisplay}</div>
+                            <div class="text-slate-400 font-mono">${isWaiting ? '--:--:--' : (t.finished_at ? '--:--:--' : phaseTimeLeft)}</div>
                         </div>
                         ${forceStartBtn}
                     </div>`;
@@ -917,17 +930,23 @@
         }
     }
 
-        async function loadJudges() {
+    async function loadJudges() {
         const tbody = document.getElementById('judges-body');
-        const res = await fetch('/api/admin/judges');
-        const judges = await res.json();
-        tbody.innerHTML = judges.map(j => `
-            <tr class="border-b border-line/50">
-                <td class="py-3 font-bold">${j.name}</td>
-                <td class="text-slate-400 text-xs">${new Date(j.created_at).toLocaleString()}</td>
-                <td><button onclick="deleteJudge(${j.id})" class="text-xs text-slate-500 hover:text-magenta px-1">🗑</button></td>
-            </tr>
-        `).join('') || '<tr><td colspan="3" class="text-center py-4 text-slate-500">Нет судей</td></tr>';
+        try {
+            const res = await fetch('/api/admin/judges');
+            if (res.status === 401 || res.status === 403) return window.location.href = '/logout';
+
+            const judges = await res.json();
+            tbody.innerHTML = judges.map(j => `
+                <tr class="border-b border-line/50">
+                    <td class="py-3 font-bold">${escapeHTML(j.name)}</td>
+                    <td class="text-slate-400 text-xs">${new Date(j.created_at).toLocaleString()}</td>
+                    <td><button onclick="deleteJudge(${j.id})" class="text-xs text-slate-500 hover:text-magenta px-1">🗑</button></td>
+                </tr>
+            `).join('') || '<tr><td colspan="3" class="text-center py-4 text-slate-500">Нет судей</td></tr>';
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     function createJudge() {
@@ -961,15 +980,36 @@
 
     function copyJudgeCode() {
         const code = document.getElementById('judge-result-code').textContent;
-        navigator.clipboard.writeText(code).then(() => {
-            const txt = document.getElementById('judge-copy-text');
+        const txt = document.getElementById('judge-copy-text');
+
+        const successMsg = () => {
             txt.textContent = 'СКОПИРОВАНО!';
             txt.classList.add('text-neon');
             setTimeout(() => {
                 txt.textContent = 'Нажмите, чтобы скопировать';
                 txt.classList.remove('text-neon');
             }, 2000);
-        });
+        };
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(code).then(successMsg);
+        } else {
+            // Фолбэк для HTTP на телефонах
+            const textArea = document.createElement("textarea");
+            textArea.value = code;
+            textArea.style.position = "absolute";
+            textArea.style.left = "-999999px";
+            document.body.prepend(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                successMsg();
+            } catch (error) {
+                alert('Код: ' + code);
+            } finally {
+                textArea.remove();
+            }
+        }
     }
 
     function closeJudgeModal() {

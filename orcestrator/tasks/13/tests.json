@@ -31,13 +31,13 @@
     {
       "id": 5,
       "input": "10\n",
-      "expected_output": ".\n",
+      "expected_output": "-.\n",
       "points": 1
     },
     {
       "id": 6,
       "input": "24\n",
-      "expected_output": ".\n",
+      "expected_output": "..\n",
       "points": 2
     },
     {
@@ -49,13 +49,13 @@
     {
       "id": 8,
       "input": "123\n",
-      "expected_output": ".\n",
+      "expected_output": "-.-\n",
       "points": 2
     },
     {
       "id": 9,
       "input": "246\n",
-      "expected_output": ".\n",
+      "expected_output": "...\n",
       "points": 2
     },
     {
@@ -67,7 +67,7 @@
     {
       "id": 11,
       "input": "802\n",
-      "expected_output": ".\n",
+      "expected_output": "...\n",
       "points": 3
     },
     {
@@ -97,7 +97,7 @@
     {
       "id": 16,
       "input": "9876543210\n",
-      "expected_output": "⸭⸭⸭⸭⸭\n",
+      "expected_output": "-.-.-.-.-.\n",
       "points": 4
     },
     {
