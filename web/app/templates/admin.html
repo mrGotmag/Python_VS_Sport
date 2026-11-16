@@ -106,7 +106,6 @@
     </div>
 
     <!-- ВКЛАДКА: РЕЙТИНГ -->
-        <!-- ВКЛАДКА: РЕЙТИНГ -->
     <div id="tab-rating" class="tab-content bg-panel border border-line rounded-xl p-6">
         <table class="w-full text-left text-sm">
             <thead><tr class="border-b border-line text-slate-500">
@@ -175,6 +174,108 @@
             <div class="flex justify-end gap-2 mt-6">
                 <button onclick="closeEditModal()" class="text-slate-400 px-4 py-2">Отмена</button>
                 <button onclick="saveEditedPhase()" class="bg-cyan text-ink font-bold px-4 py-2 rounded">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА: УПРАВЛЕНИЕ КОМАНДОЙ -->
+<div id="team-manage-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+    <div class="bg-panel border border-cyan rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <h3 class="text-xl font-bold text-cyan mb-1">Управление командой</h3>
+            <div id="manage-team-name" class="text-sm text-slate-400 mb-6"></div>
+            <input type="hidden" id="manage-team-id">
+
+            <!-- Размер команды -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="text-xs text-slate-400">Размер команды (максимум участников)</label>
+                    <span class="text-[10px] text-slate-500">сейчас: <span id="manage-current-size" class="text-cyan font-mono">0</span></span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="adjustMaxSize(-1)" class="w-10 h-10 bg-ink border border-line rounded text-xl text-cyan hover:border-cyan">−</button>
+                    <input type="number" id="manage-max-size" min="1" max="20" class="w-24 bg-ink border border-line rounded px-3 py-2 text-center text-xl font-mono text-neon font-bold">
+                    <button onclick="adjustMaxSize(1)" class="w-10 h-10 bg-ink border border-line rounded text-xl text-cyan hover:border-cyan">+</button>
+                </div>
+                <div id="manage-participants-list" class="mt-3 space-y-1"></div>
+            </div>
+
+            <!-- Стартовая фаза -->
+            <div class="mb-6">
+                <label class="text-xs text-slate-400 block mb-2">Стартовая фаза</label>
+                <select id="manage-start-phase" class="w-full bg-ink border border-line rounded p-2 text-white"></select>
+                <div class="text-[10px] text-warn mt-1">⚠ Смена стартовой фазы у уже стартовавшей команды откатит её прогресс</div>
+            </div>
+
+            <!-- Режим запуска -->
+            <div class="mb-4">
+                <label class="text-xs text-slate-400 block mb-2">Запуск</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button type="button" onclick="setScheduleMode('none')" id="mode-btn-none" class="schedule-mode-btn px-3 py-2 rounded border text-xs font-bold transition">Только вручную</button>
+                    <button type="button" onclick="setScheduleMode('absolute')" id="mode-btn-absolute" class="schedule-mode-btn px-3 py-2 rounded border text-xs font-bold transition">В конкретное время</button>
+                    <button type="button" onclick="setScheduleMode('relative')" id="mode-btn-relative" class="schedule-mode-btn px-3 py-2 rounded border text-xs font-bold transition">Через…</button>
+                </div>
+            </div>
+
+            <!-- Круглые часы -->
+            <div id="clock-section" class="hidden mb-4">
+                <div class="flex flex-col items-center">
+                    <div class="relative w-52 h-52">
+                        <div class="absolute inset-0 rounded-full border-2 border-cyan/40 bg-gradient-to-br from-[#0a0e14] via-[#0d1218] to-[#0a0e14] shadow-[inset_0_0_25px_rgba(0,229,255,0.12),0_0_35px_rgba(0,229,255,0.15)]"></div>
+                        <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" id="clock-ticks"></svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <div class="flex items-baseline text-neon font-mono font-bold glow-text">
+                                <span id="clock-h" class="text-3xl">00</span>
+                                <span class="text-xl text-cyan/50 mx-0.5">:</span>
+                                <span id="clock-m" class="text-3xl">00</span>
+                                <span class="text-xl text-cyan/50 mx-0.5">:</span>
+                                <span id="clock-s" class="text-2xl text-slate-400">00</span>
+                            </div>
+                            <div class="text-[8px] text-slate-500 tracking-[0.4em] mt-1">ЧЧ ММ СС</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3 w-full max-w-md mt-4">
+                        <div class="text-center">
+                            <div class="text-[9px] text-cyan tracking-widest mb-1">ЧАСЫ</div>
+                            <div class="flex gap-1">
+                                <button onclick="clockAdjust('h', -1)" class="flex-1 bg-ink border border-line rounded py-1.5 text-lg text-slate-400 hover:border-magenta hover:text-magenta transition">−</button>
+                                <button onclick="clockAdjust('h', 1)" class="flex-1 bg-ink border border-line rounded py-1.5 text-lg text-slate-400 hover:border-cyan hover:text-cyan transition">+</button>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-[9px] text-cyan tracking-widest mb-1">МИНУТЫ</div>
+                            <div class="flex gap-1">
+                                <button onclick="clockAdjust('m', -1)" class="flex-1 bg-ink border border-line rounded py-1.5 text-lg text-slate-400 hover:border-magenta hover:text-magenta transition">−</button>
+                                <button onclick="clockAdjust('m', 1)" class="flex-1 bg-ink border border-line rounded py-1.5 text-lg text-slate-400 hover:border-cyan hover:text-cyan transition">+</button>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-[9px] text-cyan tracking-widest mb-1">СЕКУНДЫ</div>
+                            <div class="flex gap-1">
+                                <button onclick="clockAdjust('s', -1)" class="flex-1 bg-ink border border-line rounded py-1.5 text-lg text-slate-400 hover:border-magenta hover:text-magenta transition">−</button>
+                                <button onclick="clockAdjust('s', 1)" class="flex-1 bg-ink border border-line rounded py-1.5 text-lg text-slate-400 hover:border-cyan hover:text-cyan transition">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 mt-3 flex-wrap justify-center">
+                        <button onclick="clockPreset(5*60)" class="text-[10px] text-cyan border border-cyan/40 px-2 py-1 rounded hover:bg-cyan/10">+5 мин</button>
+                        <button onclick="clockPreset(10*60)" class="text-[10px] text-cyan border border-cyan/40 px-2 py-1 rounded hover:bg-cyan/10">+10 мин</button>
+                        <button onclick="clockPreset(30*60)" class="text-[10px] text-cyan border border-cyan/40 px-2 py-1 rounded hover:bg-cyan/10">+30 мин</button>
+                        <button onclick="clockNow()" class="text-[10px] text-warn border border-warn/40 px-2 py-1 rounded hover:bg-warn/10">Сейчас</button>
+                    </div>
+                    <div id="clock-preview" class="text-xs text-slate-400 mt-3 text-center"></div>
+                </div>
+            </div>
+
+            <div class="flex justify-between gap-2 mt-6 pt-4 border-t border-line">
+                <div class="flex gap-2">
+                    <button onclick="finishTeamFromModal()" class="text-magenta border border-magenta/50 px-3 py-2 rounded text-xs hover:bg-magenta/10">⏹ ЗАВЕРШИТЬ</button>
+                    <button onclick="resetTeamFromModal()" class="text-warn border border-warn/50 px-3 py-2 rounded text-xs hover:bg-warn/10">↺ СБРОС</button>
+                    <button onclick="startNowFromModal()" class="text-neon border border-neon/50 px-3 py-2 rounded text-xs hover:bg-neon/10">▶ СТАРТ СЕЙЧАС</button>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="closeManageTeam()" class="text-slate-400 px-4 py-2">Отмена</button>
+                    <button onclick="saveTeamSettings()" class="bg-cyan text-ink font-bold px-4 py-2 rounded">Сохранить</button>
+                </div>
             </div>
         </div>
     </div>
@@ -380,7 +481,8 @@
             const newPhases = await phasesRes.json();
             allTasks = await tasksRes.json();
 
-            const options = allTasks.map(t => `<option value="${t.id}">Задача ${t.id}: ${t.title}</option>`).join('');
+            const options = allTasks.map(t => `<option value="${t.id}">Задача ${t.id}: ${escapeHTML(t.title)}</option>`).join('');
+
             if (document.getElementById('phase-task-id').innerHTML !== options) {
                 document.getElementById('phase-task-id').innerHTML = options;
                 document.getElementById('edit-phase-task-id').innerHTML = options;
@@ -397,7 +499,7 @@
                 const rowClass = isActive ? 'bg-neon/10 border-l-2 border-neon' : 'hover:bg-ink';
                 const activeIcon = isActive ? '<span class="text-neon text-lg ml-2 animate-pulse">🔥</span>' : '';
 
-                let what = p.type === 'task' ? `Задача ${p.task_id}` : p.sport_name;
+                let what = p.type === 'task' ? `Задача ${p.task_id}` : escapeHTML(p.sport_name);
                 let typeLabel = p.type === 'task' ? '<span class="text-cyan">ЗАДАЧА</span>' : '<span class="text-warn">СПОРТ</span>';
 
                 let dirLabel = "";
@@ -429,6 +531,15 @@
     // --- Drag and Drop ---
     function setupDragAndDrop() {
         const rows = document.querySelectorAll('#phases-body tr');
+
+        if (globalStarted) {
+            // При активной олимпиаде перестановка фаз сломает таймеры
+            rows.forEach(r => {
+                r.setAttribute('draggable', 'false');
+                r.querySelector('.drag-handle')?.classList.add('opacity-30', 'cursor-not-allowed');
+            });
+            return;
+        }
 
         rows.forEach(row => {
             row.addEventListener('dragstart', (e) => {
@@ -581,41 +692,39 @@
 
     // --- Остальные функции ---
     async function addPhase() {
-        const typeEl = document.getElementById('phase-type');
-        const type = typeEl ? typeEl.value : 'task';
+        const type = document.getElementById('phase-type').value;
+        const taskId = (type === 'task') ? parseInt(document.getElementById('phase-task-id').value) : null;
+        const sportName = (type === 'sport') ? document.getElementById('phase-sport-name').value.trim() : null;
+        const sportDirection = (type === 'sport') ? document.getElementById('phase-direction').value : 'more';
+        const durationMin = parseInt(document.getElementById('phase-duration').value, 10);
 
-        const taskEl = document.getElementById('phase-task-id');
-        const taskId = (type === 'task' && taskEl) ? parseInt(taskEl.value) : null;
-
-        const sportNameEl = document.getElementById('phase-sport-name');
-        const sportName = (type === 'sport' && sportNameEl) ? sportNameEl.value.trim() : null;
-
-        const dirEl = document.getElementById('phase-direction');
-        const sportDirection = (type === 'sport' && dirEl) ? dirEl.value : 'more';
-
-        const durationEl = document.getElementById('phase-duration');
-        // Четко объявляем переменную duration (по умолчанию 30 минут)
-        const durationMin = durationEl ? parseInt(durationEl.value) : 30;
-        const durationSec = durationMin * 60;
-
-        if (type === 'sport' && !sportName) return alert('Введите название упражнения!');
+        if (!Number.isFinite(durationMin) || durationMin < 1 || durationMin > 600) {
+            return alert('Введите время от 1 до 600 минут');
+        }
+        if (type === 'sport' && !sportName) {
+            return alert('Введите название упражнения!');
+        }
+        if (type === 'task' && (!taskId || Number.isNaN(taskId))) {
+            return alert('Выберите задачу (или создайте её во вкладке «Задачи»)');
+        }
 
         try {
-            await fetch('/api/admin/phases', {
+            const res = await fetch('/api/admin/phases', {
                 method: 'POST',
                 headers: {'Content-Type':'application/json'},
                 body: JSON.stringify({
-                    type: type,
-                    task_id: taskId,
-                    sport_name: sportName,
-                    sport_direction: sportDirection,
-                    duration_seconds: durationSec
+                    type, task_id: taskId, sport_name: sportName,
+                    sport_direction: sportDirection, duration_seconds: durationMin * 60
                 })
             });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                alert('Ошибка добавления фазы: ' + (err.detail || res.status));
+                return;
+            }
             loadPhases();
         } catch (e) {
-            alert('Ошибка добавления фазы');
-            console.error(e);
+            alert('Ошибка сети');
         }
     }
 
@@ -631,10 +740,15 @@
         loadStats();
     }
 
+    let statsLoading = false;
+
     async function loadStats() {
+        if (statsLoading) return;   // не запускаем параллельные запросы
+        statsLoading = true;
         try {
             const res = await fetch('/api/admin/stats');
             if (res.status === 401 || res.status === 403) return window.location.href = '/logout';
+            if (!res.ok) throw new Error('HTTP ' + res.status);
             const data = await res.json();
 
             globalStarted = data.global_is_started;
@@ -686,7 +800,7 @@
             const monitor = document.getElementById('team-monitor');
             if (data.teams && data.teams.length > 0) {
                 monitor.innerHTML = data.teams.map(t => {
-                    const isWaiting = t.total_time === 0;
+                    const isWaiting = !t.started_at && !t.scheduled_start_at;
 
                     // Вычисляем номер текущей фазы
                     const currentPhaseNum = t.current_phase_index + 1;
@@ -697,7 +811,7 @@
                         if (t.finished_at) {
                             phaseDisplay = "ЗАВЕРШЕНО";
                         } else {
-                            phaseDisplay = `${t.phase_name} (Фаза ${currentPhaseNum}/${maxPhaseNum})`;
+                            phaseDisplay = `${escapeHTML(t.phase_name || '')} (Фаза ${currentPhaseNum}/${maxPhaseNum})`;
                         }
                     }
 
@@ -705,27 +819,53 @@
                     const totalTimeStr = t.total_time > 0 ? formatTime(t.total_time) : 'не начато';
 
                     const cardBg = isWaiting ? 'bg-panel opacity-50' : 'bg-panel';
-                    const phaseColor = isWaiting ? 'text-slate-500' : (t.finished_at ? 'text-magenta' : (t.phase_name.includes('Задача') ? 'text-neon' : 'text-warn'));
+                    const phaseName = t.phase_name || '';
+                    const phaseColor = isWaiting
+                        ? 'text-slate-500'
+                        : (t.finished_at
+                            ? 'text-magenta'
+                            : (phaseName.includes('Задача') ? 'text-neon' : 'text-warn'));
 
                     // ЛОГИКА КНОПКИ ЗАПУСКА (возвращаем)
-                    const forceStartBtn = (!t.is_full && !t.force_started && !t.finished_at)
-                        ? `<button onclick="forceStartTeam(${t.id})" class="mt-2 w-full bg-magenta/20 text-magenta border border-magenta text-[10px] py-1 rounded hover:bg-magenta hover:text-white transition">▶ ЗАПУСТИТЬ ПРИНУДИТЕЛЬНО</button>`
+                    const isFinished = !!t.finished_at;
+                    const isScheduled = !!t.scheduled_start_at && !t.started_at;
+
+                    // Кнопки действий
+                    const actions = [];
+                    if (isFinished) {
+                        actions.push(`<button onclick="resetTeam(${t.id})" class="col-span-2 bg-warn/10 text-warn border border-warn/40 text-[10px] py-1.5 rounded hover:bg-warn hover:text-black transition">↺ СБРОС</button>`);
+                    } else {
+                        if (!t.started_at && !isScheduled && !t.is_full && !t.force_started) {
+                            actions.push(`<button onclick="forceStartTeam(${t.id})" class="col-span-2 bg-magenta/20 text-magenta border border-magenta text-[10px] py-1.5 rounded hover:bg-magenta hover:text-white transition">▶ ЗАПУСТИТЬ</button>`);
+                        }
+                        if (t.started_at) {
+                            actions.push(`<button onclick="toggleTeam(${t.id}, ${!t.is_paused})" class="bg-ink border border-line text-[10px] py-1.5 rounded hover:border-cyan hover:text-cyan transition">${t.is_paused ? '▶' : '⏸'} ${t.is_paused ? 'ПРОДОЛЖИТЬ' : 'ПАУЗА'}</button>`);
+                            actions.push(`<button onclick="finishTeam(${t.id})" class="bg-ink border border-line text-[10px] py-1.5 rounded hover:border-magenta hover:text-magenta transition">⏹ ФИНИШ</button>`);
+                        }
+                        actions.push(`<button onclick="openManageTeam(${t.id})" class="col-span-2 bg-cyan/10 text-cyan border border-cyan/40 text-[10px] py-1.5 rounded hover:bg-cyan hover:text-black transition">⚙ УПРАВЛЕНИЕ</button>`);
+                    }
+                    actions.push(`<button onclick="deleteTeam(${t.id})" class="col-span-2 bg-ink border border-line text-[10px] py-1.5 rounded text-slate-500 hover:border-magenta hover:text-magenta transition">🗑 УДАЛИТЬ</button>`);
+
+                    const schedLine = isScheduled
+                        ? `<div class="text-[10px] text-warn border-t border-line/50 pt-1">⏰ Старт: ${new Date(t.scheduled_start_at).toLocaleString()}</div>`
                         : '';
 
-                    return `
+                                        return `
                     <div class="border border-line rounded p-3 mb-2 ${cardBg}">
                         <div class="flex justify-between items-center mb-2">
                             <div class="font-bold text-white text-sm">${escapeHTML(t.name)}</div>
-                            <div class="text-[10px] text-cyan font-mono" title="Общее время в олимпиаде">⏱ ${totalTimeStr}</div>
+                            <div class="text-[10px] text-cyan font-mono" title="Общее время">⏱ ${totalTimeStr}</div>
                         </div>
                         <div class="flex justify-between items-center text-[10px] text-slate-400 border-t border-line/50 pt-1 mb-1">
                             <span>👥 ${t.team_size}/${t.team_max}</span>
+                            <span>${t.started_at ? 'СТАРТ ' + new Date(t.started_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'НЕ СТАРТОВАЛА'}</span>
                         </div>
-                        <div class="flex justify-between items-center text-xs border-t border-line/50 pt-2">
+                        ${schedLine}
+                        <div class="flex justify-between items-center text-xs border-t border-line/50 pt-2 mb-2">
                             <div class="${phaseColor} font-bold">${phaseDisplay}</div>
                             <div class="text-slate-400 font-mono">${isWaiting ? '--:--:--' : (t.finished_at ? '--:--:--' : phaseTimeLeft)}</div>
                         </div>
-                        ${forceStartBtn}
+                        <div class="grid grid-cols-2 gap-1">${actions.join('')}</div>
                     </div>`;
                 }).join('');
             } else {
@@ -735,7 +875,11 @@
             if (document.getElementById('tab-phases').classList.contains('active')) {
                 updateActivePhaseHighlight();
             }
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            statsLoading = false;
+        }
     }
 
     function updateActivePhaseHighlight() {
@@ -787,11 +931,14 @@
         const tbody = document.getElementById('tasks-body');
         try {
             const res = await fetch('/api/admin/tasks');
+            if (res.status === 401 || res.status === 403) return window.location.href = '/logout';
+            if (!res.ok) throw new Error('HTTP ' + res.status);
             const currentTasks = await res.json();
+            allTasks = currentTasks;   // ← обновляем глобальный кэш
             tbody.innerHTML = currentTasks.map((t, i) => `
                 <tr class="border-b border-line/50 hover:bg-ink transition">
                     <td class="py-3 text-neon font-bold">${t.id}</td>
-                    <td class="font-bold">${t.title}</td>
+                    <td class="font-bold">${escapeHTML(t.title)}</td>
                     <td class="text-warn font-mono font-bold text-lg">${t.points_max}</td>
                     <td class="space-x-2">
                         <button onclick="openTaskModal(${t.id})" class="text-xs border border-line px-2 py-1 rounded hover:border-cyan hover:text-cyan">✏️ Изменить</button>
@@ -799,7 +946,10 @@
                     </td>
                 </tr>
             `).join('');
-        } catch { tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-magenta">Ошибка загрузки</td></tr>'; }
+        } catch (e) {
+            console.error(e);
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-magenta">Ошибка загрузки</td></tr>';
+        }
     }
 
     function openTaskModal(id = null) {
@@ -870,8 +1020,15 @@
     }
 
     async function deleteTask(id) {
+        const usedIn = allPhases.filter(p => p.type === 'task' && p.task_id === id);
+        if (usedIn.length > 0) {
+            const list = usedIn.map(p => `Фаза ${allPhases.indexOf(p) + 1}`).join(', ');
+            alert(`Нельзя удалить задачу: она используется в ${list}.\nСначала удалите эти фазы.`);
+            return;
+        }
         if (!confirm(`Удалить задачу #${id}? Это также удалит все решения по ней.`)) return;
-        await fetch(`/api/admin/tasks/${id}/delete`, { method: 'POST' });
+        const res = await fetch(`/api/admin/tasks/${id}/delete`, { method: 'POST' });
+        if (!res.ok) { alert('Ошибка удаления'); return; }
         loadTasksAdmin();
         loadPhases();
     }
@@ -1030,8 +1187,276 @@
     const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
     ws.onmessage = (e) => { if (e.data === 'update_rating' || e.data === 'timer_changed') loadStats(); };
 
+
+    // ================= УПРАВЛЕНИЕ КОМАНДОЙ =================
+    let clockValues = { h: 0, m: 0, s: 0 };
+    let clockMode = 'none';
+    let clockTeamId = null;
+
+    function drawClockTicks() {
+        const svg = document.getElementById('clock-ticks');
+        let html = '';
+        for (let i = 0; i < 12; i++) {
+            const rot = i * 30;
+            const isMain = (i % 3 === 0);
+            html += `<line x1="50" y1="4" x2="50" y2="${isMain ? '9' : '7'}" stroke="${isMain ? '#00e5ff' : '#1f2a3a'}" stroke-width="${isMain ? '0.8' : '0.4'}" transform="rotate(${rot} 50 50)"/>`;
+        }
+        svg.innerHTML = html;
+    }
+
+    function updateClockDisplay() {
+        document.getElementById('clock-h').textContent = String(clockValues.h).padStart(2, '0');
+        document.getElementById('clock-m').textContent = String(clockValues.m).padStart(2, '0');
+        document.getElementById('clock-s').textContent = String(clockValues.s).padStart(2, '0');
+        updateClockPreview();
+    }
+
+    function updateClockPreview() {
+        const prev = document.getElementById('clock-preview');
+        if (clockMode === 'none') { prev.textContent = ''; return; }
+        if (clockMode === 'absolute') {
+            const now = new Date();
+            const dt = new Date(now.getFullYear(), now.getMonth(), now.getDate(),
+                clockValues.h, clockValues.m, clockValues.s);
+            const past = dt <= now;
+            if (past) {
+                const mins = Math.round((now - dt) / 60000);
+                prev.innerHTML = `⚠ Время <span class="text-magenta">в прошлом</span> на ${mins} мин. ` +
+                    `<button onclick="clockNowPlus(5)" class="text-cyan underline ml-2">+5 мин от сейчас</button>`;
+            } else {
+                prev.innerHTML = `Старт в <span class="text-neon font-bold">${dt.toLocaleString()}</span>`;
+            }
+        }
+    }
+
+    function clockAdjust(unit, delta) {
+        if (unit === 'h') clockValues.h = (clockValues.h + delta + 24) % 24;
+        if (unit === 'm') clockValues.m = (clockValues.m + delta + 60) % 60;
+        if (unit === 's') clockValues.s = (clockValues.s + delta + 60) % 60;
+        updateClockDisplay();
+    }
+
+    function clockPreset(seconds) {
+        clockValues.h = Math.floor(seconds / 3600);
+        clockValues.m = Math.floor((seconds % 3600) / 60);
+        clockValues.s = seconds % 60;
+        updateClockDisplay();
+    }
+
+    function clockNowPlus(minutes) {
+        const target = new Date(Date.now() + minutes * 60 * 1000);
+        clockValues = { h: target.getHours(), m: target.getMinutes(), s: target.getSeconds() };
+        updateClockDisplay();
+    }
+
+    function clockNow() {
+        const now = new Date();
+        clockValues.h = now.getHours();
+        clockValues.m = now.getMinutes();
+        clockValues.s = now.getSeconds();
+        updateClockDisplay();
+    }
+
+    function setScheduleMode(mode) {
+        const prevMode = clockMode;
+        clockMode = mode;
+
+        ['none', 'absolute', 'relative'].forEach(m => {
+            const btn = document.getElementById('mode-btn-' + m);
+            const active = m === mode;
+            btn.className = 'schedule-mode-btn px-3 py-2 rounded border text-xs font-bold transition ' +
+                (active ? 'border-cyan bg-cyan/10 text-cyan' : 'border-line text-slate-400 hover:border-slate-500');
+        });
+
+        // Если переключились на absolute и время уже прошло — ставим «сейчас + 5 мин»
+        if (mode === 'absolute' && prevMode !== 'absolute') {
+            const now = new Date();
+            const dt = new Date(now.getFullYear(), now.getMonth(), now.getDate(),
+                clockValues.h, clockValues.m, clockValues.s);
+            if (dt <= now) {
+                const target = new Date(Date.now() + 5 * 60 * 1000);
+                clockValues = {
+                    h: target.getHours(),
+                    m: target.getMinutes(),
+                    s: target.getSeconds(),
+                };
+            }
+        }
+
+        // Если переключились на relative и время нулевое — ставим 5 мин
+        if (mode === 'relative' && clockValues.h === 0 && clockValues.m === 0 && clockValues.s === 0) {
+            clockPreset(5 * 60);
+        }
+
+        document.getElementById('clock-section').classList.toggle('hidden', mode === 'none');
+        updateClockDisplay();
+    }
+
+    function adjustMaxSize(delta) {
+        const input = document.getElementById('manage-max-size');
+        const cur = parseInt(input.value) || 1;
+        input.value = Math.max(1, Math.min(20, cur + delta));
+    }
+
+    function openManageTeam(teamId) {
+        const team = allTeams.find(t => t.id === teamId);
+        if (!team) return;
+        clockTeamId = teamId;
+        document.getElementById('manage-team-id').value = teamId;
+        document.getElementById('manage-team-name').textContent = team.name;
+        document.getElementById('manage-current-size').textContent = team.team_size;
+        document.getElementById('manage-max-size').value = team.max_size || team.team_max || 5;
+
+        // Список участников
+        const plist = document.getElementById('manage-participants-list');
+        plist.innerHTML = (team.participants || []).map(p => `
+            <div class="flex items-center justify-between text-xs bg-ink rounded px-2 py-1 border border-line/50">
+                <div><span class="text-white">${escapeHTML(p.name)}</span> <span class="text-slate-500">${escapeHTML(p.email || '')}</span></div>
+                <button onclick="removeParticipant(${p.id})" class="text-magenta hover:text-white px-2">×</button>
+            </div>
+        `).join('') || '<div class="text-xs text-slate-500 text-center py-1">Нет участников</div>';
+
+        // Стартовая фаза
+        const phaseSelect = document.getElementById('manage-start-phase');
+        phaseSelect.innerHTML = allPhases.map((p, i) => {
+            const label = p.type === 'task' ? `Фаза ${i+1}: Задача ${p.task_id}` : `Фаза ${i+1}: ${p.sport_name}`;
+            return `<option value="${i}">${label}</option>`;
+        }).join('');
+        phaseSelect.value = String(team.current_phase_index || 0);
+
+        // Время
+        if (team.scheduled_start_at) {
+            const dt = new Date(team.scheduled_start_at);
+            clockValues = { h: dt.getHours(), m: dt.getMinutes(), s: dt.getSeconds() };
+            setScheduleMode('absolute');
+        } else {
+            clockPreset(5 * 60);
+            setScheduleMode('none');
+        }
+        drawClockTicks();
+        updateClockDisplay();
+        document.getElementById('team-manage-modal').classList.remove('hidden');
+    }
+
+    function closeManageTeam() {
+        document.getElementById('team-manage-modal').classList.add('hidden');
+        clockTeamId = null;
+    }
+
+    async function removeParticipant(pid) {
+        if (!confirm('Удалить участника? Все его результаты будут стёрты.')) return;
+        await fetch(`/api/admin/participants/${pid}/delete`, { method: 'POST' });
+        // перерисовываем модалку
+        const teamId = clockTeamId;
+        await loadStats();
+        openManageTeam(teamId);
+    }
+
+    function computeScheduledStart() {
+        if (clockMode === 'none') return null;
+        if (clockMode === 'absolute') {
+            const now = new Date();
+            const dt = new Date(
+                now.getFullYear(), now.getMonth(), now.getDate(),
+                clockValues.h, clockValues.m, clockValues.s
+            );
+            // Если время в прошлом — оставляем как есть.
+            // Бэкенд разберётся (стартует сразу или проигнорирует).
+            return dt.toISOString();
+        }
+        const total = clockValues.h * 3600 + clockValues.m * 60 + clockValues.s;
+        return new Date(Date.now() + total * 1000).toISOString();
+    }
+
+    async function saveTeamSettings() {
+        if (!clockTeamId) return;
+        const team = allTeams.find(t => t.id === clockTeamId);
+        if (!team) return;
+
+        const isStarted = !!team.started_at;
+        const payload = {
+            max_size: parseInt(document.getElementById('manage-max-size').value) || null,
+        };
+
+        if (!isStarted) {
+            payload.start_phase_index =
+                parseInt(document.getElementById('manage-start-phase').value) || 0;
+            payload.scheduled_start_at = computeScheduledStart();
+
+            // Проверка: absolute-режим и время в прошлом
+            if (clockMode === 'absolute' && payload.scheduled_start_at) {
+                const dt = new Date(payload.scheduled_start_at);
+                const now = new Date();
+                if (dt <= now) {
+                    const mins = Math.round((now - dt) / 60000);
+                    const ok = confirm(
+                        `⚠ Время старта в прошлом на ${mins} мин.\n` +
+                        `Команда стартует НЕМЕДЛЕННО, если бэкенд это поддерживает.\n\n` +
+                        `Продолжить?`
+                    );
+                    if (!ok) return;
+                }
+            }
+        }
+
+        const res = await fetch(`/api/admin/teams/${clockTeamId}/settings`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+            closeManageTeam();
+            loadStats();
+        } else {
+            const err = await res.json().catch(() => ({}));
+            alert('Ошибка сохранения: ' + (err.detail || res.status));
+        }
+    }
+
+    async function finishTeamFromModal() {
+        if (!clockTeamId) return;
+        if (!confirm('Принудительно завершить команду?')) return;
+        await fetch(`/api/admin/teams/${clockTeamId}/finish`, { method: 'POST' });
+        closeManageTeam(); loadStats();
+    }
+
+    async function resetTeamFromModal() {
+        if (!clockTeamId) return;
+        if (!confirm('Сбросить команду? Всё начнётся с нуля.')) return;
+        await fetch(`/api/admin/teams/${clockTeamId}/reset`, { method: 'POST' });
+        closeManageTeam(); loadStats();
+    }
+
+    async function startNowFromModal() {
+        if (!clockTeamId) return;
+        const res = await fetch(`/api/admin/teams/${clockTeamId}/settings`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ start_now: true })
+        });
+        if (res.ok) { closeManageTeam(); loadStats(); }
+    }
+
+    async function finishTeam(id) {
+        if (!confirm('Принудительно завершить команду?')) return;
+        await fetch(`/api/admin/teams/${id}/finish`, { method: 'POST' });
+        loadStats();
+    }
+
+    async function resetTeam(id) {
+        if (!confirm('Сбросить команду? Всё начнётся с нуля.')) return;
+        await fetch(`/api/admin/teams/${id}/reset`, { method: 'POST' });
+        loadStats();
+    }
+
+
     loadPhases();
     loadStats();
-    setInterval(loadStats, 5000);
+    setInterval(() => {
+        if (!document.hidden) loadStats();
+    }, 5000);
+
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) loadStats();
+    });
 </script>
 {% endblock %}

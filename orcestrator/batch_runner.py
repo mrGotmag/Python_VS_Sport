@@ -27,14 +27,14 @@ ALLOWED_IMPORTS_STR = (
     "math statistics decimal fractions itertools functools "
     "collections datetime random re json string copy "
     "enum operator typing dataclasses heapq bisect "
-    "array numbers time weakref os"
+    "array numbers time"
 )
 
 # ---------- шаблоны раннеров ----------
 
-# Общий код для изоляции импортов (теперь передаем строку)
 _SAFE_IMPORT_CODE = """
 import builtins
+import sys as _real_sys
 
 ALLOWED = "__ALLOWED__".split()
 
@@ -48,13 +48,16 @@ def _safe_import(name, globals=None, locals=None, fromlist=(), level=0):
         raise ImportError(f"Импорт модуля '{root_module}' запрещен правилами олимпиады.")
     return _original_import(name, globals, locals, fromlist, level)
 
-# Блокируем открытие файлов
 def _safe_open(*args, **kwargs):
     raise PermissionError("Открытие файлов запрещено правилами олимпиады.")
 
-# Подменяем импорт на безопасный
 builtins.__import__ = _safe_import
 builtins.open = _safe_open
+
+# Вариант B: setrecursionlimit без импорта sys (безопаснее, чем пускать sys)
+builtins.setrecursionlimit = _real_sys.setrecursionlimit
+builtins.getrecursionlimit = _real_sys.getrecursionlimit
+del _real_sys
 
 _DANGEROUS = ("eval", "exec", "compile", "breakpoint", "globals", "locals", "vars")
 for _name in _DANGEROUS:
@@ -84,7 +87,6 @@ def main():
         sys.stdin = io.StringIO(t["input"])
         try:
             with contextlib.redirect_stdout(buf):
-                # ИСПОЛЬЗУЕМ БЕЗОПАСНЫЕ ВЕРСИИ:
                 _safe_exec(_safe_compile(code, "<solution>", "exec"), {"__name__": "__main__"})
             out = buf.getvalue()
             if len(out) > MAX_OUTPUT:
@@ -93,8 +95,16 @@ def main():
             else:
                 results.append({"id": t["id"], "out": out, "rc": 0, "err": ""})
         except SystemExit as e:
-            results.append({"id": t["id"], "out": buf.getvalue(),
-                            "rc": 1, "err": f"SystemExit({e.code!r})"})
+            out = buf.getvalue()
+            if e.code in (0, None):
+                if len(out) > MAX_OUTPUT:
+                    results.append({"id": t["id"], "out": out[:MAX_OUTPUT],
+                                    "rc": 1, "err": "OUTPUT_LIMIT"})
+                else:
+                    results.append({"id": t["id"], "out": out, "rc": 0, "err": ""})
+            else:
+                results.append({"id": t["id"], "out": out,
+                                "rc": 1, "err": f"SystemExit({e.code!r})"})
         except ImportError as e:
             results.append({"id": t["id"], "out": buf.getvalue(),
                             "rc": 1, "err": f"SecurityError: {e}"})
@@ -125,15 +135,18 @@ def _run(payload):
     sys.stdin = io.StringIO(stdin_data)
     try:
         with contextlib.redirect_stdout(buf):
-            # ИСПОЛЬЗУЕМ БЕЗОПАСНЫЕ ВЕРСИИ:
             _safe_exec(_safe_compile(code, "<solution>", "exec"), {"__name__": "__main__"})
         out = buf.getvalue()
         if len(out) > MAX_OUTPUT:
             return {"out": out[:MAX_OUTPUT], "rc": 1, "err": "OUTPUT_LIMIT"}
         return {"out": out, "rc": 0, "err": ""}
     except SystemExit as e:
-        return {"out": buf.getvalue(), "rc": 1,
-                "err": f"SystemExit({e.code!r})"}
+        out = buf.getvalue()
+        if e.code in (0, None):
+            if len(out) > MAX_OUTPUT:
+                return {"out": out[:MAX_OUTPUT], "rc": 1, "err": "OUTPUT_LIMIT"}
+            return {"out": out, "rc": 0, "err": ""}
+        return {"out": out, "rc": 1, "err": f"SystemExit({e.code!r})"}
     except ImportError as e:
         return {"out": buf.getvalue(), "rc": 1,
                 "err": f"SecurityError: {e}"}
@@ -163,12 +176,11 @@ if __name__ == "__main__":
     main()
 '''
 
-# Формируем безопасный импорт (передаем строку)
+# Формируем безопасный импорт
 _safe_import_str = _SAFE_IMPORT_CODE.replace(
     "__ALLOWED__", ALLOWED_IMPORTS_STR
 )
 
-# Собираем финальные строки раннеров
 _SEQ_RUNNER = (
     _SEQ_RUNNER_TEMPLATE
     .replace("__SAFE_IMPORT__", _safe_import_str)
@@ -182,10 +194,12 @@ _ISO_RUNNER = (
     .replace("__MAX_FORKS__", str(settings.batch_max_forks))
 )
 
+
 # ---------- вспомогательные ----------
 
 def _safe_stub(tests: list[dict], err: str) -> list[dict]:
     return [{"id": t["id"], "out": "", "rc": -1, "err": err} for t in tests]
+
 
 def _apply_limits(memory_mb: int):
     if platform.system() == "Windows":
@@ -196,12 +210,61 @@ def _apply_limits(memory_mb: int):
             import resource
             limit = memory_mb * 1024 * 1024
             resource.setrlimit(resource.RLIMIT_AS, (limit, limit))
+            try:
+                resource.setrlimit(resource.RLIMIT_NPROC, (32, 32))
+            except (ValueError, OSError):
+                pass
+            try:
+                resource.setrlimit(resource.RLIMIT_CPU, (30, 30))
+            except (ValueError, OSError):
+                pass
+            try:
+                resource.setrlimit(resource.RLIMIT_FSIZE, (16 * 1024 * 1024, 16 * 1024 * 1024))
+            except (ValueError, OSError):
+                pass
         except (ImportError, ValueError, OSError):
             pass
 
     return _limits
 
-# ---------- основной API ----------
+
+def _kill_process_tree(proc) -> None:
+    """
+    Убивает процесс и всё его дерево. Кросс-платформенно.
+    На Windows — taskkill /T, на Unix — psutil.children(recursive=True).
+    """
+    if proc is None:
+        return
+
+    if platform.system() == "Windows":
+        try:
+            subprocess.run(
+                ["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                capture_output=True,
+                timeout=5,
+            )
+            return
+        except (OSError, subprocess.SubprocessError):
+            pass
+
+    if HAS_PSUTIL:
+        try:
+            parent = psutil.Process(proc.pid)
+            for child in parent.children(recursive=True):
+                try:
+                    child.kill()
+                except psutil.Error:
+                    pass
+            parent.kill()
+            return
+        except psutil.Error:
+            pass
+
+    try:
+        proc.kill()
+    except OSError:
+        pass
+
 
 def run_batch(
     code: str,
@@ -241,12 +304,26 @@ def run_batch(
     )
     preexec = _apply_limits(memory_mb)
 
-    # --- Замер памяти: поток-монитор параллельно с процессом ---
     peak_memory_mb = 0.0
     proc = None
     stop_event = threading.Event()
+    mem_holder = {"peak_mb": 0.0, "killed_for_memory": False}
 
-    def _monitor_memory(pid: int, holder: dict, stop_evt: threading.Event) -> None:
+    def _tree_rss_mb(p) -> float:
+        """Сумма RSS процесса и всех потомков (MB)."""
+        try:
+            total = p.memory_info().rss
+            for child in p.children(recursive=True):
+                try:
+                    total += child.memory_info().rss
+                except psutil.Error:
+                    pass
+            return total / (1024 * 1024)
+        except psutil.Error:
+            return 0.0
+
+    def _monitor_memory(pid: int, holder: dict, stop_evt: threading.Event,
+                        limit_mb: int, proc_ref) -> None:
         if not HAS_PSUTIL:
             return
         try:
@@ -256,52 +333,55 @@ def run_batch(
 
         peak = 0.0
 
-        # Первый замер сразу — ловим память интерпретатора с самого старта,
-        # даже если процесс очень короткий.
-        try:
-            mem_info = p.memory_info()
-            if hasattr(mem_info, "peak_wset"):  # Windows
-                peak = mem_info.peak_wset / (1024 * 1024)
-            else:  # Linux/macOS
-                peak = mem_info.rss / (1024 * 1024)
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
-            pass
+        # Первый замер сразу
+        peak = _tree_rss_mb(p)
 
         while not stop_evt.is_set():
             try:
-                mem_info = p.memory_info()
-                if hasattr(mem_info, "peak_wset"):  # Windows
-                    mem_val = mem_info.peak_wset / (1024 * 1024)
-                else:  # Linux/macOS
-                    mem_val = mem_info.rss / (1024 * 1024)
+                mem_val = _tree_rss_mb(p)
                 if mem_val > peak:
                     peak = mem_val
-            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                if mem_val > limit_mb:
+                    crash.warning(
+                        "MEMORY LIMIT: %.0f MB > %d MB, убиваю pid=%d",
+                        mem_val, limit_mb, pid,
+                    )
+                    _kill_process_tree(proc_ref)
+                    holder["killed_for_memory"] = True
+                    break
+            except psutil.Error:
                 break
-            if not p.is_running():
-                break
-            time.sleep(0.001)  # было 0.005 — увеличена частота опроса
+            time.sleep(0.01)
         holder["peak_mb"] = peak
 
-    mem_holder = {"peak_mb": 0.0}
     monitor = None
 
-    # --- Запуск процесса и замер общего времени ---
     start_time = time.perf_counter()
     try:
-        proc = subprocess.Popen(
-            [sys.executable, "-I", "-c", runner],
+        popen_kwargs = dict(
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            preexec_fn=preexec,
+        )
+
+        if platform.system() == "Windows":
+            popen_kwargs["creationflags"] = (
+                subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
+            )
+        else:
+            popen_kwargs["start_new_session"] = True
+            popen_kwargs["preexec_fn"] = preexec
+
+        proc = subprocess.Popen(
+            [sys.executable, "-I", "-c", runner],
+            **popen_kwargs,
         )
 
         if HAS_PSUTIL:
             monitor = threading.Thread(
                 target=_monitor_memory,
-                args=(proc.pid, mem_holder, stop_event),
+                args=(proc.pid, mem_holder, stop_event, memory_mb, proc),
                 daemon=True,
             )
             monitor.start()
@@ -309,10 +389,19 @@ def run_batch(
         try:
             stdout, stderr = proc.communicate(input=payload, timeout=total_timeout)
         except subprocess.TimeoutExpired:
-            proc.kill()
-            stdout, stderr = proc.communicate()
-            crash.warning("BATCH TIMEOUT (%.1fs) на %d тестов", total_timeout, len(tests))
+            _kill_process_tree(proc)
+            try:
+                proc.communicate(timeout=2)
+            except subprocess.TimeoutExpired:
+                crash.error(
+                    "BATCH TIMEOUT: процесс не умер после kill (pid=%s)",
+                    getattr(proc, "pid", "?"),
+                )
+            crash.warning(
+                "BATCH TIMEOUT (%.1fs) на %d тестов", total_timeout, len(tests)
+            )
             return _safe_stub(tests, "TIMEOUT")
+
     except MemoryError:
         crash.warning("BATCH MEMORY_LIMIT (%d МБ)", memory_mb)
         return _safe_stub(tests, "MEMORY_LIMIT")
@@ -324,6 +413,10 @@ def run_batch(
         if monitor is not None:
             monitor.join(timeout=1.0)
         peak_memory_mb = mem_holder.get("peak_mb", 0.0)
+
+    if mem_holder.get("killed_for_memory"):
+        crash.warning("BATCH MEMORY_LIMIT (%d МБ, убит монитором)", memory_mb)
+        return _safe_stub(tests, "MEMORY_LIMIT")
 
     total_elapsed_ms = (time.perf_counter() - start_time) * 1000.0
 
@@ -342,8 +435,6 @@ def run_batch(
 
     by_id = {x.get("id"): x for x in data if isinstance(x, dict)}
 
-    # Приблизительное время на 1 тест: суммарное / число тестов.
-    # Для точности — надо править _RUNNER_TEMPLATE (внутренний замер).
     per_test_ms = total_elapsed_ms / max(len(tests), 1)
 
     result: list[dict] = []
@@ -364,7 +455,6 @@ def run_batch(
             "memory_mb": peak_memory_mb,
         })
 
-    # Логирование для отладки (пойдёт в session.log через QueueHandler)
     for r in result:
         log.info("Тест #%s: rc=%s, time=%.1fms, mem=%.1fMB",
                  r["id"], r["rc"], r["time_ms"], r["memory_mb"])

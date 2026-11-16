@@ -15,7 +15,6 @@
         transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease;
     }
 
-    /* Красивый тонкий скроллбар для вкладок дисциплин */
     .tabs-container::-webkit-scrollbar {
         height: 4px;
     }
@@ -36,16 +35,13 @@
 {% block content %}
 <div class="w-full max-w-5xl mx-auto fade-in p-2 md:p-4 pb-20">
 
-    <!-- ЗАГОЛОВОК -->
     <div class="flex justify-between items-center border-b border-line pb-2 mb-3">
         <h1 class="text-lg md:text-xl font-bold text-warn">ПАНЕЛЬ СУДЬИ</h1>
         <a href="/logout" class="text-magenta hover:text-white text-xs font-bold bg-magenta/10 px-2 py-1 rounded border border-magenta/30">ВЫЙТИ</a>
     </div>
 
-    <!-- ЛИПКАЯ ПАНЕЛЬ УПРАВЛЕНИЯ -->
     <div class="sticky top-[60px] z-40 bg-panel/95 backdrop-blur-xl border border-line rounded-xl p-3 mb-4 shadow-xl transition-all flex flex-col gap-3">
 
-        <!-- Строка поиска (на всю ширину) -->
         <div class="relative w-full">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg class="h-5 w-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -57,7 +53,6 @@
             </button>
         </div>
 
-        <!-- Вкладки дисциплин (крупные, с горизонтальным скроллом) -->
         <div>
             <div class="text-[10px] text-slate-500 uppercase tracking-wider mb-1.5 font-bold">Дисциплина:</div>
             <div id="phase-pills-container" class="tabs-container flex overflow-x-auto gap-2 pb-2 snap-x">
@@ -65,12 +60,10 @@
             </div>
         </div>
 
-        <!-- Переключатель правила (Больше/Меньше) -->
         <div id="direction-container" class="hidden pt-2 border-t border-line/50">
             <div class="text-[10px] text-slate-500 uppercase tracking-wider mb-1.5 font-bold">Правило оценки:</div>
             <div class="relative flex bg-ink border border-line rounded-lg p-1 h-[48px]">
                 <div id="dir-pill" class="pill-transition absolute top-1 bottom-1 w-[calc(50%-4px)] bg-cyan rounded-md shadow-[0_0_15px_rgba(0,229,255,0.4)] z-0" style="left: 4px;"></div>
-
                 <button id="btn-dir-more" onclick="setDirection('more')" class="relative z-10 flex-1 py-2 rounded-md font-bold text-xs md:text-sm flex items-center justify-center transition-colors duration-300 text-ink">
                     ↑ БОЛЬШЕ = ЛУЧШЕ
                 </button>
@@ -81,7 +74,6 @@
         </div>
     </div>
 
-    <!-- Сетка карточек участников -->
     <div id="staff-teams-container" class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div class="col-span-full text-center py-8 text-slate-500 bg-panel border border-line rounded-xl text-sm">
             Выберите дисциплину выше
@@ -95,8 +87,8 @@
 
 <script>
     function escapeHTML(str) {
-        if (!str) return '';
-        return str.replace(/[&<>'"]/g,
+        if (str === null || str === undefined) return '';
+        return String(str).replace(/[&<>'"]/g,
             tag => ({
                 '&': '&amp;',
                 '<': '&lt;',
@@ -110,6 +102,7 @@
     let sportData = { phases: [], participants: [], results: [] };
     let currentPhaseId = null;
 
+    // ---------- Поиск ----------
     document.getElementById('search-input').addEventListener('input', function() {
         const clearBtn = document.getElementById('btn-clear-search');
         if (this.value.length > 0) clearBtn.classList.remove('hidden');
@@ -128,9 +121,13 @@
         const query = document.getElementById('search-input').value.toLowerCase().trim();
         const cards = document.querySelectorAll('.participant-card');
         let visibleCount = 0;
-
         cards.forEach(card => {
-            const searchStr = card.getAttribute('data-search');
+            const nameEl = card.querySelector('.participant-name');
+            const teamEl = card.querySelector('.participant-team');
+            const searchStr = (
+                (nameEl ? nameEl.textContent : '') + ' ' +
+                (teamEl ? teamEl.textContent : '')
+            ).toLowerCase();
             if (searchStr.includes(query)) {
                 card.classList.remove('hidden');
                 visibleCount++;
@@ -138,7 +135,6 @@
                 card.classList.add('hidden');
             }
         });
-
         const noResults = document.getElementById('no-results-msg');
         if (visibleCount === 0 && cards.length > 0) {
             noResults.classList.remove('hidden');
@@ -147,37 +143,79 @@
         }
     }
 
+    // ---------- Проверки занятости ----------
+    function hasActiveInput() {
+        const active = document.activeElement;
+        return !!(active && active.closest('.participant-card'));
+    }
+
+    function hasDirtyCards() {
+        return document.querySelectorAll('.participant-card[data-dirty="true"]').length > 0;
+    }
+
+    // Делегирование: помечаем карточку "грязной" при вводе
+    (function initStaffListeners() {
+        const container = document.getElementById('staff-teams-container');
+        container.addEventListener('input', (e) => {
+            if (e.target.matches('input[type="number"]')) {
+                const card = e.target.closest('.participant-card');
+                if (card) card.dataset.dirty = 'true';
+            }
+        });
+    })();
+
+    // ---------- Загрузка данных ----------
     async function loadStaffData() {
         try {
             const res = await fetch('/api/staff/sport_data', { credentials: 'include' });
             if (res.status === 401 || res.status === 403) return window.location.href = '/';
-            sportData = await res.json();
+            if (!res.ok) {
+                console.error('staff_data: HTTP', res.status);
+                return;
+            }
+            const newData = await res.json();
+            sportData = newData;
 
-            const container = document.getElementById('phase-pills-container');
+            renderPhasePills();
 
-            if (sportData.phases.length === 0) {
-                container.innerHTML = '<div class="text-slate-500 text-xs">Нет фаз</div>';
+            if (newData.phases.length === 0) {
+                document.getElementById('staff-teams-container').innerHTML =
+                    '<div class="col-span-full text-center py-8 text-slate-500 bg-panel border border-line rounded-xl text-sm">Нет дисциплин</div>';
+                document.getElementById('direction-container').classList.add('hidden');
+                currentPhaseId = null;
                 return;
             }
 
-            // Крупные вкладки (как в браузере), с min-w-max, чтобы не сжимались
-            container.innerHTML = sportData.phases.map(p => `
-                <button id="pill-${p.id}" onclick="selectPhase(${p.id})"
-                    class="phase-pill flex-shrink-0 min-w-max px-5 py-2.5 rounded-lg border border-line bg-ink text-slate-400 hover:border-slate-500 hover:text-white font-bold text-sm transition-all duration-300 snap-start">
-                    ${p.sport_name}
-                </button>
-            `).join('');
+            const phaseStillExists = currentPhaseId &&
+                newData.phases.some(p => p.id === currentPhaseId);
 
-            if (sportData.phases.length > 0) {
-                selectPhase(sportData.phases[0].id);
+            if (phaseStillExists) {
+                // Сохраняем выбор, БЕЗ скролла
+                selectPhase(currentPhaseId, { skipScroll: true });
+            } else {
+                // Первый запуск или фаза исчезла
+                selectPhase(newData.phases[0].id);
             }
-
         } catch (e) {
             console.error(e);
         }
     }
 
-    function selectPhase(phaseId) {
+    function renderPhasePills() {
+        const container = document.getElementById('phase-pills-container');
+        const newHtml = sportData.phases.map(p => `
+            <button id="pill-${p.id}" onclick="selectPhase(${p.id})"
+                class="phase-pill flex-shrink-0 min-w-max px-5 py-2.5 rounded-lg border border-line bg-ink text-slate-400 hover:border-slate-500 hover:text-white font-bold text-sm transition-all duration-300 snap-start">
+                ${escapeHTML(p.sport_name)}
+            </button>
+        `).join('');
+        // Перерисовываем только если что-то изменилось (hover/фокус сохраняются)
+        if (container.innerHTML !== newHtml) {
+            container.innerHTML = newHtml;
+        }
+    }
+
+    function selectPhase(phaseId, { skipScroll = false } = {}) {
         currentPhaseId = phaseId;
 
         document.querySelectorAll('.phase-pill').forEach(btn => {
@@ -187,8 +225,9 @@
         const activeBtn = document.getElementById(`pill-${phaseId}`);
         if (activeBtn) {
             activeBtn.className = 'phase-pill flex-shrink-0 min-w-max px-5 py-2.5 rounded-lg border border-cyan bg-cyan/10 text-cyan font-bold text-sm shadow-[0_0_15px_rgba(0,229,255,0.2)] transition-all duration-300 snap-start scale-[1.02]';
-            // Прокручиваем к активной вкладке, если она за пределами экрана
-            activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            if (!skipScroll) {
+                activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
         }
 
         loadStaffTeams();
@@ -224,9 +263,17 @@
             return;
         }
 
+        // КЛЮЧЕВОЙ ФИКС: не перерисовывать, если пользователь вводит
+        // или есть несохранённые данные
+        if (hasActiveInput() || hasDirtyCards()) {
+            return;
+        }
+
         const phase = sportData.phases.find(p => p.id === currentPhaseId);
+        if (!phase) return;
+
         dirContainer.classList.remove('hidden');
-        updateDirectionUI(phase.sport_direction);
+        updateDirectionUI(phase.sport_direction || 'more');
 
         const sortedParticipants = [...sportData.participants].sort((a, b) => {
             if (a.team_name !== b.team_name) return a.team_name.localeCompare(b.team_name);
@@ -238,18 +285,17 @@
             return;
         }
 
-        container.innerHTML = '';
-
         container.innerHTML = sortedParticipants.map(p => {
-            const result = sportData.results.find(r => r.participant_id === p.id && r.phase_id === currentPhaseId);
+            const result = sportData.results.find(r =>
+                r.participant_id === p.id && r.phase_id === currentPhaseId
+            );
             const attempts = result ? result.attempts : '';
-            const searchStr = `${p.name.toLowerCase()} ${p.team_name.toLowerCase()}`;
 
             return `
-                <div id="card-${p.id}" data-search="${searchStr}" class="participant-card bg-panel border border-line rounded-xl p-3 flex flex-col gap-2 shadow-md transition hover:border-slate-600">
+                <div id="card-${p.id}" class="participant-card bg-panel border border-line rounded-xl p-3 flex flex-col gap-2 shadow-md transition hover:border-slate-600">
                     <div class="flex justify-between items-start">
-                        <div class="font-bold text-base text-white leading-tight">${p.name}</div>
-                        <div class="text-[9px] bg-ink text-cyan border border-line px-1.5 py-0.5 rounded-full whitespace-nowrap ml-2 mt-0.5">${p.team_name}</div>
+                        <div class="participant-name font-bold text-base text-white leading-tight">${escapeHTML(p.name)}</div>
+                        <div class="participant-team text-[9px] bg-ink text-cyan border border-line px-1.5 py-0.5 rounded-full whitespace-nowrap ml-2 mt-0.5">${escapeHTML(p.team_name)}</div>
                     </div>
 
                     <div class="flex gap-2 mt-1">
@@ -257,7 +303,7 @@
                             <input type="number" id="staff-input-${p.id}" value="${attempts}" placeholder="0" min="0"
                                 class="w-full bg-ink border-2 border-line rounded-lg px-2 py-2 text-xl text-center font-mono font-bold text-neon focus:border-neon outline-none transition">
                         </div>
-                        <button onclick="saveStaffResult(${p.id}, ${currentPhaseId})"
+                        <button id="staff-btn-${p.id}" onclick="saveStaffResult(${p.id}, ${currentPhaseId})"
                             class="w-1/2 bg-warn text-ink font-bold text-xs rounded-lg hover:bg-white transition active:scale-95 shadow-[0_0_10px_rgba(255,184,0,0.3)]">
                             СОХРАНИТЬ
                         </button>
@@ -273,10 +319,11 @@
 
     async function setDirection(newDir) {
         if (!currentPhaseId) return;
-
         const phase = sportData.phases.find(p => p.id === currentPhaseId);
+        if (!phase) return;
         if (phase.sport_direction === newDir) return;
 
+        const oldDir = phase.sport_direction;
         phase.sport_direction = newDir;
         updateDirectionUI(newDir);
 
@@ -287,29 +334,38 @@
                 body: JSON.stringify({ direction: newDir }),
                 credentials: 'include'
             });
-            if (!res.ok) throw new Error('Ошибка сервера');
+            if (!res.ok) throw new Error('HTTP ' + res.status);
         } catch (e) {
             alert('Ошибка смены правила: ' + e.message);
-            phase.sport_direction = newDir === 'more' ? 'less' : 'more';
-            updateDirectionUI(phase.sport_direction);
+            phase.sport_direction = oldDir;
+            updateDirectionUI(oldDir);
         }
     }
 
     async function saveStaffResult(participantId, phaseId) {
         const input = document.getElementById(`staff-input-${participantId}`);
         const card = document.getElementById(`card-${participantId}`);
-        const attempts = parseInt(input.value) || 0;
-        const btn = input.parentElement.nextElementSibling;
+        const btn = document.getElementById(`staff-btn-${participantId}`);
+        if (!input || !card || !btn) return;
 
-        btn.disabled = true;
+        // Валидация: целое, 0..1_000_000
+        const raw = parseInt(input.value, 10);
+        if (Number.isNaN(raw) || raw < 0 || raw > 1_000_000) {
+            alert('Некорректное значение: введите целое число от 0 до 1000000');
+            input.focus();
+            return;
+        }
+
         const originalText = btn.textContent;
+        const originalClass = btn.className;
+        btn.disabled = true;
         btn.textContent = '...';
 
         try {
             const res = await fetch('/api/staff/sport_result', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ participant_id: participantId, phase_id: phaseId, attempts: attempts }),
+                body: JSON.stringify({ participant_id: participantId, phase_id: phaseId, attempts: raw }),
                 credentials: 'include'
             });
 
@@ -318,30 +374,37 @@
                 btn.textContent = '✔ ОК';
                 btn.className = 'w-1/2 bg-neon text-ink font-bold text-xs rounded-lg transition';
 
-                const existing = sportData.results.find(r => r.participant_id === participantId && r.phase_id === phaseId);
-                if (existing) existing.attempts = attempts;
-                else sportData.results.push({participant_id: participantId, phase_id: phaseId, attempts: attempts});
+                // Снимаем флаг "грязный" — разрешаем автообновление
+                card.dataset.dirty = 'false';
+
+                const existing = sportData.results.find(r =>
+                    r.participant_id === participantId && r.phase_id === phaseId
+                );
+                if (existing) existing.attempts = raw;
+                else sportData.results.push({participant_id: participantId, phase_id: phaseId, attempts: raw});
 
                 setTimeout(() => {
                     card.classList.remove('saved-success');
                     btn.textContent = originalText;
-                    btn.className = 'w-1/2 bg-warn text-ink font-bold text-xs rounded-lg hover:bg-white transition active:scale-95 shadow-[0_0_10px_rgba(255,184,0,0.3)]';
+                    btn.className = originalClass;
                     btn.disabled = false;
                 }, 1500);
             } else {
-                alert('Ошибка сохранения');
+                alert('Ошибка сохранения (HTTP ' + res.status + ')');
                 btn.textContent = originalText;
+                btn.className = originalClass;
                 btn.disabled = false;
             }
         } catch (e) {
             alert('Ошибка сети');
             btn.textContent = originalText;
+            btn.className = originalClass;
             btn.disabled = false;
         }
     }
 
-    setInterval(loadStaffData, 15000);
-
+    // Первичная загрузка + периодическое обновление
     loadStaffData();
+    setInterval(loadStaffData, 15000);
 </script>
 {% endblock %}

@@ -21,6 +21,7 @@ from app.models import Base, AdminUser, GlobalSettings, Organization, Team, Task
 from app.security import get_password_hash, verify_password, create_access_token, decode_token
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from datetime import datetime, timedelta, timezone
+from sqlalchemy import inspect, text
 
 register_lock = threading.Lock()
 # Единый источник правды для путей — orcestrator/config.py
@@ -49,13 +50,51 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 Base.metadata.create_all(bind=engine)
 
+def ensure_team_columns():
+    """Добавляет новые колонки в teams, если их нет (простая миграция без Alembic)."""
+    insp = inspect(engine)
+    if "teams" not in insp.get_table_names():
+        return
+    cols = {c["name"] for c in insp.get_columns("teams")}
+    with engine.connect() as conn:
+        if "scheduled_start_at" not in cols:
+            try:
+                conn.execute(text("ALTER TABLE teams ADD COLUMN scheduled_start_at DATETIME"))
+                print("[MIGRATE] teams.scheduled_start_at added")
+            except Exception as e:
+                print(f"[MIGRATE] scheduled_start_at: {e}")
+        if "max_size" not in cols:
+            try:
+                conn.execute(text("ALTER TABLE teams ADD COLUMN max_size INTEGER"))
+                print("[MIGRATE] teams.max_size added")
+            except Exception as e:
+                print(f"[MIGRATE] max_size: {e}")
+        conn.commit()
+
+ensure_team_columns()
+
 app = FastAPI(title=settings.app_name)
+
+# ---- Абсолютные пути (не зависят от CWD) ----
+from fastapi.staticfiles import StaticFiles
+
+BASE_DIR     = Path(__file__).resolve().parent          # web/app/
+STATIC_DIR   = BASE_DIR / "static"                      # web/app/static/
+TEMPLATES_DIR = BASE_DIR / "templates"                  # web/app/templates/
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+def dt_to_iso_utc(dt):
+    """Naive UTC datetime -> ISO-строка с Z (для передачи во фронт)."""
+    if dt is None:
+        return None
+    return dt.replace(tzinfo=timezone.utc).isoformat().replace("+00:00", "Z")
 
 def utc_now():
     """Возвращает текущее время UTC без таймзоны (для совместимости с SQLite)"""
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
-templates = Jinja2Templates(directory="app/templates")
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
 class ConnectionManager:
@@ -365,8 +404,17 @@ async def get_me(request: Request):
 
         # Если команда зашла впервые, запускаем её личный таймер
         if team.started_at is None and gs.is_started:
-            # Ждём полной посадки, если админ не запустил принудительно
-            if not team.is_full and not team.force_started:
+            # 1) Если задан запланированный старт и время пришло — стартуем
+            if team.scheduled_start_at and utc_now() >= team.scheduled_start_at:
+                team.started_at = utc_now()
+                team.phase_started_at = utc_now()
+                team.scheduled_start_at = None
+                team.phase_limit = team.current_phase_index + settings.max_phases_per_team
+                db.commit()
+
+            # 2) Если запланирован старт в будущем — показываем countdown
+            elif team.scheduled_start_at:
+                wait_secs = max(0, int((team.scheduled_start_at - utc_now()).total_seconds()))
                 return {
                     "team": {
                         "name": team.name,
@@ -375,20 +423,46 @@ async def get_me(request: Request):
                         "finished_by_phases": False,
                         "total_time_seconds": 0,
                         "waiting_for_team": True,
+                        "waiting_reason": "scheduled",
+                        "scheduled_in_seconds": wait_secs,
                         "team_size": db.query(Participant).filter(Participant.team_id == team.id).count(),
-                        "team_max": settings.team_size,
+                        "team_max": team.max_size or settings.team_size,
                     },
-                    "global": {"is_started": gs.is_started, "is_paused": gs.is_paused, "current_phase_index": 0,
-                               "total_phases": len(phases), "phase_type": "none", "phase_task_id": None,
+                    "global": {"is_started": gs.is_started, "is_paused": gs.is_paused,
+                               "current_phase_index": 0, "total_phases": len(phases),
+                               "phase_type": "none", "phase_task_id": None,
                                "phase_sport_name": None, "phase_time_left": 0, "is_break": False},
                     "contest": {"remaining_seconds": 0},
                     "tasks": []
                 }
 
-            # Запускаем таймер ТОЛЬКО СЕЙЧАС
-            team.started_at = utc_now()
-            team.phase_started_at = utc_now()
-            db.commit()
+            # 3) Если не набралось нужное количество и нет force_started — ждём команду
+            elif not team.is_full and not team.force_started:
+                return {
+                    "team": {
+                        "name": team.name,
+                        "is_paused": False,
+                        "finished_at": None,
+                        "finished_by_phases": False,
+                        "total_time_seconds": 0,
+                        "waiting_for_team": True,
+                        "waiting_reason": "filling",
+                        "team_size": db.query(Participant).filter(Participant.team_id == team.id).count(),
+                        "team_max": team.max_size or settings.team_size,
+                    },
+                    "global": {"is_started": gs.is_started, "is_paused": gs.is_paused,
+                               "current_phase_index": 0, "total_phases": len(phases),
+                               "phase_type": "none", "phase_task_id": None,
+                               "phase_sport_name": None, "phase_time_left": 0, "is_break": False},
+                    "contest": {"remaining_seconds": 0},
+                    "tasks": []
+                }
+
+            # 4) Обычный старт
+            else:
+                team.started_at = utc_now()
+                team.phase_started_at = utc_now()
+                db.commit()
 
         current_phase = None
         time_left = 0
@@ -481,38 +555,79 @@ async def get_leaderboard(request: Request):
         participant_current = get_current_participant(request, db)
         participants = db.query(Participant).all()
         teams = {t.id: t.name for t in db.query(Team).all()}
+        phases = db.query(Phase).order_by(Phase.order_index).all()
+        sport_phases = [p for p in phases if p.type == "sport"]
 
-        rows = []
+        # ---------- 1. Кодовая часть ----------
+        p_data = []
         for p in participants:
             subs = db.query(Submission).filter_by(participant_id=p.id).all()
             best_scores = {}
             for s in subs:
                 cur = best_scores.get(s.task_id)
-                if cur is None:
+                if cur is None or (s.score or 0) > (cur.score or 0):
                     best_scores[s.task_id] = s
-                    continue
-                s_key = (s.score or 0, -(s.time_ms or 0), -(s.memory_mb or 0))
-                c_key = (cur.score or 0, -(cur.time_ms or 0), -(cur.memory_mb or 0))
-                if s_key > c_key:
-                    best_scores[s.task_id] = s
-
             code_score = sum((s.score or 0) for s in best_scores.values())
-            rows.append({
+            p_data.append({
                 "id": p.id, "name": p.name,
                 "team_name": teams.get(p.team_id, "—"),
-                "code_score": code_score, "total_score": code_score,
-                "is_me": p.id == participant_current.id if participant_current else False
+                "code_score": code_score,
             })
 
-        rows.sort(key=lambda r: -r["total_score"])
-        current_place = 1
-        for i, r in enumerate(rows):
-            if i > 0 and rows[i-1]["total_score"] != r["total_score"]:
-                current_place = i + 1
-            r["place"] = current_place
+        sorted_py = sorted(p_data, key=lambda x: -x["code_score"])
+        cur_place = 1
+        for i, r in enumerate(sorted_py):
+            if i > 0 and sorted_py[i - 1]["code_score"] != r["code_score"]:
+                cur_place = i + 1
+            r["place_python"] = cur_place
 
-        my_place = next((r["place"] for r in rows if r["is_me"]), None)
-        return {"teams": rows, "my_place": my_place}
+        # ---------- 2. Спорт (как в admin_stats) ----------
+        sport_ranks_sum = {p.id: 0 for p in participants}
+        sport_attempts = {p.id: 0 for p in participants}
+
+        for sp in sport_phases:
+            results = db.query(SportResult).filter_by(phase_id=sp.id).all()
+            res_dict = {r.participant_id: r.attempts for r in results if r.participant_id}
+            for pid, att in res_dict.items():
+                if pid in sport_attempts:
+                    sport_attempts[pid] += att
+
+            def sport_sort_key(p, _res=res_dict, _dir=sp.sport_direction):
+                val = _res.get(p.id, None)
+                if val is None:
+                    return (1, 0)
+                return (0, -val if _dir == "more" else val)
+
+            sorted_sp = sorted(participants, key=sport_sort_key)
+            current_rank = 1
+            for i, p in enumerate(sorted_sp):
+                if i > 0:
+                    prev_val = res_dict.get(sorted_sp[i - 1].id, None)
+                    curr_val = res_dict.get(p.id, None)
+                    if curr_val != prev_val:
+                        current_rank = i + 1
+                sport_ranks_sum[p.id] += current_rank
+
+        sorted_sport = sorted(participants, key=lambda p: sport_ranks_sum[p.id])
+        place_sport = {p.id: idx + 1 for idx, p in enumerate(sorted_sport)}
+
+        # ---------- 3. Итог ----------
+        for r in p_data:
+            r["place_sport"] = place_sport.get(r["id"], 99)
+            r["sport_attempts"] = sport_attempts.get(r["id"], 0)
+            r["final_place"] = r["place_python"] + r["place_sport"]
+            r["total_score"] = r["code_score"]  # совместимость
+            r["is_me"] = r["id"] == participant_current.id if participant_current else False
+
+        p_data.sort(key=lambda x: (x["final_place"], x["place_python"]))
+        cur_place = 1
+        for i, r in enumerate(p_data):
+            if i > 0 and p_data[i - 1]["final_place"] != r["final_place"]:
+                cur_place = i + 1
+            r["place"] = cur_place
+
+        my_place = next((r["place"] for r in p_data if r["is_me"]), None)
+        return {"teams": p_data, "my_place": my_place, "sport_phases_count": len(sport_phases)}
 
 
 @app.get("/api/team/tasks/{task_id}")
@@ -866,11 +981,19 @@ async def admin_stats(request: Request):
                 "score": sum(p["score"] for p in participants_data if p["team_id"] == t.id),
                 "is_paused": t.is_paused, "is_active": t.is_active,
                 "finished_at": t.finished_at.isoformat() if t.finished_at else None,
+                "started_at": t.started_at.isoformat() if t.started_at else None,
+                "scheduled_start_at": dt_to_iso_utc(t.scheduled_start_at),
                 "current_phase_index": t.current_phase_index,
                 "phase_limit": t.phase_limit if t.phase_limit > 0 else settings.max_phases_per_team,
                 "phase_name": phase_name, "phase_time_left": time_left, "total_time": total_time,
                 "team_size": db.query(Participant).filter(Participant.team_id == t.id).count(),
-                "team_max": settings.team_size, "is_full": t.is_full, "force_started": t.force_started
+                "team_max": t.max_size or settings.team_size,
+                "max_size": t.max_size,
+                "is_full": t.is_full, "force_started": t.force_started,
+                "participants": [
+                    {"id": p.id, "name": p.name, "email": p.email, "login_code": p.login_code}
+                    for p in participants if p.team_id == t.id
+                ],
             })
 
         current_phase_for_admin = 0
@@ -980,7 +1103,8 @@ async def admin_create_team(request: Request):
             db.add(Participant(name=p_name, email=p_email, login_code=code, team_id=team.id))
             created_participants.append({"name": p_name, "email": p_email, "login_code": code})
 
-        if len(created_participants) >= settings.team_size:
+        limit = team.max_size or settings.team_size
+        if len(created_participants) >= limit:
             team.is_full = True
 
         db.commit()
@@ -1179,12 +1303,11 @@ async def public_register(request: Request):
             # Ищем открытую команду (где < 5 человек, еще не стартовала и не завершилась)
             open_team = None
             for t in db.query(Team).filter(
-                    Team.is_full == False,
-                    Team.started_at == None,  # Команда еще не начинала играть
-                    Team.finished_at == None  # Команда еще не завершила олимпиаду
+                    Team.is_full == False, Team.started_at == None, Team.finished_at == None
             ).order_by(Team.created_at).all():
                 cnt = db.query(Participant).filter(Participant.team_id == t.id).count()
-                if cnt < settings.team_size:
+                limit = t.max_size or settings.team_size
+                if cnt < limit:
                     open_team = t
                     break
 
@@ -1208,7 +1331,8 @@ async def public_register(request: Request):
 
             # Проверяем, набралась ли команда
             cnt = db.query(Participant).filter(Participant.team_id == open_team.id).count()
-            if cnt >= settings.team_size:
+            limit = open_team.max_size or settings.team_size
+            if cnt >= limit:
                 open_team.is_full = True
 
             db.commit()
@@ -1546,4 +1670,111 @@ async def staff_change_direction(phase_id: int, request: Request):
 
         phase.sport_direction = new_dir
         db.commit()
+        return {"status": "ok"}
+
+
+# --- УПРАВЛЕНИЕ КОМАНДОЙ ---
+@app.post("/api/admin/teams/{team_id}/settings")
+async def admin_team_settings(team_id: int, request: Request):
+    with Session(engine) as db:
+        get_current_admin(request, db)
+        team = db.get(Team, team_id)
+        if not team:
+            raise HTTPException(404, "Команда не найдена")
+        data = await request.json()
+
+        if "max_size" in data:
+            team.max_size = int(data["max_size"]) if data["max_size"] else None
+            cnt = db.query(Participant).filter(Participant.team_id == team.id).count()
+            limit = team.max_size or settings.team_size
+            team.is_full = cnt >= limit
+
+        if "start_phase_index" in data:
+            idx = int(data["start_phase_index"])
+            phases = db.query(Phase).order_by(Phase.order_index).all()
+            if 0 <= idx < len(phases):
+                team.current_phase_index = idx
+                if team.started_at:  # перезапуск с этой фазы
+                    team.phase_started_at = utc_now()
+                    team.finished_at = None
+                    team.phase_limit = idx + settings.max_phases_per_team
+
+        if "scheduled_start_at" in data:
+            val = data["scheduled_start_at"]
+            if val:
+                try:
+                    dt = datetime.fromisoformat(str(val).replace("Z", "+00:00"))
+                    if dt.tzinfo:
+                        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+                    team.scheduled_start_at = dt
+                except Exception:
+                    raise HTTPException(400, "Неверный формат времени")
+            else:
+                team.scheduled_start_at = None
+
+        if data.get("start_now"):
+            team.started_at = utc_now()
+            team.phase_started_at = utc_now()
+            team.finished_at = None
+            team.is_paused = False
+            team.scheduled_start_at = None
+            team.phase_limit = team.current_phase_index + settings.max_phases_per_team
+
+        db.commit()
+        await manager.broadcast("timer_changed")
+        return {"status": "ok"}
+
+
+@app.post("/api/admin/teams/{team_id}/finish")
+async def admin_force_finish_team(team_id: int, request: Request):
+    with Session(engine) as db:
+        get_current_admin(request, db)
+        team = db.get(Team, team_id)
+        if not team:
+            raise HTTPException(404)
+        team.finished_at = utc_now()
+        db.commit()
+        await manager.broadcast("timer_changed")
+        return {"status": "ok"}
+
+
+@app.post("/api/admin/teams/{team_id}/reset")
+async def admin_reset_team(team_id: int, request: Request):
+    with Session(engine) as db:
+        get_current_admin(request, db)
+        team = db.get(Team, team_id)
+        if not team:
+            raise HTTPException(404)
+        team.started_at = None
+        team.phase_started_at = None
+        team.current_phase_index = 0
+        team.finished_at = None
+        team.is_paused = False
+        team.paused_at = None
+        team.scheduled_start_at = None
+        team.phase_limit = 0
+        team.force_started = False
+        db.commit()
+        await manager.broadcast("timer_changed")
+        return {"status": "ok"}
+
+
+@app.post("/api/admin/participants/{participant_id}/delete")
+async def admin_delete_participant(participant_id: int, request: Request):
+    with Session(engine) as db:
+        get_current_admin(request, db)
+        p = db.get(Participant, participant_id)
+        if not p:
+            raise HTTPException(404)
+        team = db.get(Team, p.team_id)
+        db.query(Submission).filter_by(participant_id=participant_id).delete()
+        db.query(SportResult).filter_by(participant_id=participant_id).delete()
+        db.delete(p)
+        db.commit()
+        if team:
+            cnt = db.query(Participant).filter(Participant.team_id == team.id).count()
+            limit = team.max_size or settings.team_size
+            team.is_full = cnt >= limit
+            db.commit()
+        await manager.broadcast("update_rating")
         return {"status": "ok"}

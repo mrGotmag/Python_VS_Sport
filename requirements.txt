@@ -17,3 +17,6 @@ psutil==6.0.0
 
 # --- Форматирование текста ---
 markdown==3.7
+uvicorn==0.30.6
+websockets==17.3
+httptools==0.9.0

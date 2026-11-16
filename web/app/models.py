@@ -80,6 +80,9 @@ class Team(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
+    scheduled_start_at = mapped_column(DateTime, nullable=True)
+    max_size = mapped_column(Integer, nullable=True)
+
 
 class Task(Base):
     __tablename__ = "tasks"

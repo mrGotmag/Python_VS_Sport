@@ -8,18 +8,19 @@
 """
 
 from __future__ import annotations
-from pydantic_settings import BaseSettings
 
 import multiprocessing as mp
+import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-import os
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 # Загружаем .env из корня проекта (рядом с main.py)
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
-load_dotenv(_PROJECT_ROOT / ".env")
+_ENV_FILE = _PROJECT_ROOT / ".env"
+load_dotenv(_ENV_FILE)
 
 
 def _get_str(key: str, default: str) -> str:
@@ -65,12 +66,22 @@ def _get_path(key: str, default: str) -> Path:
 
 
 class Settings(BaseSettings):
-    app_name: str = "Python vs Спорт"
-    secret_key: str = "super-secret-key-change-me"
-    access_token_expire_minutes: int = 480  # 8 часов
+    # ВАЖНО: env_prefix отключает автоматическое чтение env-переменных
+    # в pydantic-settings. Все значения уже прочитаны через _get_* выше
+    # (с корректным разрешением относительных путей от _PROJECT_ROOT).
+    #
+    # Без этого pydantic-settings перезапишет, например, tasks_dir
+    # относительным "orcestrator/tasks" из .env — и абсолютный путь
+    # потеряется (см. _get_path).
+    #
+    # Если в будущем понадобится переопределять настройки через env
+    # на уровне pydantic — используйте префикс CONTEST_CHECKER_,
+    # например CONTEST_CHECKER_TASKS_DIR=/abs/path.
+    model_config = SettingsConfigDict(
+        env_prefix="CONTEST_CHECKER_",
+        extra="ignore",
+    )
 
-    class Config:
-        env_file = ".env"
     # ---------- пути ----------
     tasks_dir: Path = _get_path("TASKS_DIR", "orcestrator/tasks")
     logs_dir: Path = _get_path("LOGS_DIR", "orcestrator/logs")

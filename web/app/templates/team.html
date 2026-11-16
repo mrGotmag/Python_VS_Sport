@@ -1,16 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Кабинет // Python vs Спорт{% endblock %}
 {% block head %}
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<!-- CodeMirror CSS -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/show-hint.min.css">
-<!-- CodeMirror JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/show-hint.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/closebrackets.min.js"></script>
+<!-- Локальный marked -->
+<script src="/static/vendor/marked.min.js"></script>
+
+<!-- CodeMirror CSS (локально) -->
+<link rel="stylesheet" href="/static/vendor/codemirror.min.css">
+<link rel="stylesheet" href="/static/vendor/dracula.min.css">
+<link rel="stylesheet" href="/static/vendor/show-hint.min.css">
+
+<!-- CodeMirror JS (локально) -->
+<script src="/static/vendor/codemirror.min.js"></script>
+<script src="/static/vendor/python.min.js"></script>
+<script src="/static/vendor/show-hint.min.js"></script>
+<script src="/static/vendor/closebrackets.min.js"></script>
 
 <style>
     /* Стилизация подсказок CodeMirror под неоновую тему */
@@ -322,21 +325,34 @@
 
             // Проверка на ожидание полной посадки
             if (data.team.waiting_for_team) {
-                document.getElementById('status-banner').classList.remove('hidden');
-                document.getElementById('status-banner').textContent = `ОЖИДАНИЕ КОМАНДЫ: ${data.team.team_size}/${data.team.team_max}`;
-                document.getElementById('status-banner').className = "p-3 text-center border-b border-warn bg-warn/10 text-warn font-bold tracking-widest";
+                const banner = document.getElementById('status-banner');
+                banner.classList.remove('hidden');
 
-                document.getElementById('timer-text').textContent = "WAITING";
-                document.getElementById('global-timer').className = "flex items-center gap-2 border border-warn px-3 py-1.5 rounded text-warn font-mono font-bold";
-                document.getElementById('global-timer').classList.remove('hidden');
-
-                document.getElementById('workspace-empty').innerHTML = `
-                    <div class="text-4xl mb-4">⏳</div>
-                    <div class="text-lg font-bold text-warn mb-2">Ожидание команды</div>
-                    <div class="text-sm text-slate-400 text-center">Соревнование начнется, когда наберется ${data.team.team_max} человек,<br>либо когда администратор запустит его принудительно.</div>
-                `;
+                if (data.team.waiting_reason === 'scheduled') {
+                    banner.textContent = `ЗАПЛАНИРОВАН СТАРТ ЧЕРЕЗ ${formatTime(data.team.scheduled_in_seconds || 0)}`;
+                    banner.className = "p-3 text-center border-b border-cyan bg-cyan/10 text-cyan font-bold tracking-widest";
+                    document.getElementById('timer-text').textContent = formatTime(data.team.scheduled_in_seconds || 0);
+                    document.getElementById('global-timer').className = "flex items-center gap-2 border border-cyan px-3 py-1.5 rounded text-cyan font-mono font-bold";
+                    document.getElementById('global-timer').classList.remove('hidden');
+                    document.getElementById('workspace-empty').innerHTML = `
+                        <div class="text-4xl mb-4">⏰</div>
+                        <div class="text-lg font-bold text-cyan mb-2">Старт запланирован</div>
+                        <div class="text-sm text-slate-400 text-center">Олимпиада для вашей команды начнётся автоматически.</div>
+                    `;
+                } else {
+                    banner.textContent = `ОЖИДАНИЕ КОМАНДЫ: ${data.team.team_size}/${data.team.team_max}`;
+                    banner.className = "p-3 text-center border-b border-warn bg-warn/10 text-warn font-bold tracking-widest";
+                    document.getElementById('timer-text').textContent = "WAITING";
+                    document.getElementById('global-timer').className = "flex items-center gap-2 border border-warn px-3 py-1.5 rounded text-warn font-mono font-bold";
+                    document.getElementById('global-timer').classList.remove('hidden');
+                    document.getElementById('workspace-empty').innerHTML = `
+                        <div class="text-4xl mb-4">⏳</div>
+                        <div class="text-lg font-bold text-warn mb-2">Ожидание команды</div>
+                        <div class="text-sm text-slate-400 text-center">Соревнование начнётся, когда наберётся ${data.team.team_max} человек,<br>либо когда администратор запустит его вручную.</div>
+                    `;
+                }
                 document.getElementById('tasks-list').innerHTML = '<div class="text-xs text-center py-4 text-slate-500">Заблокировано</div>';
-                return; // Прерываем дальнейшую инициализацию
+                return;
             }
 
             document.getElementById('team-name').textContent = data.team.name;

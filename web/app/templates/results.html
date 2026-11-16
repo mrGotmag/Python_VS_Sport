@@ -27,7 +27,9 @@
                     <tr class="text-slate-500 text-xs uppercase tracking-widest">
                         <th class="p-3 w-14">#</th>
                         <th class="p-3">Участник</th>
-                        <th class="p-3 text-right">Баллы (Код)</th>
+                        <th class="p-3 text-right">Код</th>
+                        <th class="p-3 text-right">Спорт</th>
+                        <th class="p-3 text-right">Итог</th>
                     </tr>
                 </thead>
                 <tbody id="leaderboard-body">
@@ -71,7 +73,7 @@
                 const myName = data.teams.find(t => t.is_me)?.name || '';
                 document.getElementById('my-team-name').textContent = myName;
                 document.getElementById('my-place-number').textContent = data.my_place;
-                document.getElementById('my-place-total').textContent = `из ${data.teams.length} участников`;
+                document.getElementById('my-place-total').textContent = `из ${data.teams.length} участников (по сумме мест)`;
             }
 
             tbody.innerHTML = data.teams.map(t => {
@@ -86,7 +88,12 @@
                         <div class="text-[10px] text-slate-500 font-normal">${escapeHTML(t.team_name)}</div>
                         ${t.is_me ? '<span class="text-[10px] text-warn">← вы</span>' : ''}
                     </td>
-                    <td class="p-3 text-right text-neon font-mono font-bold text-lg">${t.total_score}</td>
+                    <td class="p-3 text-right text-cyan font-mono font-bold">${t.code_score}</td>
+                    <td class="p-3 text-right text-warn font-mono">
+                        <div>${t.place_sport}</div>
+                        <div class="text-[10px] text-slate-500 font-normal">${t.sport_attempts} поп.</div>
+                    </td>
+                    <td class="p-3 text-right text-neon font-mono font-bold text-lg">${t.final_place}</td>
                 </tr>`;
             }).join('');
         } catch (e) {
