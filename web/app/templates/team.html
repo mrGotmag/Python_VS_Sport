@@ -1,644 +1,1538 @@
 {% extends "base.html" %}
 {% block title %}Кабинет // Python vs Спорт{% endblock %}
+
 {% block head %}
-<!-- Локальный marked -->
-<script src="/static/vendor/marked.min.js"></script>
-
-<!-- CodeMirror CSS (локально) -->
-<link rel="stylesheet" href="/static/vendor/codemirror.min.css">
-<link rel="stylesheet" href="/static/vendor/dracula.min.css">
-<link rel="stylesheet" href="/static/vendor/show-hint.min.css">
-
-<!-- CodeMirror JS (локально) -->
-<script src="/static/vendor/codemirror.min.js"></script>
-<script src="/static/vendor/python.min.js"></script>
-<script src="/static/vendor/show-hint.min.js"></script>
-<script src="/static/vendor/closebrackets.min.js"></script>
+<!-- CodeMirror (локально) -->
+<link rel="stylesheet" href="/static/vendor/codemirror/lib/codemirror.css">
+<link rel="stylesheet" href="/static/vendor/codemirror/addon/hint/show-hint.css">
+<script src="/static/vendor/codemirror/lib/codemirror.js"></script>
+<script src="/static/vendor/codemirror/mode/python/python.js"></script>
+<script src="/static/vendor/codemirror/addon/hint/show-hint.js"></script>
+<script src="/static/vendor/codemirror/addon/hint/anyword-hint.js"></script>
+<script src="/static/vendor/codemirror/addon/edit/matchbrackets.js"></script>
+<script src="/static/vendor/codemirror/addon/edit/closebrackets.js"></script>
+<script src="/static/vendor/codemirror/addon/selection/active-line.js"></script>
 
 <style>
-    /* Стилизация подсказок CodeMirror под неоновую тему */
-    .CodeMirror-hints {
-        background: #0d1117 !important;
-        border: 1px solid #00ffcc !important;
-        border-radius: 6px !important;
-        box-shadow: 0 0 15px rgba(0, 255, 204, 0.2) !important;
-        font-family: 'JetBrains Mono', monospace !important;
-        font-size: 13px !important;
-        z-index: 1000 !important;
-    }
-    .CodeMirror-hint {
-        color: #e6edf3 !important;
-        padding: 4px 8px !important;
-        border-radius: 4px !important;
-    }
-    .CodeMirror-hint-active {
-        background: #00ffcc !important;
-        color: #0a0e14 !important;
-        font-weight: bold !important;
+    /* ====== LAYOUT НА ВСЮ ВЫСОТУ ЭКРАНА ====== */
+    html, body { height: 100%; overflow: hidden; }
+
+    .cab-wrap{
+        max-width:1800px;
+        margin:0 auto;
+        padding:8px 14px;
+        position:relative;
+        z-index:3;
+        height:calc(100vh - 110px);
+        display:flex;
+        flex-direction:column;
+        overflow:hidden;
     }
 
-    /* Стили для вкладок запуска */
-    .tab-btn.active {
-        border-bottom: 2px solid #00ffcc;
-        color: #00ffcc;
+    /* ====== ВЕРХНЯЯ ПАНЕЛЬ ====== */
+    .top-status{
+        display:flex;justify-content:space-between;align-items:center;
+        gap:10px;margin-bottom:8px;flex-shrink:0;
+    }
+    .team-info{
+        display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    }
+    .team-name{
+        font-family:'Russo One',sans-serif;
+        font-size:13px;font-weight:400;letter-spacing:1.5px;
+        color:var(--text);
+        display:flex;align-items:center;gap:6px;
+    }
+    .team-name::before{
+        content:"⬢";color:var(--accent);font-size:11px;
+        text-shadow:0 0 8px var(--accent);
+    }
+    .phase-badge{
+        padding:4px 10px;border-radius:6px;
+        background:rgba(0,255,156,.08);
+        border:1px solid rgba(0,255,156,.25);
+        font-size:9px;letter-spacing:2px;color:var(--accent);
+        font-weight:600;
+    }
+
+    .timer-box{
+        display:flex;align-items:center;gap:10px;
+        padding:6px 14px;border-radius:8px;
+        background:rgba(255,179,71,.06);
+        border:1px solid rgba(255,179,71,.25);
+    }
+    .timer-label{
+        font-size:8px;letter-spacing:2px;color:var(--amber);
+        text-transform:uppercase;
+    }
+    .timer-value{
+        font-family:'Russo One',sans-serif;
+        font-size:20px;font-weight:400;letter-spacing:2px;
+        color:var(--amber);
+        text-shadow:0 0 12px rgba(255,179,71,.5);
+    }
+    .timer-value.critical{
+        color:var(--danger);
+        text-shadow:0 0 12px rgba(255,59,107,.6);
+        animation:blink-timer 1s ease-in-out infinite;
+    }
+    @keyframes blink-timer{0%,100%{opacity:1}50%{opacity:.6}}
+
+    /* ====== ОСНОВНОЙ LAYOUT ====== */
+    .main-grid{
+        display:grid;
+        grid-template-columns: 1fr 1fr;
+        gap:8px;
+        flex:1;
+        min-height:0;
+        overflow:hidden;
+    }
+    @media (max-width: 1100px){
+        .main-grid{grid-template-columns:1fr}
+    }
+
+    /* ====== ЛЕВАЯ КОЛОНКА: УСЛОВИЕ ====== */
+    .statement-col{
+        display:flex;flex-direction:column;
+        background:linear-gradient(135deg,rgba(20,28,40,.9),rgba(10,15,20,.95));
+        border:1px solid var(--line);
+        border-radius:10px;
+        overflow:hidden;
+        min-height:0;
+    }
+
+    .col-head{
+        padding:8px 14px;
+        display:flex;align-items:center;justify-content:space-between;
+        border-bottom:1px solid var(--line);
+        background:linear-gradient(90deg,rgba(0,255,156,.05),transparent);
+        flex-shrink:0;
+    }
+    .col-head .tag{
+        font-size:9px;letter-spacing:2px;color:var(--accent);
+        display:flex;align-items:center;gap:6px;font-weight:600;
+    }
+    .col-head .tag::before{
+        content:"";width:5px;height:5px;border-radius:50%;
+        background:var(--accent);box-shadow:0 0 6px var(--accent);
+    }
+
+    .statement-body{
+        flex:1;overflow-y:auto;padding:14px 16px;
+        min-height:0;
+    }
+
+    .statement-empty{
+        text-align:center;padding:40px 20px;color:var(--muted);
+    }
+    .statement-empty .icon{font-size:36px;margin-bottom:12px;opacity:.3}
+
+    /* ====== УСЛОВИЕ ЗАДАЧИ (увеличенные шрифты) ====== */
+    .statement-body h1,.statement-body h2,.statement-body h3{
+        font-family:'Russo One',sans-serif;
+        color:var(--accent);margin:16px 0 10px;letter-spacing:.5px;
+    }
+    .statement-body h1{font-size:22px;border-bottom:1px solid var(--line);padding-bottom:8px}
+    .statement-body h2{font-size:17px}
+    .statement-body h3{font-size:14px;color:var(--accent-2)}
+    .statement-body p{line-height:1.65;margin-bottom:10px;color:var(--text);font-size:14px}
+    .statement-body ul,.statement-body ol{
+        line-height:1.65;margin-bottom:10px;color:var(--text);font-size:14px;
+        padding-left:24px;
+    }
+    .statement-body li{margin-bottom:4px}
+    .statement-body code{
+        font-family:'JetBrains Mono',monospace;
+        background:rgba(0,255,156,.08);
+        padding:2px 6px;border-radius:4px;
+        color:var(--accent);font-size:13px;
+    }
+    .statement-body pre{
+        background:rgba(5,7,10,.85) !important;
+        border:1px solid var(--line) !important;
+        border-radius:8px !important;
+        padding:12px 14px !important;
+        overflow-x:auto !important;
+        margin:8px 0 !important;
+        font-size:13px !important;
+        line-height:1.5 !important;
+    }
+    .statement-body pre code{
+        background:transparent !important;
+        padding:0 !important;
+        color:var(--text) !important;
+        font-size:13px !important;
+    }
+    .statement-body blockquote{
+        border-left:3px solid var(--amber);
+        padding:10px 14px;margin:12px 0;
+        background:rgba(255,179,71,.05);
+        color:var(--amber);font-size:13px;
+    }
+    .statement-body table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+    .statement-body th,.statement-body td{
+        border:1px solid var(--line);padding:8px 12px;text-align:left;
+    }
+    .statement-body th{
+        background:rgba(0,255,156,.06);color:var(--accent);font-weight:600;
+    }
+
+    /* ====== СТИЛИ ДЛЯ ПРИМЕРОВ (Tailwind-классы из main.py) ====== */
+    .mb-1 { margin-bottom: 4px }
+    .mb-4 { margin-bottom: 16px }
+    .mb-6 { margin-bottom: 24px }
+    .mt-4 { margin-top: 16px }
+    .ml-2 { margin-left: 8px }
+    .last\:mb-0:last-child { margin-bottom: 0 }
+
+    .p-3 { padding: 12px }
+    .p-4 { padding: 16px }
+    .px-4 { padding-left: 16px; padding-right: 16px }
+    .py-2 { padding-top: 8px; padding-bottom: 8px }
+
+    .flex { display: flex }
+    .items-center { align-items: center }
+    .gap-2 { gap: 8px }
+    .gap-4 { gap: 16px }
+
+    .grid { display: grid }
+    .grid-cols-1 { grid-template-columns: 1fr }
+    @media (min-width: 768px) {
+        .md\:grid-cols-2 { grid-template-columns: 1fr 1fr }
+        .md\:p-6 { padding: 24px }
+    }
+
+    .overflow-hidden { overflow: hidden }
+    .overflow-x-auto { overflow-x: auto }
+    .whitespace-pre { white-space: pre }
+
+    .rounded-lg { border-radius: 8px }
+    .rounded-xl { border-radius: 12px }
+    .rounded-full { border-radius: 9999px }
+
+    .border { border: 1px solid var(--line) }
+    .border-b { border-bottom: 1px solid var(--line) }
+    .border-line\/50 { border-color: rgba(30,42,58,.5) }
+    .border-line { border-color: var(--line) }
+
+    .shadow-lg { box-shadow: 0 10px 30px rgba(0,0,0,.4) }
+
+    .uppercase { text-transform: uppercase }
+    .tracking-widest { letter-spacing: 3px }
+    .leading-loose { line-height: 2 }
+
+    .font-mono { font-family: 'JetBrains Mono', monospace }
+    .font-bold { font-weight: 700 }
+
+    .text-xs { font-size: 10px }
+    .text-sm { font-size: 13px }
+    .text-\[10px\] { font-size: 10px }
+
+    .w-2\.5 { width: 10px }
+    .h-2\.5 { height: 10px }
+
+    .text-cyan { color: var(--accent-2) }
+    .text-magenta { color: var(--violet) }
+    .text-slate-300 { color: var(--text) }
+    .text-slate-500 { color: var(--muted) }
+
+    .bg-\[\#0b0f19\] {
+        background: rgba(5,7,10,.85);
+        border: 1px solid var(--line);
+    }
+    .bg-\[\#0a0e14\] {
+        background: linear-gradient(135deg, rgba(10,14,20,.95), rgba(5,7,10,.95));
+    }
+    .bg-panel {
+        background: rgba(10,15,20,.8);
+    }
+    .bg-\[\#ff5f56\] { background: #ff5f56; box-shadow: 0 0 6px #ff5f56 }
+    .bg-\[\#ffbd2e\] { background: #ffbd2e; box-shadow: 0 0 6px #ffbd2e }
+    .bg-\[\#27c93f\] { background: #27c93f; box-shadow: 0 0 6px #27c93f }
+
+    /* ====== ПРАВАЯ КОЛОНКА: РЕДАКТОР ====== */
+    .editor-col{
+        display:flex;flex-direction:column;
+        background:linear-gradient(135deg,rgba(20,28,40,.9),rgba(10,15,20,.95));
+        border:1px solid var(--line);
+        border-radius:10px;
+        overflow:hidden;
+        min-height:0;
+    }
+
+    .mobile-tabs{
+        display:none;
+        padding:6px;gap:4px;
+        border-bottom:1px solid var(--line);
+        background:rgba(5,7,10,.4);
+        flex-shrink:0;
+    }
+    @media (max-width: 1100px){
+        .mobile-tabs{display:flex}
+    }
+    .mobile-tab{
+        flex:1;padding:8px;
+        font-size:10px;letter-spacing:2px;
+        color:var(--muted);background:transparent;
+        border:1px solid transparent;border-radius:6px;
+        cursor:pointer;transition:.25s;
+        text-transform:uppercase;font-weight:600;
+        font-family:inherit;text-align:center;
+        display:flex;align-items:center;justify-content:center;gap:4px;
+    }
+    .mobile-tab.active{
+        color:var(--accent);
+        background:rgba(0,255,156,.08);
+        border-color:rgba(0,255,156,.25);
+    }
+
+    .statement-col,.editor-col{display:flex}
+    @media (max-width: 1100px){
+        .statement-col,.editor-col{display:none}
+        .statement-col.mob-active,.editor-col.mob-active{display:flex}
+    }
+
+    .editor-wrap{
+        flex:1;display:flex;flex-direction:column;
+        overflow:hidden;
+        min-height:0;
+    }
+    .editor-toolbar{
+        padding:6px 12px;
+        display:flex;align-items:center;justify-content:space-between;
+        border-bottom:1px solid var(--line);
+        background:rgba(5,7,10,.4);
+        font-size:10px;color:var(--muted);letter-spacing:1.5px;
+        flex-shrink:0;
+    }
+    .editor-toolbar-left{display:flex;align-items:center;gap:10px}
+    .editor-toolbar-right{display:flex;gap:4px}
+
+    .tool-btn{
+        width:24px;height:24px;border-radius:5px;
+        background:rgba(5,7,10,.6);border:1px solid var(--line);
+        color:var(--muted);cursor:pointer;
+        display:grid;place-items:center;transition:.2s;
+        font-size:11px;padding:0;
+    }
+    .tool-btn:hover{
+        color:var(--accent);border-color:var(--accent);
+        background:rgba(0,255,156,.08);
+    }
+
+    /* ====== CODEMIRROR ====== */
+    .CodeMirror{
+        flex:1;
+        height:auto !important;
+        background:
+            repeating-linear-gradient(
+                0deg,
+                rgba(0,255,156,.015) 0px,
+                rgba(0,255,156,.015) 1px,
+                transparent 1px,
+                transparent 22px
+            ),
+            #05070a !important;
+        color:var(--text) !important;
+        font-family:'JetBrains Mono',monospace !important;
+        font-size:12px !important;
+        line-height:1.5 !important;
+        caret-color:var(--accent) !important;
+    }
+    .CodeMirror-gutters{
+        background:rgba(5,7,10,.6) !important;
+        border-right:1px solid var(--line) !important;
+    }
+    .CodeMirror-linenumber{
+        color:var(--muted) !important;
+        padding:0 6px !important;
+        font-size:10px !important;
+    }
+    .CodeMirror-cursor{border-left:2px solid var(--accent) !important}
+    .CodeMirror-selected{background:rgba(0,255,156,.15) !important}
+    .CodeMirror-focused .CodeMirror-selected{background:rgba(0,255,156,.2) !important}
+    .CodeMirror-activeline-background{background:rgba(0,255,156,.04) !important}
+
+    .cm-s-default .cm-keyword{color:var(--accent) !important;font-weight:600}
+    .cm-s-default .cm-def{color:var(--accent-2) !important}
+    .cm-s-default .cm-variable{color:var(--text) !important}
+    .cm-s-default .cm-variable-2{color:var(--accent-2) !important}
+    .cm-s-default .cm-string{color:var(--amber) !important}
+    .cm-s-default .cm-string-2{color:var(--amber) !important}
+    .cm-s-default .cm-number{color:var(--violet) !important}
+    .cm-s-default .cm-comment{color:var(--muted) !important;font-style:italic}
+    .cm-s-default .cm-builtin{color:var(--accent) !important}
+    .cm-s-default .cm-operator{color:var(--accent-2) !important}
+    .cm-s-default .cm-bracket{color:var(--muted) !important}
+
+    .CodeMirror-hints{
+        background:rgba(10,15,20,.98) !important;
+        border:1px solid var(--accent) !important;
+        border-radius:6px !important;
+        box-shadow:0 10px 40px rgba(0,0,0,.6),0 0 20px rgba(0,255,156,.2) !important;
+        font-family:'JetBrains Mono',monospace !important;
+        font-size:11px !important;
+        padding:3px !important;
+        z-index:1000;
+    }
+    .CodeMirror-hint{
+        color:var(--text) !important;
+        padding:3px 8px !important;
+        border-radius:3px !important;
+    }
+    .CodeMirror-hint-active{
+        background:rgba(0,255,156,.15) !important;
+        color:var(--accent) !important;
+    }
+
+    /* ====== КОНСОЛЬ ====== */
+    .console-wrap{
+        border-top:1px solid var(--line);
+        background:rgba(5,7,10,.6);
+        display:flex;flex-direction:column;
+        flex-shrink:0;
+        height:130px;
+    }
+    .console-head{
+        padding:5px 12px;
+        display:flex;align-items:center;justify-content:space-between;
+        border-bottom:1px solid var(--line);
+        font-size:9px;letter-spacing:2px;color:var(--muted);
+        text-transform:uppercase;
+    }
+    .console-head .dot{
+        display:inline-block;width:5px;height:5px;border-radius:50%;
+        margin-right:5px;
+    }
+    .console-head .dot.in{background:var(--accent-2);box-shadow:0 0 5px var(--accent-2)}
+    .console-head .dot.out{background:var(--accent);box-shadow:0 0 5px var(--accent)}
+
+    .console-input{
+        flex:1;
+        padding:6px 10px;
+        background:transparent;border:none;
+        color:var(--text);
+        font-family:'JetBrains Mono',monospace;
+        font-size:11px;line-height:1.4;
+        resize:none;outline:none;
+        caret-color:var(--accent);
+    }
+    .console-output{
+        flex:1;
+        padding:6px 10px;
+        background:rgba(0,255,156,.02);
+        color:var(--accent);
+        font-family:'JetBrains Mono',monospace;
+        font-size:11px;line-height:1.4;
+        resize:none;outline:none;
+        overflow-y:auto;
+    }
+
+    /* ====== ПАНЕЛЬ ДЕЙСТВИЙ ====== */
+    .actions-bar{
+        padding:8px 12px;
+        display:flex;align-items:center;justify-content:space-between;
+        gap:8px;
+        border-top:1px solid var(--line);
+        background:linear-gradient(90deg,rgba(0,255,156,.04),transparent);
+        flex-shrink:0;
+    }
+    .actions-left{display:flex;gap:6px;flex-wrap:wrap}
+
+    .btn-sm{
+        padding:7px 14px;
+        font-size:9px;letter-spacing:1.5px;
+        border-radius:6px;font-weight:600;
+        cursor:pointer;transition:.25s;
+        font-family:inherit;text-transform:uppercase;
+        border:1px solid;display:inline-flex;align-items:center;gap:5px;
+        white-space:nowrap;
+    }
+    .btn-sm.primary{
+        background:linear-gradient(135deg,var(--accent),#00d98a);
+        border-color:var(--accent);color:var(--bg-0);
+        box-shadow:0 3px 12px rgba(0,255,156,.3);
+    }
+    .btn-sm.primary:hover{
+        box-shadow:0 5px 18px rgba(0,255,156,.5);
+        transform:translateY(-1px);
+    }
+    .btn-sm.ghost{
+        background:transparent;border-color:var(--line-2);color:var(--text);
+    }
+    .btn-sm.ghost:hover{
+        border-color:var(--accent);color:var(--accent);
+        background:rgba(0,255,156,.05);
+    }
+    .btn-sm.danger{
+        background:transparent;border-color:rgba(255,59,107,.3);color:var(--danger);
+    }
+    .btn-sm.danger:hover{
+        background:rgba(255,59,107,.1);border-color:var(--danger);
+    }
+    .btn-sm:disabled{opacity:.5;cursor:not-allowed;transform:none !important}
+
+    /* ====== СПИСОК ЗАДАЧ ====== */
+    .tasks-bar{
+        margin-top:8px;
+        background:linear-gradient(135deg,rgba(20,28,40,.9),rgba(10,15,20,.95));
+        border:1px solid var(--line);
+        border-radius:10px;
+        overflow:hidden;
+        flex-shrink:0;
+    }
+    .tasks-bar-head{
+        padding:6px 14px;
+        display:flex;align-items:center;justify-content:space-between;
+        border-bottom:1px solid var(--line);
+        background:linear-gradient(90deg,rgba(0,229,255,.05),transparent);
+    }
+    .tasks-bar-head .tag{
+        font-size:9px;letter-spacing:2px;color:var(--accent-2);
+        display:flex;align-items:center;gap:6px;font-weight:600;
+    }
+    .tasks-bar-head .tag::before{
+        content:"";width:5px;height:5px;border-radius:50%;
+        background:var(--accent-2);box-shadow:0 0 6px var(--accent-2);
+    }
+    .tasks-list{
+        display:flex;gap:6px;
+        padding:8px;
+        overflow-x:auto;
+        scrollbar-width:thin;
+    }
+
+    .task-chip{
+        flex-shrink:0;
+        padding:8px 12px;
+        border:1px solid var(--line);
+        border-radius:8px;
+        background:rgba(5,7,10,.4);
+        cursor:pointer;
+        transition:.25s;
+        min-width:120px;
+        position:relative;
+    }
+    .task-chip:hover{
+        border-color:var(--accent-2);
+        background:rgba(0,229,255,.05);
+        transform:translateY(-1px);
+    }
+    .task-chip.active{
+        border-color:var(--accent-2);
+        background:linear-gradient(135deg,rgba(0,229,255,.12),transparent);
+        box-shadow:0 0 14px rgba(0,229,255,.15);
+    }
+    .task-chip.current{
+        border-color:var(--amber);
+        box-shadow:0 0 12px rgba(255,179,71,.2);
+    }
+    .task-chip.current::before{
+        content:"⚡";position:absolute;top:-5px;right:-5px;
+        width:16px;height:16px;border-radius:50%;
+        background:var(--amber);color:var(--bg-0);
+        display:grid;place-items:center;font-size:8px;
+        box-shadow:0 0 8px var(--amber);
+    }
+    .task-chip.solved{
+        border-color:var(--accent);
+    }
+    .task-chip.solved::after{
+        content:"✓";position:absolute;top:-5px;right:-5px;
+        width:16px;height:16px;border-radius:50%;
+        background:var(--accent);color:var(--bg-0);
+        display:grid;place-items:center;font-size:10px;font-weight:700;
+        box-shadow:0 0 8px var(--accent);
+    }
+    .task-chip-title{
+        font-size:11px;font-weight:600;color:var(--text);
+        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+        margin-bottom:2px;
+    }
+    .task-chip-meta{
+        font-size:8px;letter-spacing:1.5px;color:var(--muted);
+        text-transform:uppercase;
+    }
+    .task-chip-score{
+        font-family:'JetBrains Mono',monospace;
+        font-size:10px;font-weight:700;color:var(--accent);
+        margin-top:2px;
+    }
+
+    /* ====== OVERLAY ОЖИДАНИЯ ====== */
+    .waiting-overlay{
+        position:fixed;inset:0;
+        background:rgba(5,7,10,.95);
+        backdrop-filter:blur(10px);
+        display:none;
+        flex-direction:column;
+        align-items:center;justify-content:center;
+        z-index:50;text-align:center;padding:40px;
+    }
+    .waiting-overlay.show{display:flex}
+    .waiting-icon{
+        font-size:56px;margin-bottom:16px;opacity:.5;
+        animation:float 3s ease-in-out infinite;
+    }
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    .waiting-title{
+        font-family:'Russo One',sans-serif;
+        font-size:20px;color:var(--accent);
+        margin-bottom:8px;letter-spacing:2px;
+    }
+    .waiting-text{font-size:12px;color:var(--muted);line-height:1.5}
+
+    /* ====== TOAST ВЕРДИКТА ====== */
+    .verdict-toast{
+        position:fixed;bottom:20px;right:20px;
+        padding:14px 20px;border-radius:10px;
+        background:rgba(10,15,20,.95);
+        backdrop-filter:blur(20px);
+        border:1px solid var(--line);
+        box-shadow:0 20px 60px rgba(0,0,0,.6);
+        z-index:100;display:none;
+        animation:slide-in .4s cubic-bezier(.16,1,.3,1);
+        max-width:360px;
+    }
+    @keyframes slide-in{
+        from{opacity:0;transform:translateY(20px) scale(.95)}
+        to{opacity:1;transform:translateY(0) scale(1)}
+    }
+    .verdict-toast.show{display:block}
+    .verdict-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .verdict-badge{
+        padding:3px 8px;border-radius:5px;
+        font-size:10px;font-weight:700;letter-spacing:1.5px;
+        font-family:'JetBrains Mono',monospace;
+    }
+    .verdict-badge.ok{background:rgba(0,255,156,.15);color:var(--accent);border:1px solid var(--accent)}
+    .verdict-badge.wa{background:rgba(255,59,107,.15);color:var(--danger);border:1px solid var(--danger)}
+    .verdict-badge.tl{background:rgba(255,179,71,.15);color:var(--amber);border:1px solid var(--amber)}
+    .verdict-badge.ce{background:rgba(179,136,255,.15);color:var(--violet);border:1px solid var(--violet)}
+    .verdict-badge.re{background:rgba(179,136,255,.15);color:var(--violet);border:1px solid var(--violet)}
+    .verdict-score{
+        font-family:'Russo One',sans-serif;
+        font-size:16px;font-weight:400;color:var(--accent);
+    }
+    .verdict-details{
+        font-size:10px;color:var(--muted);line-height:1.4;
+        white-space:pre-wrap;font-family:'JetBrains Mono',monospace;
+    }
+
+    /* ====== КАСТОМНЫЕ СКРОЛЛБАРЫ ====== */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--line-2) transparent;
+    }
+    *::-webkit-scrollbar { width: 8px; height: 8px; }
+    *::-webkit-scrollbar-track {
+        background: rgba(5, 7, 10, 0.4);
+        border-radius: 10px;
+    }
+    *::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, var(--line-2), var(--line));
+        border-radius: 10px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+    }
+    *::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, var(--accent), #00d98a);
+        border: 2px solid transparent;
+        background-clip: padding-box;
+        box-shadow: 0 0 8px rgba(0, 255, 156, 0.4);
+    }
+
+    .statement-body::-webkit-scrollbar { width: 6px; }
+    .statement-body::-webkit-scrollbar-track {
+        background: rgba(5, 7, 10, 0.6);
+        border-radius: 10px;
+        margin: 10px 0;
+    }
+    .statement-body::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, rgba(0, 255, 156, 0.3), rgba(0, 229, 255, 0.3));
+        border-radius: 10px;
+        border: 1px solid transparent;
+        background-clip: padding-box;
+    }
+    .statement-body::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, var(--accent), var(--accent-2));
+        border: 1px solid transparent;
+        background-clip: padding-box;
+        box-shadow: 0 0 10px rgba(0, 255, 156, 0.5);
+    }
+
+    .tasks-list::-webkit-scrollbar { height: 5px; }
+    .tasks-list::-webkit-scrollbar-track {
+        background: rgba(5, 7, 10, 0.6);
+        border-radius: 10px;
+        margin: 0 8px;
+    }
+    .tasks-list::-webkit-scrollbar-thumb {
+        background: linear-gradient(90deg, rgba(0, 229, 255, 0.4), rgba(0, 255, 156, 0.4));
+        border-radius: 10px;
+        border: 1px solid transparent;
+        background-clip: padding-box;
+    }
+    .tasks-list::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(90deg, var(--accent-2), var(--accent));
+        border: 1px solid transparent;
+        background-clip: padding-box;
+    }
+
+    .console-output::-webkit-scrollbar { width: 5px; }
+    .console-output::-webkit-scrollbar-track {
+        background: rgba(0, 255, 156, 0.03);
+        border-radius: 10px;
+    }
+    .console-output::-webkit-scrollbar-thumb {
+        background: rgba(0, 255, 156, 0.25);
+        border-radius: 10px;
+    }
+    .console-output::-webkit-scrollbar-thumb:hover {
+        background: var(--accent);
+    }
+
+    .CodeMirror-vscrollbar::-webkit-scrollbar { width: 8px; }
+    .CodeMirror-vscrollbar::-webkit-scrollbar-track {
+        background: rgba(5, 7, 10, 0.8);
+        border-radius: 10px;
+    }
+    .CodeMirror-vscrollbar::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, var(--line-2), var(--line));
+        border-radius: 10px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+    }
+    .CodeMirror-vscrollbar::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, var(--accent), #00d98a);
+        border: 2px solid transparent;
+        background-clip: padding-box;
+    }
+
+    .CodeMirror-hscrollbar::-webkit-scrollbar { height: 6px; }
+    .CodeMirror-hscrollbar::-webkit-scrollbar-track {
+        background: rgba(5, 7, 10, 0.8);
+        border-radius: 10px;
+    }
+    .CodeMirror-hscrollbar::-webkit-scrollbar-thumb {
+        background: linear-gradient(90deg, var(--line-2), var(--line));
+        border-radius: 10px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+    }
+
+    .CodeMirror-hints::-webkit-scrollbar { width: 5px; }
+    .CodeMirror-hints::-webkit-scrollbar-track {
+        background: rgba(5, 7, 10, 0.6);
+        border-radius: 10px;
+    }
+    .CodeMirror-hints::-webkit-scrollbar-thumb {
+        background: rgba(0, 255, 156, 0.3);
+        border-radius: 10px;
+    }
+
+    /* ====== АДАПТИВ ====== */
+    @media (max-width: 1100px){
+        .cab-wrap{padding:8px;height:calc(100vh - 100px)}
+        .main-grid{gap:6px}
+    }
+    @media (max-width: 600px){
+        .top-status{flex-direction:column;align-items:stretch}
+        .timer-box{justify-content:center}
+        .actions-bar{flex-direction:column}
+        .actions-left{width:100%;justify-content:stretch}
+        .actions-left .btn-sm{flex:1;justify-content:center}
+        .verdict-toast{left:16px;right:16px;bottom:16px;max-width:none}
+    }
+
+    /* ====== ПРОГРЕСС-БАЛЛЫ ЗА ЗАДАЧУ ====== */
+    .task-score-bar{
+        padding:10px 16px;
+        background:rgba(5,7,10,.5);
+        border-bottom:1px solid var(--line);
+        display:flex;
+        align-items:center;
+        gap:14px;
+        flex-shrink:0;
+    }
+    .task-score-value{
+        font-family:'Russo One',sans-serif;
+        font-size:22px;
+        color:var(--muted);
+        letter-spacing:1px;
+        min-width:90px;
+        transition:.3s;
+    }
+    .task-score-value.has-score{
+        color:var(--accent);
+        text-shadow:0 0 12px rgba(0,255,156,.5);
+    }
+    .task-score-value.full{
+        color:var(--amber);
+        text-shadow:0 0 14px rgba(255,179,71,.6);
+    }
+    .task-score-track{
+        flex:1;
+        height:6px;
+        background:rgba(255,255,255,.05);
+        border-radius:10px;
+        overflow:hidden;
+        position:relative;
+    }
+    .task-score-fill{
+        height:100%;
+        background:linear-gradient(90deg,var(--accent),var(--accent-2));
+        border-radius:10px;
+        transition:width .6s cubic-bezier(.16,1,.3,1);
+        box-shadow:0 0 10px rgba(0,255,156,.4);
+    }
+    .task-score-fill.full{
+        background:linear-gradient(90deg,var(--amber),#ffd700);
+        box-shadow:0 0 14px rgba(255,179,71,.6);
+    }
+    .task-score-label{
+        font-size:9px;
+        letter-spacing:2px;
+        color:var(--muted);
+        text-transform:uppercase;
+        margin-bottom:2px;
+    }
+
+    /* ====== ТОСТ С ЗАКРЫТИЕМ ====== */
+    .verdict-toast{
+        cursor:pointer;
+        position:relative;
+    }
+    .verdict-close{
+        position:absolute;
+        top:10px;
+        right:10px;
+        width:26px;
+        height:26px;
+        border-radius:50%;
+        background:rgba(255,255,255,.05);
+        border:1px solid var(--line);
+        color:var(--muted);
+        cursor:pointer;
+        display:grid;
+        place-items:center;
+        font-size:14px;
+        font-weight:700;
+        transition:.2s;
+        padding:0;
+        line-height:1;
+        z-index:2;
+    }
+    .verdict-close:hover{
+        color:var(--danger);
+        border-color:var(--danger);
+        background:rgba(255,59,107,.15);
+        box-shadow:0 0 10px rgba(255,59,107,.3);
+        transform:rotate(90deg);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="w-full max-w-7xl flex gap-6 fade-in mx-auto">
-    <!-- ЛЕВАЯ ПАНЕЛЬ -->
-    <aside class="w-72 shrink-0 hidden md:flex flex-col border border-line bg-panel rounded-xl overflow-hidden sticky top-20 h-[calc(100vh-7rem)]">
-        <div class="p-4 border-b border-line bg-ink shrink-0">
-            <div class="text-[10px] text-neon tracking-[0.3em]">// TASKS_LIST</div>
-            <h2 class="font-display font-bold text-lg mt-1" id="team-name">Загрузка...</h2>
+<div class="cab-wrap">
+    <!-- ====== ВЕРХНЯЯ ПАНЕЛЬ ====== -->
+    <div class="top-status">
+        <div class="team-info">
+            <div class="team-name" id="team-name">Загрузка...</div>
+            <div class="phase-badge" id="phase-badge">Фаза — / —</div>
         </div>
-        <div class="flex-1 overflow-y-auto p-2 space-y-2" id="tasks-list">
-            <div class="text-xs text-slate-500 p-2 text-center">Загрузка задач...</div>
+        <div class="timer-box">
+            <div class="timer-label">Осталось</div>
+            <div class="timer-value" id="timer-value">00:00</div>
         </div>
-        <div class="p-4 border-t border-line text-center shrink-0">
-            <a href="/logout" class="block text-xs text-magenta hover:text-white transition">[ ВЫЙТИ ]</a>
-        </div>
-    </aside>
+    </div>
 
-    <!-- ПРАВАЯ ПАНЕЛЬ -->
-    <section class="flex-1 flex flex-col min-w-0 border border-line bg-panel rounded-xl relative">
-
-        <!-- БЛОК ТАЙМЕРА И ФАЗЫ -->
-        <div class="flex items-center justify-between p-3 border-b border-line bg-ink rounded-t-xl">
-            <div class="flex flex-col">
-                <div class="text-xs text-slate-500 tracking-widest font-bold">// ТЕКУЩАЯ ФАЗА</div>
-                <div id="current-phase-name" class="text-sm text-neon font-bold mt-1">Ожидание...</div>
+    <!-- ====== ОСНОВНОЙ LAYOUT ====== -->
+    <div class="main-grid">
+        <!-- ЛЕВАЯ: УСЛОВИЕ -->
+        <div class="statement-col mob-active" id="statement-col">
+            <div class="col-head">
+                <div class="tag">📋 УСЛОВИЕ</div>
+                <span class="badge" id="task-points">— pts</span>
             </div>
-            <div id="global-timer" class="hidden flex items-center gap-2 border px-3 py-1.5 rounded font-mono font-bold">
-                <span id="timer-text">00:00:00</span>
-            </div>
-        </div>
-
-        <div id="status-banner" class="hidden p-3 text-center border-b border-line bg-ink text-sm font-bold tracking-widest"></div>
-
-        <div id="workspace-empty" class="p-12 flex flex-col items-center justify-center text-slate-600 text-sm min-h-[400px]">
-            <div class="text-4xl mb-4">👈</div>
-            &gt; выберите задачу из списка слева _
-        </div>
-
-        <div id="workspace" class="hidden flex-col h-full relative">
-            <div id="workspace-overlay" class="hidden absolute inset-0 bg-[#0a0e14]/90 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
-                <div id="ws-overlay-icon" class="text-4xl font-bold mb-2 animate-pulse">⏸</div>
-                <h2 id="ws-overlay-title" class="text-2xl font-bold mb-2"></h2>
-            </div>
-
-            <!-- Условие -->
-            <div class="p-6 border-b border-line bg-ink">
-                <h2 id="task-title" class="font-display text-xl font-bold text-neon"></h2>
-                <div id="task-statement" class="text-sm text-slate-300 mt-3 prose prose-invert max-w-none"></div>
-            </div>
-
-            <!-- Вкладки -->
-            <div class="flex border-b border-line bg-[#0a0e14]">
-                <button id="tab-code" class="tab-btn active px-4 py-2 text-sm font-bold text-slate-400 hover:text-white transition" onclick="switchTab('code')">КОД</button>
-                <button id="tab-test" class="tab-btn px-4 py-2 text-sm font-bold text-slate-400 hover:text-white transition" onclick="switchTab('test')">ТЕСТИРОВАНИЕ</button>
-            </div>
-
-            <!-- Редактор кода -->
-            <div id="pane-code" class="h-[400px] border-b border-line relative bg-[#0a0e14]">
-                <textarea id="code-editor"></textarea>
-            </div>
-
-            <!-- Панель тестирования -->
-            <div id="pane-test" class="hidden h-[400px] flex-col border-b border-line bg-[#0a0e14] p-4 gap-2">
-                <div class="flex-1 flex gap-2">
-                    <div class="flex-1 flex flex-col">
-                        <label class="text-xs text-slate-500 mb-1">Ввод (Input):</label>
-                        <textarea id="test-input" class="flex-1 bg-[#05080c] border border-line rounded p-2 text-sm font-mono text-slate-300 focus:outline-none focus:border-neon resize-none" placeholder="Введите тестовые данные..."></textarea>
-                    </div>
-                    <div class="flex-1 flex flex-col">
-                        <label class="text-xs text-slate-500 mb-1">Вывод (Output):</label>
-                        <pre id="test-output" class="flex-1 bg-[#05080c] border border-line rounded p-2 text-sm font-mono text-slate-300 overflow-auto whitespace-pre-wrap"></pre>
-                    </div>
+            <div class="task-score-bar" id="task-score-bar" style="display:none">
+                <div>
+                    <div class="task-score-label">ВАШ БАЛЛ</div>
+                    <div class="task-score-value" id="task-score-value">0 / 0</div>
                 </div>
-                <button id="btn-run-test" class="self-end bg-cyan text-ink font-bold text-xs tracking-widest px-4 py-2 rounded hover:bg-white transition" onclick="runTest()">ЗАПУСТИТЬ ▶</button>
+                <div class="task-score-track">
+                    <div class="task-score-fill" id="task-score-fill" style="width:0%"></div>
+                </div>
             </div>
-
-            <!-- Панель управления -->
-            <div class="bg-ink flex flex-col rounded-b-xl">
-                <div id="checker-output" class="hidden border-b border-line p-4 text-sm font-mono whitespace-pre-wrap bg-[#05080c] text-slate-300"></div>
-                <div class="p-4 flex items-center justify-between">
-                    <div id="submit-status" class="text-sm font-mono"></div>
-                    <button id="btn-submit" class="bg-neon text-ink font-bold text-sm tracking-widest px-6 py-2.5 rounded hover:bg-white transition shadow-neon">ОТПРАВИТЬ РЕШЕНИЕ &gt;&gt;</button>
+            <div class="statement-body" id="statement-body">
+                <div class="statement-empty">
+                    <div class="icon">⟳</div>
+                    <div>Загрузка текущей задачи...</div>
                 </div>
             </div>
         </div>
-    </section>
+
+        <!-- ПРАВАЯ: РЕДАКТОР -->
+        <div class="editor-col" id="editor-col">
+            <div class="mobile-tabs">
+                <button class="mobile-tab" onclick="showMobileTab('statement', event)">📋 Условие</button>
+                <button class="mobile-tab active" onclick="showMobileTab('editor', event)">💻 Код</button>
+            </div>
+
+            <div class="col-head">
+                <div class="tag">💻 РЕДАКТОР</div>
+                <div style="display:flex;gap:4px">
+                    <button class="tool-btn" onclick="clearCode()" title="Очистить">🗑</button>
+                    <button class="tool-btn" onclick="loadTemplate()" title="Шаблон">📄</button>
+                </div>
+            </div>
+
+            <div class="editor-wrap">
+                <div class="editor-toolbar">
+                    <div class="editor-toolbar-left">
+                        <span>solution.py</span>
+                        <span id="code-lines">0 строк</span>
+                        <span style="color:var(--muted);font-size:9px">· Ctrl+Space</span>
+                    </div>
+                </div>
+                <textarea id="code-editor" style="display:none"></textarea>
+            </div>
+
+            <!-- Консоль -->
+            <div class="console-wrap">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);flex:1;min-height:0">
+                    <div style="display:flex;flex-direction:column;min-height:0">
+                        <div class="console-head">
+                            <div><span class="dot in"></span>ВВОД</div>
+                        </div>
+                        <textarea class="console-input" id="test-input" placeholder="Входные данные..."></textarea>
+                    </div>
+                    <div style="display:flex;flex-direction:column;min-height:0">
+                        <div class="console-head">
+                            <div><span class="dot out"></span>ВЫВОД</div>
+                        </div>
+                        <textarea class="console-output" id="test-output" readonly placeholder="Результат..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Действия -->
+            <div class="actions-bar">
+                <div class="actions-left">
+                    <button class="btn-sm ghost" id="btn-run" onclick="runCode()">
+                        ▶ ПРОВЕРИТЬ
+                    </button>
+                    <button class="btn-sm primary" id="btn-submit" onclick="submitCode()">
+                        🚀 ОТПРАВИТЬ
+                    </button>
+                </div>
+                <a href="/logout" class="btn-sm danger">⏻ ВЫЙТИ</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== СПИСОК ЗАДАЧ ====== -->
+    <div class="tasks-bar">
+        <div class="tasks-bar-head">
+            <div class="tag">ЗАДАЧИ</div>
+            <span class="badge" id="tasks-count">0</span>
+        </div>
+        <div class="tasks-list" id="tasks-list">
+            <div class="statement-empty" style="padding:10px;width:100%">
+                <div>⟳ Загрузка...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Оверлей ожидания -->
+<div class="waiting-overlay" id="waiting-overlay">
+    <div class="waiting-icon">⏸</div>
+    <div class="waiting-title" id="waiting-title">ОЖИДАНИЕ</div>
+    <div class="waiting-text" id="waiting-text">Соревнование ещё не началось</div>
+</div>
+
+<!-- Тост вердикта -->
+<div class="verdict-toast" id="verdict-toast" onclick="closeVerdict()">
+    <button class="verdict-close" onclick="event.stopPropagation(); closeVerdict()" title="Закрыть">×</button>
+    <div class="verdict-head">
+        <span class="verdict-badge" id="verdict-badge">OK</span>
+        <span class="verdict-score" id="verdict-score">0 / 0</span>
+    </div>
+    <div class="verdict-details" id="verdict-details"></div>
 </div>
 
 <script>
-    let editor;
-    let currentTaskId = null;
-    let globalPaused = false;
-    let globalStarted = false;
-    let teamPaused = false;
-    let teamFinished = false;
-    let isBreakPhase = false;
-    let activePhaseTaskId = null;
+    // ====== СОСТОЯНИЕ ======
+    const state = {
+        team: null,
+        global: null,
+        tasks: [],
+        currentTaskId: null,
+        currentTask: null,
+        ws: null,
+        timerInterval: null,
+        phaseDuration: 0,
+    };
 
-        // --- Автоотправка, retry, принудительное сохранение ---
-    let autoSubmitInterval = null;
-    const lastSubmittedCode = {};
+    let editor = null;
 
-    async function forceSaveAndSubmit(taskId) {
-        if (!editor || !taskId) return;
-        const code = editor.getValue();
-        if (!code.trim()) return;
-        const teamName = document.getElementById('team-name').textContent;
-        if (!teamName) return;
-
-        localStorage.setItem(`draft_${teamName}_${taskId}`, code);
-
-        // Не отправляем повторно, если код не изменился
-        if (lastSubmittedCode[taskId] === code) return;
-        lastSubmittedCode[taskId] = code;
-
-        try {
-            const res = await fetch('/api/team/submissions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ task_id: taskId, code: code, auto: true })
-            });
-            if (!res.ok) {
-                lastSubmittedCode[taskId] = null;
-                localStorage.setItem(`unsent_${teamName}_${taskId}`, 'true');
-            } else {
-                localStorage.removeItem(`unsent_${teamName}_${taskId}`);
+    // ====== CODEMIRROR ======
+    function initEditor(){
+        const textarea = document.getElementById('code-editor');
+        editor = CodeMirror.fromTextArea(textarea, {
+            mode: 'python',
+            theme: 'default',
+            lineNumbers: true,
+            matchBrackets: true,
+            autoCloseBrackets: true,
+            styleActiveLine: true,
+            indentUnit: 4,
+            tabSize: 4,
+            indentWithTabs: false,
+            lineWrapping: false,
+            extraKeys: {
+                'Ctrl-Space': 'autocomplete',
+                'Cmd-Space': 'autocomplete',
+                'Tab': (cm) => {
+                    if(cm.somethingSelected()) cm.indentSelection('add');
+                    else cm.replaceSelection('    ', 'end');
+                },
+                'Ctrl-Enter': () => runCode(),
+                'Cmd-Enter': () => runCode(),
+                'Ctrl-S': (cm) => { cm.preventDefault(); submitCode(); },
+                'Cmd-S': (cm) => { cm.preventDefault(); submitCode(); },
             }
-        } catch (e) {
-            lastSubmittedCode[taskId] = null;
-            localStorage.setItem(`unsent_${teamName}_${taskId}`, 'true');
-        }
-    }
+        });
 
-    async function retryUnsent() {
-        const teamName = document.getElementById('team-name').textContent;
-        if (!teamName) return;
-        const keys = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const k = localStorage.key(i);
-            if (k && k.startsWith(`unsent_${teamName}_`)) keys.push(k);
-        }
-        for (const k of keys) {
-            const taskId = parseInt(k.split('_').pop());
-            const code = localStorage.getItem(`draft_${teamName}_${taskId}`);
-            if (!code) { localStorage.removeItem(k); continue; }
-            try {
-                const res = await fetch('/api/team/submissions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ task_id: taskId, code: code, auto: true })
-                });
-                if (res.ok) {
-                    localStorage.removeItem(k);
-                    lastSubmittedCode[taskId] = code;
+        // ====== УМНОЕ АВТОДОПОЛНЕНИЕ ======
+        editor.on('inputRead', (cm, change) => {
+            if(change.origin !== '+input') return;
+            const ch = change.text[0];
+            if(!ch || /\s/.test(ch)) return;
+
+            if(ch === '.'){
+                setTimeout(() => {
+                    cm.showHint({
+                        completeSingle: false,
+                        closeOnUnfocus: true,
+                        alignWithWord: true
+                    });
+                }, 50);
+                return;
+            }
+
+            if(/[a-zA-Z_]/.test(ch)){
+                clearTimeout(window._hintTimeout);
+                window._hintTimeout = setTimeout(() => {
+                    const cur = cm.getCursor();
+                    const token = cm.getTokenAt(cur);
+                    if(token.string.length >= 2 && /^[a-zA-Z_]/.test(token.string)){
+                        cm.showHint({
+                            completeSingle: false,
+                            closeOnUnfocus: true,
+                            alignWithWord: true
+                        });
+                    }
+                }, 600);
+            }
+        });
+
+        editor.on('change', () => {
+            updateCodeLines();
+            if(state.currentTaskId){
+                localStorage.setItem(`code_${state.currentTaskId}`, editor.getValue());
+            }
+        });
+
+        // ====== КАСТОМНЫЕ ПОДСКАЗКИ PYTHON ======
+        CodeMirror.registerHelper('hint', 'python', (cm) => {
+            const cur = cm.getCursor();
+            const token = cm.getTokenAt(cur);
+            const line = cm.getLine(cur.line);
+            const beforeCursor = line.slice(0, cur.ch);
+
+            const wordMatch = beforeCursor.match(/([a-zA-Z_]\w*)$/);
+            const currentWord = wordMatch ? wordMatch[1].toLowerCase() : '';
+
+            const dotMatch = beforeCursor.match(/(\w+)\.$/);
+
+            const builtinMethods = {
+                'str': ['upper','lower','strip','lstrip','rstrip','split','join','replace',
+                        'find','rfind','startswith','endswith','format','isdigit','isalpha',
+                        'isalnum','count','index','title','capitalize','center','zfill'],
+                'list': ['append','extend','insert','remove','pop','clear','index','count',
+                         'sort','reverse','copy'],
+                'dict': ['keys','values','items','get','pop','update','clear','copy',
+                         'setdefault','fromkeys'],
+                'set': ['add','remove','discard','pop','clear','union','intersection',
+                        'difference','symmetric_difference','issubset','issuperset'],
+            };
+
+            let list = [];
+
+            if(dotMatch){
+                for(const methods of Object.values(builtinMethods)){
+                    list = list.concat(methods.map(m => m + '()'));
                 }
-            } catch (_) {}
-        }
-    }
-
-    function startAutoSubmit() {
-        if (autoSubmitInterval) return;  // уже запущен
-        autoSubmitInterval = setInterval(() => {
-            if (currentTaskId && globalStarted && !globalPaused && !teamPaused && !teamFinished && !isBreakPhase) {
-                forceSaveAndSubmit(currentTaskId);
-            }
-        }, 30000);
-    }
-
-    function stopAutoSubmit() {
-        if (autoSubmitInterval) {
-            clearInterval(autoSubmitInterval);
-            autoSubmitInterval = null;
-        }
-    }
-
- // --- ОБНОВЛЕННЫЕ ПЕРЕМЕННЫЕ ТАЙМЕРА ---
-    let timerInterval = null;
-    let localRemainingSeconds = 0;
-    let currentTimerPhaseIndex = -1; // Чтобы знать, для какой фазы запущен таймер
-
-    function switchTab(tab) {
-        document.getElementById('pane-code').classList.add('hidden');
-        document.getElementById('pane-test').classList.add('hidden');
-        document.getElementById('tab-code').classList.remove('active');
-        document.getElementById('tab-test').classList.remove('active');
-
-        if (tab === 'code') {
-            document.getElementById('pane-code').classList.remove('hidden');
-            document.getElementById('tab-code').classList.add('active');
-            if(editor) editor.refresh();
-        } else {
-            document.getElementById('pane-test').classList.remove('hidden');
-            document.getElementById('pane-test').classList.add('flex');
-            document.getElementById('tab-test').classList.add('active');
-        }
-    }
-
-    function formatTime(s) {
-        if (s < 0) s = 0;
-        const h = Math.floor(s/3600).toString().padStart(2,'0');
-        const m = Math.floor((s%3600)/60).toString().padStart(2,'0');
-        const sec = (s%60).toString().padStart(2,'0');
-        return `${h}:${m}:${sec}`;
-    }
-
-    function startLocalTimer(seconds, phaseIndex, isPaused) {
-        const timerText = document.getElementById('timer-text');
-
-        // Если таймер на паузе или не запущен — просто показываем время
-        if (isPaused || !globalStarted || teamFinished) {
-            if (timerInterval) clearInterval(timerInterval);
-            timerText.textContent = formatTime(seconds);
-            return;
-        }
-
-        // Если таймер уже идет для ЭТОЙ ЖЕ фазы и просто обновились данные с сервера,
-        // мы НЕ перезапускаем интервал, чтобы не сбивать отсчет.
-        // Мы только корректируем время, если оно сильно разошлось.
-        if (currentTimerPhaseIndex === phaseIndex && timerInterval) {
-            // Если разница между локальным временем и сервером больше 2 секунд — синхронизируем
-            if (Math.abs(localRemainingSeconds - seconds) > 2) {
-                localRemainingSeconds = seconds;
-            }
-            return;
-        }
-
-        // Если фаза изменилась или таймер только запускается
-        currentTimerPhaseIndex = phaseIndex;
-        localRemainingSeconds = seconds;
-
-        if (timerInterval) clearInterval(timerInterval);
-        timerText.textContent = formatTime(localRemainingSeconds);
-
-        timerInterval = setInterval(() => {
-            if (localRemainingSeconds > 0) {
-                localRemainingSeconds--;
-                timerText.textContent = formatTime(localRemainingSeconds);
+                list = [...new Set(list)];
             } else {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                // Время вышло. Переключение фазы подхватит setInterval(init, 5000).
-
+                list = [
+                    'print()', 'input()', 'range()', 'len()', 'sum()', 'min()', 'max()',
+                    'sorted()', 'reversed()', 'enumerate()', 'zip()', 'map()', 'filter()',
+                    'abs()', 'round()', 'int()', 'float()', 'str()', 'list()', 'dict()',
+                    'set()', 'tuple()', 'bool()', 'type()', 'isinstance()', 'open()',
+                    'input().split()', 'chr()', 'ord()', 'hex()', 'bin()', 'oct()',
+                    'pow()', 'divmod()', 'hash()', 'id()', 'iter()', 'next()',
+                    'all()', 'any()', 'format()', 'repr()', 'vars()', 'dir()',
+                    'globals()', 'locals()', 'hasattr()', 'getattr()', 'setattr()',
+                ];
+                list = list.concat([
+                    'True', 'False', 'None',
+                    'if', 'else', 'elif', 'for', 'while', 'def', 'class', 'return',
+                    'import', 'from', 'as', 'try', 'except', 'finally', 'raise',
+                    'with', 'lambda', 'pass', 'break', 'continue', 'yield',
+                    'and', 'or', 'not', 'in', 'is', 'global', 'nonlocal', 'assert',
+                ]);
             }
-        }, 1000);
+
+            if(currentWord && !dotMatch){
+                list = list.filter(item => {
+                    const itemName = item.replace(/\(.*/, '').toLowerCase();
+                    return itemName.startsWith(currentWord);
+                });
+            }
+
+            list.sort((a, b) => {
+                const aName = a.replace(/\(.*/, '');
+                const bName = b.replace(/\(.*/, '');
+                if(currentWord){
+                    const aExact = aName.toLowerCase() === currentWord ? 0 : 1;
+                    const bExact = bName.toLowerCase() === currentWord ? 0 : 1;
+                    if(aExact !== bExact) return aExact - bExact;
+                }
+                return aName.localeCompare(bName);
+            });
+
+            return {
+                list: list,
+                from: dotMatch
+                    ? CodeMirror.Pos(cur.line, cur.ch)
+                    : CodeMirror.Pos(cur.line, token.start),
+                to: CodeMirror.Pos(cur.line, token.end)
+            };
+        });
+
+        loadTemplate();
     }
 
+    function updateCodeLines(){
+        const lines = editor.lineCount();
+        document.getElementById('code-lines').textContent = `${lines} строк`;
+    }
 
-    function renderTasks(tasks) {
+    function clearCode(){
+        if(confirm('Очистить код?')){
+            editor.setValue('');
+            if(state.currentTaskId){
+                localStorage.removeItem(`code_${state.currentTaskId}`);
+            }
+        }
+    }
+
+    function loadTemplate(){
+        const template = `def solve():
+    # ваш код здесь
+    pass
+
+solve()`;
+        editor.setValue(template);
+    }
+
+    // ====== МОБИЛЬНЫЕ ТАБЫ ======
+    function showMobileTab(tab, ev){
+        document.querySelectorAll('.mobile-tab').forEach(t => t.classList.remove('active'));
+        if(ev && ev.target) ev.target.classList.add('active');
+
+        if(tab === 'statement'){
+            document.getElementById('statement-col').classList.add('mob-active');
+            document.getElementById('editor-col').classList.remove('mob-active');
+        } else {
+            document.getElementById('statement-col').classList.remove('mob-active');
+            document.getElementById('editor-col').classList.add('mob-active');
+            setTimeout(() => editor.refresh(), 100);
+        }
+    }
+
+    // ====== ИНИЦИАЛИЗАЦИЯ ======
+    async function init(){
+        initEditor();
+        await loadTeamState();
+        connectWebSocket();
+        startTimer();
+    }
+
+    // ====== ЗАГРУЗКА СОСТОЯНИЯ ======
+    async function loadTeamState(){
+        try{
+            const res = await fetch('/api/team/me');
+            if(res.status === 401){
+                window.location.href = '/';
+                return;
+            }
+            if(!res.ok) throw new Error('Ошибка загрузки');
+
+            const data = await res.json();
+            state.team = data.team;
+            state.global = data.global;
+            state.tasks = data.tasks || [];
+
+            updateTeamUI();
+            updateTasksList();
+            checkWaitingState();
+
+            // ⭐ АВТООТКРЫТИЕ ТЕКУЩЕЙ ЗАДАЧИ
+            const currentTaskId = state.global.phase_task_id;
+            if(currentTaskId && !state.currentTaskId){
+                selectTask(currentTaskId, true);
+            } else if(currentTaskId && state.currentTaskId !== currentTaskId){
+                selectTask(currentTaskId, true);
+            }
+
+        } catch(err){
+            console.error(err);
+        }
+    }
+
+    // ====== UI КОМАНДЫ ======
+    function updateTeamUI(){
+        if(!state.team) return;
+
+        const displayName = state.team.participant_name || state.team.name;
+        document.getElementById('team-name').textContent = displayName;
+
+        const g = state.global;
+        document.getElementById('phase-badge').textContent =
+            `Фаза ${g.current_phase_index + 1} / ${g.total_phases} · ${g.phase_type === 'task' ? 'ЗАДАЧА' : g.phase_type === 'sport' ? 'СПОРТ' : '—'}`;
+
+        state.phaseDuration = g.phase_time_left || 0;
+        updateTimer();
+    }
+
+    // ====== ОЖИДАНИЕ ======
+    function checkWaitingState(){
+        const overlay = document.getElementById('waiting-overlay');
+        const title = document.getElementById('waiting-title');
+        const text = document.getElementById('waiting-text');
+
+        if(!state.global.is_started){
+            overlay.classList.add('show');
+            title.textContent = 'ОЖИДАНИЕ СТАРТА';
+            text.textContent = 'Соревнование ещё не началось. Ожидайте команды судьи.';
+        } else if(state.team.waiting_for_team){
+            overlay.classList.add('show');
+            if(state.team.waiting_reason === 'scheduled'){
+                title.textContent = 'ЗАПЛАНИРОВАННЫЙ СТАРТ';
+                const mins = Math.ceil(state.team.scheduled_in_seconds / 60);
+                text.textContent = `Старт через ${mins} мин.`;
+            } else {
+                title.textContent = 'ОЖИДАНИЕ КОМАНДЫ';
+                text.textContent = `Соберите команду: ${state.team.team_size} / ${state.team.team_max}`;
+            }
+        } else if(state.global.is_break){
+            overlay.classList.add('show');
+            title.textContent = 'ПЕРЕРЫВ НА СПОРТ';
+            text.textContent = state.global.phase_sport_name || 'Спортивное задание';
+        } else if(state.team.finished_at){
+            overlay.classList.add('show');
+            title.textContent = 'ЗАВЕРШЕНО';
+            text.textContent = 'Вы прошли все фазы. Перейдите к результатам.';
+            setTimeout(() => { window.location.href = '/results'; }, 3000);
+        } else {
+            overlay.classList.remove('show');
+        }
+    }
+
+    // ====== СПИСОК ЗАДАЧ ======
+    function updateTasksList(){
         const list = document.getElementById('tasks-list');
-        if (!tasks || !tasks.length) {
-            list.innerHTML = '<div class="text-xs text-slate-500 p-2 text-center">Задач нет.</div>';
+        document.getElementById('tasks-count').textContent = state.tasks.length;
+
+        if(state.tasks.length === 0){
+            list.innerHTML = `<div class="statement-empty" style="padding:10px;width:100%"><div>📭 Задач пока нет</div></div>`;
             return;
         }
 
-        list.innerHTML = tasks.map(t => {
-            // Если сейчас спорт-фаза, задачи заблокированы
-            const disabled = (!globalStarted || globalPaused || teamPaused || teamFinished || isBreakPhase || activePhaseTaskId !== t.id);
-            const clickAction = disabled ? '' : `onclick="openTask(${t.id})"`;
-            const classes = disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-neon';
-            const activeClass = (currentTaskId === t.id) ? 'border-neon bg-neon/5' : 'border-line';
+        const currentTaskId = state.global.phase_task_id;
+
+        list.innerHTML = state.tasks.map(t => {
+            const isCurrent = t.id === currentTaskId;
+            const isSolved = t.current_score > 0;
+            const isActive = t.id === state.currentTaskId;
+
+            let classes = 'task-chip';
+            if(isActive) classes += ' active';
+            if(isCurrent) classes += ' current';
+            if(isSolved) classes += ' solved';
 
             return `
-            <div ${clickAction} class="p-3 border ${activeClass} rounded ${classes} transition group">
-                <div class="flex justify-between items-center text-[10px]">
-                    <span class="text-slate-500 group-hover:text-neon">ЗАДАЧА #${t.order_index}</span>
-                    <span class="text-warn font-mono font-bold">${t.current_score} / ${t.max_points} B</span>
-                </div>
-                <div class="text-sm font-bold mt-1">${t.title}</div>
-                ${t.time_spent > 0 ? `<div class="text-[10px] text-cyan mt-1">Решено за: ${formatTime(t.time_spent)}</div>` : ''}
-            </div>`;
+                <div class="${classes}" onclick="selectTask(${t.id})">
+                    <div class="task-chip-title">${escapeHTML(t.title)}</div>
+                    <div class="task-chip-meta">${t.max_points} PTS</div>
+                    <div class="task-chip-score">${t.current_score} / ${t.max_points}</div>
+                </div>`;
         }).join('');
     }
 
-    async function init() {
-        try {
-            const res = await fetch('/api/team/me');
-            if (res.status === 401) return window.location.href = '/';
-            const data = await res.json();
+    // ====== ВЫБОР ЗАДАЧИ ======
+    async function selectTask(taskId, silent = false){
+        state.currentTaskId = taskId;
+        updateTasksList();
 
-            // Проверка на ожидание полной посадки
-            if (data.team.waiting_for_team) {
-                const banner = document.getElementById('status-banner');
-                banner.classList.remove('hidden');
+        const body = document.getElementById('statement-body');
+        body.innerHTML = '<div class="statement-empty"><div class="icon">⟳</div><div>Загрузка условия...</div></div>';
 
-                if (data.team.waiting_reason === 'scheduled') {
-                    banner.textContent = `ЗАПЛАНИРОВАН СТАРТ ЧЕРЕЗ ${formatTime(data.team.scheduled_in_seconds || 0)}`;
-                    banner.className = "p-3 text-center border-b border-cyan bg-cyan/10 text-cyan font-bold tracking-widest";
-                    document.getElementById('timer-text').textContent = formatTime(data.team.scheduled_in_seconds || 0);
-                    document.getElementById('global-timer').className = "flex items-center gap-2 border border-cyan px-3 py-1.5 rounded text-cyan font-mono font-bold";
-                    document.getElementById('global-timer').classList.remove('hidden');
-                    document.getElementById('workspace-empty').innerHTML = `
-                        <div class="text-4xl mb-4">⏰</div>
-                        <div class="text-lg font-bold text-cyan mb-2">Старт запланирован</div>
-                        <div class="text-sm text-slate-400 text-center">Олимпиада для вашей команды начнётся автоматически.</div>
-                    `;
-                } else {
-                    banner.textContent = `ОЖИДАНИЕ КОМАНДЫ: ${data.team.team_size}/${data.team.team_max}`;
-                    banner.className = "p-3 text-center border-b border-warn bg-warn/10 text-warn font-bold tracking-widest";
-                    document.getElementById('timer-text').textContent = "WAITING";
-                    document.getElementById('global-timer').className = "flex items-center gap-2 border border-warn px-3 py-1.5 rounded text-warn font-mono font-bold";
-                    document.getElementById('global-timer').classList.remove('hidden');
-                    document.getElementById('workspace-empty').innerHTML = `
-                        <div class="text-4xl mb-4">⏳</div>
-                        <div class="text-lg font-bold text-warn mb-2">Ожидание команды</div>
-                        <div class="text-sm text-slate-400 text-center">Соревнование начнётся, когда наберётся ${data.team.team_max} человек,<br>либо когда администратор запустит его вручную.</div>
-                    `;
-                }
-                document.getElementById('tasks-list').innerHTML = '<div class="text-xs text-center py-4 text-slate-500">Заблокировано</div>';
-                return;
-            }
+        try{
+            const res = await fetch(`/api/team/tasks/${taskId}`);
+            if(!res.ok) throw new Error('Ошибка загрузки задачи');
 
-            document.getElementById('team-name').textContent = data.team.name;
+            const task = await res.json();
+            state.currentTask = task;
 
-            globalStarted = data.global.is_started;
-            globalPaused = data.global.is_paused;
-            teamPaused = data.team.is_paused;
-            teamFinished = data.team.finished_at !== null;
+            body.innerHTML = `
+                <h1>${escapeHTML(task.title)}</h1>
+                <div style="margin-bottom:10px;font-size:9px;color:var(--muted);letter-spacing:2px">
+                    MAX POINTS: ${task.max_points}
+                </div>
+                <div>${task.statement}</div>`;
 
-            // Устанавливаем имя команды сразу (даже если она ждет)
-            document.getElementById('team-name').textContent = data.team.name;
+            document.getElementById('task-points').textContent = `${task.max_points} pts`;
 
-            // Команда финишировала — уводим на страницу результатов
-            if (teamFinished || data.team.finished_by_phases) {
-                window.location.href = '/results';
-                return;
-            }
+            // ОБНОВЛЯЕМ БАЛЛЫ ЗА ТЕКУЩУЮ ЗАДАЧУ
+            updateScoreBar(taskId);
 
-            isBreakPhase = data.global.is_break;
-            activePhaseTaskId = data.global.phase_task_id;
-            const phaseIndex = data.global.current_phase_index; // Получаем индекс текущей фазы
-
-            const phaseType = data.global.phase_type;
-            let phaseTitle = "Ожидание...";
-            if (phaseType === 'task') phaseTitle = `Решение задачи #${data.global.phase_task_id}`;
-            if (phaseType === 'sport') phaseTitle = `Спортивное задание: ${data.global.phase_sport_name}`;
-            if (teamFinished) phaseTitle = "Соревнование завершено";
-
-            document.getElementById('current-phase-name').textContent = phaseTitle;
-
-            renderTasks(data.tasks);
-
-            const netIndicator = document.getElementById('net-status');
-            const isLocked = (!globalStarted || globalPaused || teamPaused || teamFinished);
-
-            if (netIndicator) {
-                if (isLocked) {
-                    netIndicator.className = "flex items-center gap-1.5 text-magenta";
-                    netIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-magenta"></span><span class="text-[10px] tracking-widest">OFFLINE</span>';
-                } else {
-                    netIndicator.className = "flex items-center gap-1.5 text-neon";
-                    netIndicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-neon animate-pulse"></span><span class="text-[10px] tracking-widest">ONLINE</span>';
-                }
-            }
-
-            const banner = document.getElementById('status-banner');
-            const timerBox = document.getElementById('global-timer');
-
-            banner.classList.remove('hidden');
-            timerBox.classList.remove('hidden');
-
-            const isPausedForTeam = (globalPaused || teamPaused || !globalStarted || teamFinished);
-
-            if (teamFinished) {
-                banner.textContent = "ЗАВЕРШЕНО";
-                banner.className = "p-3 text-center border-b border-magenta bg-magenta/10 text-magenta font-bold tracking-widest";
-                document.getElementById('timer-text').textContent = "FINISHED";
-                timerBox.className = "flex items-center gap-2 border border-magenta px-3 py-1.5 rounded text-magenta font-mono font-bold";
-                if(timerInterval) clearInterval(timerInterval);
-            } else if (!globalStarted) {
-                banner.textContent = "ОЖИДАНИЕ СТАРТА";
-                banner.className = "p-3 text-center border-b border-cyan bg-cyan/10 text-cyan font-bold tracking-widest";
-                document.getElementById('timer-text').textContent = "WAITING";
-                timerBox.className = "flex items-center gap-2 border border-cyan px-3 py-1.5 rounded text-cyan font-mono font-bold";
-                if(timerInterval) clearInterval(timerInterval);
-            } else if (globalPaused || teamPaused) {
-                banner.textContent = "НА ПАУЗЕ";
-                banner.className = "p-3 text-center border-b border-warn bg-warn/10 text-warn font-bold tracking-widest";
-                document.getElementById('timer-text').textContent = "PAUSED";
-                timerBox.className = "flex items-center gap-2 border border-warn px-3 py-1.5 rounded text-warn font-mono font-bold";
-                // При паузе просто фиксируем время
-                startLocalTimer(data.global.phase_time_left, phaseIndex, true);
-            } else if (isBreakPhase) {
-                banner.textContent = "СПОРТИВНОЕ ЗАДАНИЕ (ПЕРЕРЫВ)";
-                banner.className = "p-3 text-center border-b border-warn bg-warn/10 text-warn font-bold tracking-widest";
-                timerBox.className = "flex items-center gap-2 border border-warn/30 bg-warn/10 px-3 py-1.5 rounded text-warn font-mono font-bold";
-                startLocalTimer(data.global.phase_time_left, phaseIndex, false);
+            const savedCode = localStorage.getItem(`code_${taskId}`);
+            if(savedCode){
+                editor.setValue(savedCode);
             } else {
-                banner.textContent = "РЕШЕНИЕ ЗАДАЧИ";
-                banner.className = "p-3 text-center border-b border-neon bg-neon/10 text-neon font-bold tracking-widest";
-                timerBox.className = "flex items-center gap-2 border border-neon/30 bg-neon/10 px-3 py-1.5 rounded text-neon font-mono font-bold glow-text";
-                startLocalTimer(data.global.phase_time_left, phaseIndex, false);
+                loadTemplate();
             }
 
-            const wsOverlay = document.getElementById('workspace-overlay');
-            const isTaskLocked = (!globalStarted || globalPaused || teamPaused || teamFinished || isBreakPhase);
-
-            if (isTaskLocked && currentTaskId) {
-                wsOverlay.classList.remove('hidden');
-                document.getElementById('ws-overlay-icon').textContent = teamFinished ? '🏁' : (isBreakPhase ? '🏃' : '⏸');
-                document.getElementById('ws-overlay-title').textContent = teamFinished ? 'ЗАВЕРШЕНО' : (isBreakPhase ? 'СПОРТ-ПАУЗА' : 'ПАУЗА');
-            } else {
-                wsOverlay.classList.add('hidden');
+            if(!silent && window.innerWidth <= 1100){
+                showMobileTab('statement');
             }
 
-            // Автоматически открываем задачу текущей фазы, если она сменилась
-            if (!isLocked && !isBreakPhase && activePhaseTaskId && currentTaskId !== activePhaseTaskId) {
-                if (currentTaskId) {
-                    await forceSaveAndSubmit(currentTaskId);
-                }
-                await openTask(activePhaseTaskId);
-            }
-
-            const btn = document.getElementById('btn-submit');
-            if (btn) {
-                if (isLocked || isBreakPhase || (activePhaseTaskId && currentTaskId !== activePhaseTaskId)) {
-                    btn.disabled = true;
-                    btn.textContent = "НЕДОСТУПНО";
-                } else {
-                    btn.disabled = false;
-                    btn.textContent = "ОТПРАВИТЬ РЕШЕНИЕ >>";
-                }
-            }
-
-            // Автоотправка: стартуем/останавливаем в зависимости от состояния
-            if (!isLocked && !isBreakPhase) {
-                startAutoSubmit();
-            } else {
-                stopAutoSubmit();
-            }
-
-            // Пробуем дослать всё, что не ушло в прошлый раз
-            retryUnsent();
-        } catch (e) { console.error("Ошибка:", e); }
+        } catch(err){
+            console.error(err);
+            body.innerHTML = `<div class="statement-empty"><div class="icon">⚠</div><div>Не удалось загрузить задачу</div></div>`;
+        }
     }
 
-    async function openTask(id) {
-        if (!globalStarted || globalPaused || teamPaused || teamFinished || isBreakPhase) return;
-        if (activePhaseTaskId && id !== activePhaseTaskId) return; // Нельзя открывать чужие задачи
+    // Обновление прогресс-бара баллов
+    function updateScoreBar(taskId){
+        const scoreBar = document.getElementById('task-score-bar');
+        const scoreValue = document.getElementById('task-score-value');
+        const scoreFill = document.getElementById('task-score-fill');
 
-        // Принудительно сохраняем черновик предыдущей задачи перед переключением
-        if (editor && currentTaskId && currentTaskId !== id) {
-            const teamName = document.getElementById('team-name').textContent;
-            localStorage.setItem(`draft_${teamName}_${currentTaskId}`, editor.getValue());
+        const taskData = state.tasks.find(t => t.id === taskId);
+        const currentScore = taskData?.current_score || 0;
+        const maxScore = state.currentTask?.max_points || 0;
+
+        scoreValue.textContent = `${currentScore} / ${maxScore}`;
+        const percent = maxScore > 0 ? (currentScore / maxScore) * 100 : 0;
+        scoreFill.style.width = `${percent}%`;
+
+        // Цветовая индикация
+        scoreValue.classList.remove('has-score', 'full');
+        scoreFill.classList.remove('full');
+
+        if(currentScore > 0){
+            scoreValue.classList.add('has-score');
+            if(currentScore >= maxScore){
+                scoreValue.classList.add('full');
+                scoreFill.classList.add('full');
+            }
         }
 
-        currentTaskId = id;
-        document.getElementById('workspace-empty').classList.add('hidden');
-        document.getElementById('workspace').classList.remove('hidden');
-        document.getElementById('workspace').classList.add('flex');
-
-        switchTab('code');
-
-        const res = await fetch('/api/team/me');
-        if(res.ok) {
-            const data = await res.json();
-            renderTasks(data.tasks);
-        }
-
-        const taskRes = await fetch(`/api/team/tasks/${id}`);
-        const task = await taskRes.json();
-        document.getElementById('task-title').textContent = task.title;
-        document.getElementById('task-statement').innerHTML = task.statement;
-
-        if (!editor) {
-            editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
-                mode: 'python',
-                theme: 'dracula',
-                lineNumbers: true,
-                indentUnit: 4,
-                matchBrackets: true,
-                autoCloseBrackets: true,
-                autofocus: true,
-                extraKeys: { "Ctrl-Space": "autocomplete" }
-            });
-
-            editor.on("inputRead", function(instance, changeObj) {
-                if (changeObj.text[0].match(/[a-zA-Z_]/)) {
-                    instance.showHint({ completeSingle: false });
-                }
-            });
-        }
-        editor.setValue(localStorage.getItem(`draft_${document.getElementById('team-name').textContent}_${id}`) || '');
-
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        scoreBar.style.display = 'flex';
     }
 
-    async function submitCode() {
-        if (!currentTaskId || !globalStarted || globalPaused || teamPaused || teamFinished || isBreakPhase) return;
-        const btn = document.getElementById('btn-submit');
-        const status = document.getElementById('submit-status');
-        const outputBox = document.getElementById('checker-output');
-
-        btn.disabled = true; status.textContent = 'Проверка...'; status.className = 'text-cyan text-sm font-mono animate-pulse'; outputBox.classList.add('hidden');
-
+    // ====== ЗАПУСК КОДА ======
+    async function runCode(){
         const code = editor.getValue();
-        localStorage.setItem(`draft_${document.getElementById('team-name').textContent}_${currentTaskId}`, code);
+        const input = document.getElementById('test-input').value;
+        const output = document.getElementById('test-output');
 
-        try {
-            const res = await fetch('/api/team/submissions', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ task_id: currentTaskId, code: code })
+        if(!code.trim()){
+            alert('Введите код');
+            return;
+        }
+        output.value = '⏳ Выполнение...';
+
+        try{
+            const res = await fetch('/api/team/run', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({code, input})
             });
+
             const data = await res.json();
-            if (res.ok) {
-                const v = data.verdict;
-                let color = 'text-neon glow-text';
-                let text = '✔ OK';
 
-                if (v === 'WA') { color = 'text-magenta'; text = '✘ WRONG ANSWER (WA)'; }
-                else if (v === 'TL') { color = 'text-warn'; text = '⏱ TIME LIMIT (TL)'; }
-                else if (v === 'RE') { color = 'text-orange-500'; text = '💥 RUNTIME ERROR (RE)'; }
-                else if (v === 'CE') { color = 'text-purple-400'; text = '📝 COMPILATION ERROR (CE)'; }
-
-                status.textContent = text;
-                status.className = `${color} text-sm font-mono font-bold`;
-
-                // Показываем только безопасные детали
-                if (data.details) {
-                    outputBox.textContent = data.details;
-                    outputBox.classList.remove('hidden');
-                } else {
-                    outputBox.classList.add('hidden');
-                    outputBox.textContent = '';
-                }
-                init();
+            if(data.status === 'error'){
+                output.value = `❌ Ошибка:\n${data.error}`;
             } else {
-                status.textContent = '✘ ' + (data.detail || 'Ошибка'); status.className = 'text-magenta text-sm font-mono';
+                output.value = data.output || '(пустой вывод)';
+                if(data.error){
+                    output.value += `\n\n⚠ Предупреждение:\n${data.error}`;
+                }
             }
-        } catch (e) {
-            status.textContent = '✘ Сеть'; status.className = 'text-magenta text-sm font-mono';
-        } finally {
-            if(globalStarted && !globalPaused && !teamPaused && !teamFinished && !isBreakPhase) btn.disabled = false;
+
+        } catch(err){
+            output.value = `❌ Ошибка сети: ${err.message}`;
         }
     }
 
-    async function runTest() {
-        if (!currentTaskId) return;
-        const btn = document.getElementById('btn-run-test');
-        const outputBox = document.getElementById('test-output');
-        const testInput = document.getElementById('test-input').value;
-        const code = editor.getValue();
-
-        if (!code.trim()) {
-            outputBox.textContent = "Введите код!";
+    // ====== ОТПРАВКА РЕШЕНИЯ ======
+    async function submitCode(){
+        if(!state.currentTaskId){
+            alert('Выберите задачу');
             return;
         }
 
-        btn.disabled = true;
-        btn.textContent = "ЗАПУСК...";
-        outputBox.textContent = "Выполнение...";
-        outputBox.className = "flex-1 bg-[#05080c] border border-line rounded p-2 text-sm font-mono text-cyan overflow-auto whitespace-pre-wrap";
+        const code = editor.getValue();
+        if(!code.trim()){
+            alert('Введите код');
+            return;
+        }
 
-        try {
-            const res = await fetch('/api/team/run', {
+        const btn = document.getElementById('btn-submit');
+        btn.disabled = true;
+        btn.innerHTML = '⟳ ПРОВЕРКА...';
+
+        try{
+            const res = await fetch('/api/team/submissions', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ task_id: currentTaskId, code: code, input: testInput })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    task_id: state.currentTaskId,
+                    code: code
+                })
             });
+
             const data = await res.json();
 
-            if (data.status === "ok") {
-                outputBox.textContent = data.output || "(Программа ничего не вывела)";
-                outputBox.className = "flex-1 bg-[#05080c] border border-line rounded p-2 text-sm font-mono text-slate-300 overflow-auto whitespace-pre-wrap";
-                if (data.error) {
-                    outputBox.textContent += "\n\n[STDERR]:\n" + data.error;
-                    outputBox.className = "flex-1 bg-[#05080c] border border-line rounded p-2 text-sm font-mono text-magenta overflow-auto whitespace-pre-wrap";
-                }
-            } else {
-                outputBox.textContent = "ОШИБКА:\n" + data.error;
-                outputBox.className = "flex-1 bg-[#05080c] border border-line rounded p-2 text-sm font-mono text-magenta overflow-auto whitespace-pre-wrap";
+            if(!res.ok){
+                throw new Error(data.detail || 'Ошибка отправки');
             }
-        } catch (e) {
-            outputBox.textContent = "Ошибка сети: " + e.message;
+
+            showVerdict(data);
+            await loadTeamState();
+            // Обновляем баллы после проверки
+            if(state.currentTaskId){
+                updateScoreBar(state.currentTaskId);
+            }
+
+        } catch(err){
+            alert('Ошибка: ' + err.message);
         } finally {
             btn.disabled = false;
-            btn.textContent = "ЗАПУСТИТЬ ▶";
+            btn.innerHTML = '🚀 ОТПРАВИТЬ';
         }
     }
 
-    document.getElementById('btn-submit').addEventListener('click', submitCode);
+    // ====== ВЕРДИКТ ======
+    let verdictTimeout = null;
 
-    setInterval(() => {
-        if (editor && currentTaskId) {
-            localStorage.setItem(`draft_${document.getElementById('team-name').textContent}_${currentTaskId}`, editor.getValue());
+    function showVerdict(data){
+        const toast = document.getElementById('verdict-toast');
+        const badge = document.getElementById('verdict-badge');
+        const score = document.getElementById('verdict-score');
+        const details = document.getElementById('verdict-details');
+
+        const verdictMap = {
+            'OK': {class: 'ok', text: '✓ OK'},
+            'WA': {class: 'wa', text: '✗ WRONG ANSWER'},
+            'TL': {class: 'tl', text: '⏱ TIME LIMIT'},
+            'CE': {class: 'ce', text: '⚠ COMPILATION ERROR'},
+            'RE': {class: 're', text: '⚠ RUNTIME ERROR'},
+        };
+
+        const v = verdictMap[data.verdict] || {class: 'wa', text: data.verdict};
+
+        badge.className = `verdict-badge ${v.class}`;
+        badge.textContent = v.text;
+        score.textContent = `${data.score} / ${data.max_points}`;
+        details.textContent = data.details || '';
+
+        toast.classList.add('show');
+
+        // Автоскрытие через 15 секунд (вместо 5)
+        clearTimeout(verdictTimeout);
+        verdictTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 15000);
+    }
+
+    // НОВАЯ ФУНКЦИЯ: закрытие тоста по клику
+    function closeVerdict(){
+        clearTimeout(verdictTimeout);
+        document.getElementById('verdict-toast').classList.remove('show');
+    }
+
+    // ====== ТАЙМЕР ======
+    function startTimer(){
+        if(state.timerInterval) clearInterval(state.timerInterval);
+        state.timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    function updateTimer(){
+        const timerEl = document.getElementById('timer-value');
+
+        if(!state.global || state.global.phase_time_left <= 0){
+            timerEl.textContent = '00:00';
+            timerEl.classList.add('critical');
+            return;
         }
-    }, 3000);
 
-    const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
-    ws.onmessage = (e) => {
-        if (e.data === 'timer_changed' || e.data === 'tasks_changed' || e.data === 'update_rating') {
-            init();
+        const timeLeft = state.global.phase_time_left;
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+        if(timeLeft < 60){
+            timerEl.classList.add('critical');
+        } else {
+            timerEl.classList.remove('critical');
         }
-    };
 
+        state.global.phase_time_left = Math.max(0, timeLeft - 1);
+    }
+
+    // ====== WEBSOCKET ======
+    function connectWebSocket(){
+        const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        state.ws = new WebSocket(`${protocol}//${location.host}/ws`);
+
+        state.ws.onmessage = (event) => {
+            const msg = event.data;
+            if(msg === 'update_rating' || msg === 'timer_changed'){
+                loadTeamState();
+            }
+        };
+
+        state.ws.onclose = () => setTimeout(connectWebSocket, 3000);
+    }
+
+    // ====== УТИЛИТЫ ======
+    function escapeHTML(str){
+        if(!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // ====== СТАРТ ======
     init();
-    setInterval(init, 5000); // Ускорил опрос до 5 секунд, чтобы переключение фаз было быстрее
+    setInterval(loadTeamState, 30000);
 </script>
 {% endblock %}

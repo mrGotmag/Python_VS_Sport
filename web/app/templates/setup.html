@@ -1,26 +1,640 @@
 {% extends "base.html" %}
+{% block title %}Первичная настройка // Python vs Спорт{% endblock %}
+
+{% block head %}
+<style>
+    /* ====== LAYOUT ====== */
+    html, body { height: 100%; overflow: hidden; }
+
+    .setup-wrap {
+        max-width: 520px;
+        margin: 0 auto;
+        padding: 20px;
+        position: relative;
+        z-index: 3;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: calc(100vh - 110px);
+    }
+
+    /* ====== ПАНЕЛЬ ====== */
+    .setup-panel {
+        position: relative;
+        background: linear-gradient(135deg, rgba(20,28,40,.9), rgba(10,15,20,.95));
+        backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255,179,71,.25);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow:
+            0 0 0 1px rgba(255,255,255,.03) inset,
+            0 30px 80px -20px rgba(0,0,0,.8),
+            0 0 60px -10px rgba(255,179,71,.2);
+        animation: fadeIn .8s cubic-bezier(.16,1,.3,1);
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px) scale(.98); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .setup-panel::before {
+        content: "";
+        position: absolute;
+        top: -50%; left: -50%;
+        width: 200%; height: 200%;
+        background: conic-gradient(from 0deg, transparent 0deg, transparent 340deg,
+            rgba(255,179,71,.3) 350deg, rgba(255,215,0,.2) 355deg, transparent 360deg);
+        animation: rotate-border 10s linear infinite;
+        pointer-events: none;
+        z-index: 0;
+    }
+    @keyframes rotate-border { to { transform: rotate(360deg); } }
+    .setup-panel::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(255,179,71,.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,179,71,.03) 1px, transparent 1px);
+        background-size: 30px 30px;
+        mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+        -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+        pointer-events: none;
+        z-index: 1;
+    }
+    .setup-panel > * { position: relative; z-index: 2; }
+
+    /* Уголки */
+    .corner { position: absolute; width: 24px; height: 24px; z-index: 3; pointer-events: none; }
+    .corner::before, .corner::after {
+        content: ""; position: absolute;
+        background: linear-gradient(90deg, var(--amber), #ffd700);
+        box-shadow: 0 0 10px var(--amber);
+    }
+    .corner.tl { top: 10px; left: 10px; }
+    .corner.tl::before { top: 0; left: 0; width: 24px; height: 2px; }
+    .corner.tl::after { top: 0; left: 0; width: 2px; height: 24px; }
+    .corner.tr { top: 10px; right: 10px; }
+    .corner.tr::before { top: 0; right: 0; width: 24px; height: 2px; }
+    .corner.tr::after { top: 0; right: 0; width: 2px; height: 24px; }
+    .corner.bl { bottom: 10px; left: 10px; }
+    .corner.bl::before { bottom: 0; left: 0; width: 24px; height: 2px; }
+    .corner.bl::after { bottom: 0; left: 0; width: 2px; height: 24px; }
+    .corner.br { bottom: 10px; right: 10px; }
+    .corner.br::before { bottom: 0; right: 0; width: 24px; height: 2px; }
+    .corner.br::after { bottom: 0; right: 0; width: 2px; height: 24px; }
+
+    /* Шапка */
+    .panel-head {
+        padding: 14px 20px;
+        display: flex; align-items: center; justify-content: space-between;
+        border-bottom: 1px solid rgba(255,179,71,.15);
+        background: linear-gradient(90deg, rgba(255,179,71,.08), transparent);
+    }
+    .panel-head .tag {
+        font-size: 10px; letter-spacing: 3px; color: var(--amber);
+        display: flex; align-items: center; gap: 8px; font-weight: 600;
+    }
+    .panel-head .tag::before {
+        content: ""; width: 7px; height: 7px; border-radius: 50%;
+        background: var(--amber);
+        box-shadow: 0 0 10px var(--amber), 0 0 16px var(--amber);
+        animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: .5; transform: scale(.8); }
+    }
+    .panel-head .badge {
+        padding: 3px 10px; border-radius: 6px;
+        font-size: 9px; letter-spacing: 2px;
+        background: rgba(255,179,71,.1);
+        border: 1px solid rgba(255,179,71,.3);
+        color: var(--amber);
+        font-weight: 700;
+    }
+
+    .panel-body { padding: 28px 28px 24px; }
+
+    /* Иконка короны */
+    .crown-wrap {
+        position: relative;
+        width: 90px; height: 90px;
+        margin: 0 auto 20px;
+    }
+    .crown-ring {
+        position: absolute; inset: 0;
+        border-radius: 50%; border: 1px solid transparent;
+    }
+    .crown-ring.r1 {
+        border-top-color: var(--amber); border-right-color: var(--amber);
+        animation: spin 4s linear infinite;
+        filter: drop-shadow(0 0 8px var(--amber));
+    }
+    .crown-ring.r2 {
+        inset: 7px;
+        border-bottom-color: #ffd700; border-left-color: #ffd700;
+        animation: spin 3s linear infinite reverse;
+        filter: drop-shadow(0 0 8px #ffd700);
+    }
+    .crown-ring.r3 {
+        inset: 14px;
+        border-top-color: var(--accent);
+        animation: spin 5s linear infinite;
+        opacity: .6;
+        filter: drop-shadow(0 0 6px var(--accent));
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .crown-core {
+        position: absolute; inset: 22px; border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%,
+            rgba(255,179,71,.3), rgba(255,215,0,.15) 50%, rgba(5,7,10,.95) 100%);
+        border: 1px solid rgba(255,179,71,.3);
+        display: grid; place-items: center;
+        box-shadow: inset 0 0 25px rgba(255,179,71,.2), 0 0 35px rgba(255,179,71,.3);
+        animation: pulse-core 3s ease-in-out infinite;
+    }
+    @keyframes pulse-core {
+        0%, 100% { box-shadow: inset 0 0 25px rgba(255,179,71,.2), 0 0 35px rgba(255,179,71,.3); }
+        50% { box-shadow: inset 0 0 35px rgba(255,179,71,.35), 0 0 50px rgba(255,179,71,.5); }
+    }
+    .crown-core::before {
+        content: "👑";
+        font-size: 30px;
+        filter: drop-shadow(0 0 10px var(--amber));
+    }
+
+    /* Поле ввода */
+    .input-wrapper { position: relative; width: 100%; }
+    .setup-input {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700; font-size: 22px;
+        letter-spacing: 6px; text-align: center;
+        padding: 20px 55px 20px 20px;
+        background:
+            repeating-linear-gradient(0deg, rgba(255,179,71,.02) 0px, rgba(255,179,71,.02) 1px,
+                transparent 1px, transparent 30px),
+            linear-gradient(180deg, rgba(5,7,10,.9), rgba(10,15,20,.95));
+        border: 2px solid rgba(42,58,79,.8);
+        border-radius: 14px;
+        color: var(--amber);
+        outline: none; transition: .3s;
+        width: 100%;
+        caret-color: var(--amber);
+        box-shadow: inset 0 2px 8px rgba(0,0,0,.4);
+    }
+    .setup-input::placeholder {
+        color: rgba(107,125,147,.6);
+        font-size: 12px; letter-spacing: 3px;
+        font-weight: 400;
+    }
+    .setup-input:focus {
+        border-color: var(--amber);
+        box-shadow: inset 0 2px 8px rgba(0,0,0,.4),
+            0 0 0 4px rgba(255,179,71,.12),
+            0 0 40px rgba(255,179,71,.25),
+            0 0 80px rgba(255,179,71,.15);
+    }
+    .setup-input.error {
+        border-color: var(--danger);
+        box-shadow: inset 0 2px 8px rgba(0,0,0,.4),
+            0 0 0 4px rgba(255,59,107,.15),
+            0 0 40px rgba(255,59,107,.3);
+        animation: shake .5s cubic-bezier(.36,.07,.19,.97);
+    }
+    @keyframes shake {
+        10%, 90% { transform: translateX(-2px); }
+        20%, 80% { transform: translateX(4px); }
+        30%, 50%, 70% { transform: translateX(-8px); }
+        40%, 60% { transform: translateX(8px); }
+    }
+
+    /* Кнопка глаза */
+    .toggle-visibility {
+        position: absolute; right: 10px; top: 50%;
+        transform: translateY(-50%);
+        width: 38px; height: 38px; border-radius: 10px;
+        background: rgba(5,7,10,.6);
+        border: 1px solid rgba(42,58,79,.6);
+        color: var(--muted); cursor: pointer;
+        display: grid; place-items: center;
+        transition: .25s; padding: 0;
+    }
+    .toggle-visibility:hover {
+        color: var(--amber);
+        background: rgba(255,179,71,.1);
+        border-color: rgba(255,179,71,.4);
+        box-shadow: 0 0 16px rgba(255,179,71,.3);
+        transform: translateY(-50%) scale(1.05);
+    }
+    .toggle-visibility svg { width: 18px; height: 18px; transition: .25s; }
+    .toggle-visibility .eye-off { display: none; }
+    .toggle-visibility.shown .eye-on { display: none; }
+    .toggle-visibility.shown .eye-off { display: block; }
+
+    /* Лейбл */
+    .setup-label {
+        font-size: 9px; letter-spacing: 3px; color: var(--muted);
+        text-transform: uppercase;
+        display: flex; align-items: center; gap: 6px;
+        margin-bottom: 10px; font-weight: 600;
+    }
+    .setup-label::before { content: "//"; color: var(--amber); font-weight: 700; }
+
+    /* Индикатор сложности пароля */
+    .strength-bar {
+        margin-top: 10px;
+        height: 4px;
+        background: rgba(255,255,255,.05);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .strength-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 10px;
+        transition: all .3s;
+    }
+    .strength-fill.weak { width: 33%; background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+    .strength-fill.medium { width: 66%; background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+    .strength-fill.strong { width: 100%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+
+    .strength-text {
+        font-size: 9px; letter-spacing: 2px;
+        color: var(--muted);
+        margin-top: 6px;
+        text-transform: uppercase;
+        text-align: right;
+    }
+
+    /* Кнопка */
+    .setup-btn {
+        width: 100%;
+        padding: 16px 32px;
+        font-size: 12px; letter-spacing: 3px;
+        background: linear-gradient(135deg, var(--amber), #ffd700);
+        border: none; color: var(--bg-0);
+        font-weight: 800;
+        position: relative; overflow: hidden;
+        box-shadow: 0 0 0 1px rgba(255,255,255,.1) inset,
+            0 10px 30px -5px rgba(255,179,71,.5),
+            0 0 60px -10px rgba(255,179,71,.4);
+        transition: .3s;
+        cursor: pointer;
+        font-family: inherit;
+        text-transform: uppercase;
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .setup-btn::before {
+        content: "";
+        position: absolute; top: 0; left: -100%;
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent);
+        transition: .6s;
+    }
+    .setup-btn:hover::before { left: 100%; }
+    .setup-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 0 1px rgba(255,255,255,.2) inset,
+            0 15px 40px -5px rgba(255,179,71,.7),
+            0 0 80px -10px rgba(255,179,71,.6);
+    }
+    .setup-btn:disabled { opacity: .6; cursor: not-allowed; transform: none !important; }
+
+    /* Разделитель */
+    .deco-line {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--amber) 20%,
+            #ffd700 50%, var(--amber) 80%, transparent);
+        margin: 20px 0; opacity: .4; position: relative;
+    }
+    .deco-line::before {
+        content: "◆"; position: absolute; left: 50%; top: 50%;
+        transform: translate(-50%, -50%);
+        color: var(--amber); font-size: 8px;
+        background: var(--bg-1); padding: 0 8px;
+        text-shadow: 0 0 6px var(--amber);
+    }
+
+    /* Терминальная строка */
+    .term-line {
+        font-size: 11px; color: var(--muted);
+        letter-spacing: .5px; margin-top: 8px;
+        font-family: 'JetBrains Mono', monospace;
+        text-align: center;
+        min-height: 16px;
+    }
+    .term-line .prompt { color: var(--amber); margin-right: 5px; text-shadow: 0 0 6px var(--amber); }
+    .term-line .cursor {
+        display: inline-block; width: 6px; height: 11px;
+        background: var(--amber);
+        vertical-align: middle; margin-left: 2px;
+        animation: blink 1s steps(2) infinite;
+        box-shadow: 0 0 6px var(--amber);
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    .term-line.error { color: var(--danger); }
+    .term-line.error .prompt { color: var(--danger); text-shadow: 0 0 6px var(--danger); }
+    .term-line.success { color: var(--accent); }
+
+    /* Предупреждение */
+    .warn-box {
+        display: flex; align-items: flex-start; gap: 10px;
+        padding: 12px 14px; border-radius: 10px;
+        background: rgba(255,179,71,.06);
+        border: 1px solid rgba(255,179,71,.25);
+        border-left: 3px solid var(--amber);
+        font-size: 11px; color: var(--amber);
+        letter-spacing: .3px; line-height: 1.5;
+        margin-bottom: 18px;
+    }
+    .warn-box::before {
+        content: "⚠"; font-size: 14px; flex-shrink: 0;
+        text-shadow: 0 0 8px var(--amber);
+    }
+    .warn-box b { color: #ffd700; letter-spacing: 1px; }
+
+    /* Частицы */
+    .particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
+    .particle {
+        position: absolute; width: 3px; height: 3px;
+        background: var(--amber);
+        border-radius: 50%;
+        box-shadow: 0 0 8px var(--amber);
+        opacity: .5;
+        animation: float 8s linear infinite;
+    }
+    @keyframes float {
+        0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+        10% { opacity: .6; }
+        90% { opacity: .6; }
+        100% { transform: translateY(-100px) translateX(50px); opacity: 0; }
+    }
+
+    /* Адаптив */
+    @media (max-width: 600px) {
+        .setup-wrap { padding: 12px; }
+        .panel-body { padding: 22px 18px; }
+        .setup-input { font-size: 18px; letter-spacing: 4px; padding: 16px 48px 16px 14px; }
+        .crown-wrap { width: 75px; height: 75px; }
+        .crown-core::before { font-size: 24px; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="w-full max-w-md fade-in">
-    <div class="border border-neon bg-panel rounded-xl shadow-2xl p-8 text-center">
-        <h2 class="text-2xl font-bold text-neon mb-4">ПЕРВИЧНАЯ НАСТРОЙКА</h2>
-        <p class="text-slate-400 text-sm mb-6">Создайте пароль администратора для управления системой.</p>
-        <form id="setup-form" class="space-y-4 text-left">
-            <div>
-                <label class="block text-[10px] text-slate-500 tracking-[0.2em] mb-1">// ПАРОЛЬ АДМИНА</label>
-                <input type="password" name="password" id="setup-pwd" required class="w-full bg-ink border border-line rounded px-3 py-2 text-white focus:border-neon outline-none">
+<canvas id="matrix-canvas"></canvas>
+
+<div class="setup-wrap">
+    <div class="h-sub" style="margin-bottom: 6px;">// SYSTEM_INIT · FIRST_BOOT</div>
+    <h1 class="h-title glitch" data-text="ПЕРВИЧНАЯ НАСТРОЙКА" style="margin-bottom: 6px;">ПЕРВИЧНАЯ НАСТРОЙКА</h1>
+    <div class="term-line" style="margin-top: 0; text-align: left;">
+        <span class="prompt">&gt;</span> создайте пароль администратора для управления системой<span class="cursor"></span>
+    </div>
+
+    <div class="setup-panel" style="margin-top: 14px;">
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+        <div class="particles" id="particles"></div>
+
+        <div class="panel-head">
+            <div class="tag">ADMIN_SETUP</div>
+            <span class="badge">FIRST RUN</span>
+        </div>
+
+        <div class="panel-body">
+            <div class="crown-wrap">
+                <div class="crown-ring r1"></div>
+                <div class="crown-ring r2"></div>
+                <div class="crown-ring r3"></div>
+                <div class="crown-core"></div>
             </div>
-            <button type="submit" class="w-full bg-neon text-ink font-bold py-3 rounded mt-2">СОЗДАТЬ</button>
-        </form>
-        <div id="err" class="text-magenta text-sm mt-3 hidden"></div>
+
+            <div class="warn-box">
+                <div>
+                    <b>ВНИМАНИЕ:</b> этот пароль будет использоваться для входа в админ-панель.
+                    Запомните его — восстановить будет невозможно.
+                    Минимум 5 символов.
+                </div>
+            </div>
+
+            <form id="setup-form" onsubmit="return submitSetup(event)">
+                <div class="field">
+                    <label class="setup-label">Пароль администратора</label>
+                    <div class="input-wrapper">
+                        <input
+                            class="setup-input"
+                            id="setup-input"
+                            name="password"
+                            type="password"
+                            required
+                            placeholder="••••••••"
+                            minlength="5"
+                            autocomplete="new-password"
+                            autofocus
+                        >
+                        <button
+                            type="button"
+                            class="toggle-visibility"
+                            id="toggle-btn"
+                            onclick="toggleVisibility()"
+                            aria-label="Показать пароль"
+                            title="Показать/скрыть пароль"
+                        >
+                            <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="strength-bar">
+                        <div class="strength-fill" id="strength-fill"></div>
+                    </div>
+                    <div class="strength-text" id="strength-text">—</div>
+                </div>
+
+                <div class="deco-line"></div>
+
+                <button class="setup-btn" type="submit" id="setup-submit">
+                    <span id="btn-icon">🔐</span>
+                    <span id="btn-text">СОЗДАТЬ АДМИНИСТРАТОРА</span>
+                </button>
+
+                <div id="setup-status" class="term-line"></div>
+            </form>
+        </div>
     </div>
 </div>
+
 <script>
-document.getElementById('setup-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const pwd = document.getElementById('setup-pwd').value;
-    const res = await fetch('/api/setup', { method: 'POST', body: new URLSearchParams({password: pwd}) });
-    if (res.ok) window.location.href = '/';
-    else { const d = await res.json(); const er = document.getElementById('err'); er.textContent = d.detail; er.classList.remove('hidden'); }
-});
+    // ====== МАТРИЧНЫЙ ДОЖДЬ (янтарный) ======
+    (function(){
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        let w, h, columns, drops;
+        const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノλΣΔΠφψω{}[]<>/\\';
+
+        function resize(){
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+            columns = Math.floor(w / 18);
+            drops = Array(columns).fill(0).map(() => Math.random() * -100);
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        function draw(){
+            ctx.fillStyle = 'rgba(5,7,10,0.06)';
+            ctx.fillRect(0, 0, w, h);
+            ctx.font = '14px JetBrains Mono, monospace';
+
+            for(let i = 0; i < drops.length; i++){
+                const char = chars[Math.floor(Math.random() * chars.length)];
+                const x = i * 18;
+                const y = drops[i] * 18;
+
+                const gradient = ctx.createLinearGradient(x, y - 20, x, y);
+                gradient.addColorStop(0, 'rgba(255,179,71,0)');
+                gradient.addColorStop(1, 'rgba(255,179,71,0.9)');
+                ctx.fillStyle = gradient;
+                ctx.fillText(char, x, y);
+
+                if(y > h && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(draw, 55);
+    })();
+
+    // ====== ЧАСТИЦЫ ======
+    (function(){
+        const container = document.getElementById('particles');
+        for(let i = 0; i < 15; i++){
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDelay = Math.random() * 8 + 's';
+            p.style.animationDuration = (6 + Math.random() * 6) + 's';
+            const colors = ['var(--amber)', '#ffd700', 'var(--accent)'];
+            const c = colors[Math.floor(Math.random() * colors.length)];
+            p.style.background = c;
+            p.style.boxShadow = `0 0 8px ${c}`;
+            container.appendChild(p);
+        }
+    })();
+
+    // ====== ПОКАЗАТЬ/СКРЫТЬ ======
+    function toggleVisibility(){
+        const input = document.getElementById('setup-input');
+        const btn = document.getElementById('toggle-btn');
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        btn.classList.toggle('shown', isPassword);
+        input.focus();
+    }
+
+    // ====== ИНДИКАТОР СЛОЖНОСТИ ======
+    const input = document.getElementById('setup-input');
+    const strengthFill = document.getElementById('strength-fill');
+    const strengthText = document.getElementById('strength-text');
+    const status = document.getElementById('setup-status');
+
+    input.addEventListener('input', function(){
+        this.classList.remove('error');
+        status.textContent = '';
+        status.className = 'term-line';
+
+        const val = this.value;
+        let score = 0;
+        if (val.length >= 5) score++;
+        if (val.length >= 8) score++;
+        if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+        if (/\d/.test(val)) score++;
+        if (/[^A-Za-z0-9]/.test(val)) score++;
+
+        strengthFill.className = 'strength-fill';
+        if (val.length === 0) {
+            strengthText.textContent = '—';
+        } else if (score <= 2) {
+            strengthFill.classList.add('weak');
+            strengthText.textContent = 'СЛАБЫЙ';
+            strengthText.style.color = 'var(--danger)';
+        } else if (score <= 3) {
+            strengthFill.classList.add('medium');
+            strengthText.textContent = 'СРЕДНИЙ';
+            strengthText.style.color = 'var(--amber)';
+        } else {
+            strengthFill.classList.add('strong');
+            strengthText.textContent = 'НАДЁЖНЫЙ';
+            strengthText.style.color = 'var(--accent)';
+        }
+    });
+
+    // ====== ОТПРАВКА ======
+    async function submitSetup(e){
+        e.preventDefault();
+
+        const form = document.getElementById('setup-form');
+        const btn = document.getElementById('setup-submit');
+        const btnIcon = document.getElementById('btn-icon');
+        const btnText = document.getElementById('btn-text');
+
+        const pwd = input.value.trim();
+        if (pwd.length < 5) {
+            input.classList.add('error');
+            status.innerHTML = '<span class="prompt" style="color:var(--danger)">&gt;</span> пароль должен быть не короче 5 символов';
+            status.className = 'term-line error';
+            return false;
+        }
+
+        btn.disabled = true;
+        btnIcon.textContent = '⟳';
+        btnText.textContent = 'СОЗДАНИЕ...';
+        status.innerHTML = '<span class="prompt">&gt;</span> инициализация системы...';
+        status.className = 'term-line';
+
+        try {
+            const formData = new FormData(form);
+            const res = await fetch('/api/setup', {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            });
+
+            if (res.ok) {
+                status.innerHTML = '<span class="prompt">&gt;</span> администратор создан ✓ · перенаправление...';
+                status.className = 'term-line success';
+                btnIcon.textContent = '✓';
+                btnText.textContent = 'УСПЕХ';
+
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1200);
+            } else {
+                let msg = 'ошибка создания';
+                try {
+                    const err = await res.json();
+                    msg = err.detail || msg;
+                } catch(_) {}
+                throw new Error(msg);
+            }
+        } catch (err) {
+            console.error(err);
+            input.classList.add('error');
+            status.innerHTML = `<span class="prompt" style="color:var(--danger)">&gt;</span> ${err.message}`;
+            status.className = 'term-line error';
+            btn.disabled = false;
+            btnIcon.textContent = '🔐';
+            btnText.textContent = 'СОЗДАТЬ АДМИНИСТРАТОРА';
+            input.focus();
+        }
+
+        return false;
+    }
 </script>
 {% endblock %}

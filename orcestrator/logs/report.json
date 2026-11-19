@@ -1,174 +1,234 @@
 [
   {
-    "id": "14",
-    "title": "Арифметическое выражение",
-    "status": "ok",
-    "score": 50,
+    "id": "6",
+    "title": "Точки в кольце",
+    "status": "partial",
+    "score": 0,
     "total": 50,
     "tests": [
       {
         "id": 1,
-        "status": "ok",
-        "points": 1,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "12\n",
+        "got": "",
+        "points": 0,
         "max_points": 1,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 2,
-        "status": "ok",
-        "points": 1,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "28\n",
+        "got": "",
+        "points": 0,
         "max_points": 1,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 3,
-        "status": "ok",
-        "points": 1,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "20\n",
+        "got": "",
+        "points": 0,
         "max_points": 1,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 4,
-        "status": "ok",
-        "points": 1,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "40\n",
+        "got": "",
+        "points": 0,
         "max_points": 1,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 5,
-        "status": "ok",
-        "points": 1,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "72\n",
+        "got": "",
+        "points": 0,
         "max_points": 1,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 6,
-        "status": "ok",
-        "points": 2,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "56\n",
+        "got": "",
+        "points": 0,
         "max_points": 2,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 7,
-        "status": "ok",
-        "points": 2,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "68\n",
+        "got": "",
+        "points": 0,
         "max_points": 2,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 8,
-        "status": "ok",
-        "points": 2,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "128\n",
+        "got": "",
+        "points": 0,
         "max_points": 2,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 9,
-        "status": "ok",
-        "points": 2,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "292\n",
+        "got": "",
+        "points": 0,
         "max_points": 2,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 10,
-        "status": "ok",
-        "points": 2,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "172\n",
+        "got": "",
+        "points": 0,
         "max_points": 2,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 11,
-        "status": "ok",
-        "points": 3,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "516\n",
+        "got": "",
+        "points": 0,
         "max_points": 3,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 12,
-        "status": "ok",
-        "points": 3,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "952\n",
+        "got": "",
+        "points": 0,
         "max_points": 3,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 13,
-        "status": "ok",
-        "points": 3,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "1264\n",
+        "got": "",
+        "points": 0,
         "max_points": 3,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 14,
-        "status": "ok",
-        "points": 3,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "1576\n",
+        "got": "",
+        "points": 0,
         "max_points": 3,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 15,
-        "status": "ok",
-        "points": 3,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "5904\n",
+        "got": "",
+        "points": 0,
         "max_points": 3,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 16,
-        "status": "ok",
-        "points": 4,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "9840\n",
+        "got": "",
+        "points": 0,
         "max_points": 4,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 17,
-        "status": "ok",
-        "points": 4,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "20140\n",
+        "got": "",
+        "points": 0,
         "max_points": 4,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 18,
-        "status": "ok",
-        "points": 4,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "125660\n",
+        "got": "",
+        "points": 0,
         "max_points": 4,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 19,
-        "status": "ok",
-        "points": 4,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "502672\n",
+        "got": "",
+        "points": 0,
         "max_points": 4,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       },
       {
         "id": 20,
-        "status": "ok",
-        "points": 4,
+        "status": "fail",
+        "reason": "wrong output",
+        "expected": "2356228\n",
+        "got": "",
+        "points": 0,
         "max_points": 4,
-        "time_ms": 3.5163100001227576,
-        "memory_mb": 3.890625
+        "time_ms": 5.455834999884246,
+        "memory_mb": 25.9609375
       }
     ],
     "error": null,
-    "time_ms": 70.32620000245515,
-    "memory_mb": 3.890625
+    "time_ms": 0.0,
+    "memory_mb": 0.0
   }
 ]

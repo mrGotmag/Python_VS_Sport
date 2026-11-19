@@ -73,6 +73,7 @@ class Team(Base):
     # Индивидуальный прогресс по фазам
     current_phase_index: Mapped[int] = mapped_column(Integer, default=0)
     phase_started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    end_phase_index: Mapped[int] = mapped_column(Integer, nullable=True)
 
     is_full: Mapped[bool] = mapped_column(Boolean, default=False)
     force_started: Mapped[bool] = mapped_column(Boolean, default=False)

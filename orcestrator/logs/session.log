@@ -1,74 +1,444 @@
-2026-11-12 01:01:16 [MainProcess] [INFO] Старт: 1 задач, 8 воркеров
-2026-11-12 01:01:16 [MainProcess] [INFO] Параллельная проверка: 1 задач, 8 воркеров
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] --- Задача 14: начало проверки (tasks\14)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: 20 тестов, максимум 50 баллов, лимиты: 1.0s / 256 МБ
-2026-11-12 01:01:17 [SpawnProcess-1] [DEBUG] Задача 14: код решения — 98 символов, 3 строк
-2026-11-12 01:01:17 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #1: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #2: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #3: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #4: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #5: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #6: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #7: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #8: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #9: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #10: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #11: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #12: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #13: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #14: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #15: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #16: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #17: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #18: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #19: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Тест #20: rc=0, time=3.5ms, mem=3.9MB
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #1 OK (+1)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #2 OK (+1)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #3 OK (+1)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #4 OK (+1)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #5 OK (+1)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #6 OK (+2)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #7 OK (+2)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #8 OK (+2)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #9 OK (+2)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #10 OK (+2)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #11 OK (+3)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #12 OK (+3)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #13 OK (+3)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #14 OK (+3)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #15 OK (+3)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #16 OK (+4)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #17 OK (+4)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #18 OK (+4)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #19 OK (+4)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: тест #20 OK (+4)
-2026-11-12 01:01:17 [SpawnProcess-1] [INFO] Задача 14: итог 50/50 (ok)
-2026-11-12 01:01:17 [MainProcess] [INFO] 
-2026-11-12 01:01:17 [MainProcess] [INFO] === Задача 14: Арифметическое выражение ===
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #1 (+1) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #2 (+1) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #3 (+1) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #4 (+1) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #5 (+1) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #6 (+2) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #7 (+2) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #8 (+2) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #9 (+2) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #10 (+2) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #11 (+3) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #12 (+3) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #13 (+3) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #14 (+3) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #15 (+3) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #16 (+4) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #17 (+4) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #18 (+4) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #19 (+4) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] [ OK ] #20 (+4) time=3.5ms mem=3.9MB
-2026-11-12 01:01:17 [MainProcess] [INFO] Результат: 50/50
-2026-11-12 01:01:17 [MainProcess] [INFO] 
-2026-11-12 01:01:17 [MainProcess] [INFO] ИТОГО: 50/50 баллов
-2026-11-12 01:01:17 [MainProcess] [INFO] Задач решено полностью: 1/1
-2026-11-12 01:01:17 [MainProcess] [INFO] Отчёт сохранён в C:\Users\user\PycharmProjects\Contest\orcestrator\logs\report.json
+2026-11-19 20:40:13 [MainProcess] [INFO] Старт: 1 задач, 1 воркеров
+2026-11-19 20:40:13 [MainProcess] [INFO] Параллельная проверка: 1 задач, 1 воркеров
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] --- Задача 6: начало проверки (tasks\6)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: 20 тестов, максимум 50 баллов, лимиты: 1.0s / 256 МБ
+2026-11-19 20:40:13 [SpawnProcess-1] [DEBUG] Задача 6: код решения — 16 символов, 2 строк
+2026-11-19 20:40:13 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #1: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #2: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #3: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #4: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #5: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #6: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #7: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #8: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #9: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #10: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #11: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #12: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #13: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #14: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #15: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #16: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #17: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #18: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #19: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Тест #20: rc=1, time=5.0ms, mem=26.9MB
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #1 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #2 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #3 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #4 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #5 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #6 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #7 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #8 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #9 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #10 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #11 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #12 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #13 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #14 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #15 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #16 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #17 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #18 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #19 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: тест #20 FAIL (NameError: name 'sqrt' is not defined)
+2026-11-19 20:40:13 [SpawnProcess-1] [INFO] Задача 6: итог 0/50 (partial)
+2026-11-19 20:40:13 [MainProcess] [INFO] 
+2026-11-19 20:40:13 [MainProcess] [INFO] === Задача 6: Точки в кольце ===
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #1: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #2: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #3: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #4: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #5: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #6: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #7: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #8: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #9: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #10: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #11: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #12: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #13: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #14: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #15: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #16: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #17: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #18: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #19: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] [FAIL] #20: NameError: name 'sqrt' is not defined
+2026-11-19 20:40:13 [MainProcess] [INFO] Результат: 0/50
+2026-11-19 20:40:13 [MainProcess] [INFO] 
+2026-11-19 20:40:13 [MainProcess] [INFO] ИТОГО: 0/50 баллов
+2026-11-19 20:40:13 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-11-19 20:40:13 [MainProcess] [INFO] Отчёт сохранён в C:\Users\user\PycharmProjects\Contest\orcestrator\logs\report.json
+2026-11-19 20:40:48 [MainProcess] [INFO] Старт: 1 задач, 1 воркеров
+2026-11-19 20:40:48 [MainProcess] [INFO] Параллельная проверка: 1 задач, 1 воркеров
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] --- Задача 6: начало проверки (tasks\6)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: 20 тестов, максимум 50 баллов, лимиты: 1.0s / 256 МБ
+2026-11-19 20:40:49 [SpawnProcess-1] [DEBUG] Задача 6: код решения — 12 символов, 1 строк
+2026-11-19 20:40:49 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #1: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #2: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #3: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #4: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #5: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #6: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #7: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #8: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #9: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #10: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #11: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #12: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #13: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #14: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #15: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #16: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #17: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #18: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #19: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Тест #20: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #1 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #2 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #3 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #4 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #5 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #6 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #7 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #8 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #9 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #10 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #11 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #12 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #13 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #14 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #15 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #16 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #17 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #18 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #19 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: тест #20 FAIL (wrong output)
+2026-11-19 20:40:49 [SpawnProcess-1] [INFO] Задача 6: итог 0/50 (partial)
+2026-11-19 20:40:49 [MainProcess] [INFO] 
+2026-11-19 20:40:49 [MainProcess] [INFO] === Задача 6: Точки в кольце ===
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #1: wrong output expected '12\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #2: wrong output expected '28\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #3: wrong output expected '20\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #4: wrong output expected '40\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #5: wrong output expected '72\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #6: wrong output expected '56\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #7: wrong output expected '68\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #8: wrong output expected '128\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #9: wrong output expected '292\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #10: wrong output expected '172\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #11: wrong output expected '516\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #12: wrong output expected '952\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #13: wrong output expected '1264\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #14: wrong output expected '1576\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #15: wrong output expected '5904\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #16: wrong output expected '9840\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #17: wrong output expected '20140\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #18: wrong output expected '125660\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #19: wrong output expected '502672\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] [FAIL] #20: wrong output expected '2356228\n', got ''
+2026-11-19 20:40:49 [MainProcess] [INFO] Результат: 0/50
+2026-11-19 20:40:49 [MainProcess] [INFO] 
+2026-11-19 20:40:49 [MainProcess] [INFO] ИТОГО: 0/50 баллов
+2026-11-19 20:40:49 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-11-19 20:40:49 [MainProcess] [INFO] Отчёт сохранён в C:\Users\user\PycharmProjects\Contest\orcestrator\logs\report.json
+2026-11-19 20:41:07 [MainProcess] [INFO] Старт: 1 задач, 1 воркеров
+2026-11-19 20:41:07 [MainProcess] [INFO] Параллельная проверка: 1 задач, 1 воркеров
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] --- Задача 6: начало проверки (tasks\6)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: 20 тестов, максимум 50 баллов, лимиты: 1.0s / 256 МБ
+2026-11-19 20:41:07 [SpawnProcess-1] [DEBUG] Задача 6: код решения — 12 символов, 1 строк
+2026-11-19 20:41:07 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #1: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #2: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #3: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #4: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #5: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #6: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #7: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #8: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #9: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #10: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #11: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #12: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #13: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #14: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #15: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #16: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #17: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #18: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #19: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Тест #20: rc=0, time=5.2ms, mem=25.9MB
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #1 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #2 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #3 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #4 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #5 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #6 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #7 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #8 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #9 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #10 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #11 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #12 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #13 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #14 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #15 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #16 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #17 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #18 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #19 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: тест #20 FAIL (wrong output)
+2026-11-19 20:41:07 [SpawnProcess-1] [INFO] Задача 6: итог 0/50 (partial)
+2026-11-19 20:41:07 [MainProcess] [INFO] 
+2026-11-19 20:41:07 [MainProcess] [INFO] === Задача 6: Точки в кольце ===
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #1: wrong output expected '12\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #2: wrong output expected '28\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #3: wrong output expected '20\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #4: wrong output expected '40\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #5: wrong output expected '72\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #6: wrong output expected '56\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #7: wrong output expected '68\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #8: wrong output expected '128\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #9: wrong output expected '292\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #10: wrong output expected '172\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #11: wrong output expected '516\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #12: wrong output expected '952\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #13: wrong output expected '1264\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #14: wrong output expected '1576\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #15: wrong output expected '5904\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #16: wrong output expected '9840\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #17: wrong output expected '20140\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #18: wrong output expected '125660\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #19: wrong output expected '502672\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] [FAIL] #20: wrong output expected '2356228\n', got ''
+2026-11-19 20:41:07 [MainProcess] [INFO] Результат: 0/50
+2026-11-19 20:41:07 [MainProcess] [INFO] 
+2026-11-19 20:41:07 [MainProcess] [INFO] ИТОГО: 0/50 баллов
+2026-11-19 20:41:07 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-11-19 20:41:07 [MainProcess] [INFO] Отчёт сохранён в C:\Users\user\PycharmProjects\Contest\orcestrator\logs\report.json
+2026-11-19 21:56:55 [MainProcess] [INFO] Старт: 1 задач, 1 воркеров
+2026-11-19 21:56:55 [MainProcess] [INFO] Параллельная проверка: 1 задач, 1 воркеров
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] --- Задача 6: начало проверки (tasks\6)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: 20 тестов, максимум 50 баллов, лимиты: 1.0s / 256 МБ
+2026-11-19 21:56:55 [SpawnProcess-1] [DEBUG] Задача 6: код решения — 50 символов, 5 строк
+2026-11-19 21:56:55 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #1: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #2: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #3: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #4: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #5: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #6: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #7: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #8: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #9: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #10: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #11: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #12: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #13: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #14: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #15: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #16: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #17: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #18: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #19: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Тест #20: rc=0, time=6.0ms, mem=25.8MB
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #1 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #2 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #3 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #4 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #5 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #6 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #7 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #8 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #9 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #10 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #11 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #12 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #13 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #14 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #15 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #16 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #17 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #18 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #19 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: тест #20 FAIL (wrong output)
+2026-11-19 21:56:55 [SpawnProcess-1] [INFO] Задача 6: итог 0/50 (partial)
+2026-11-19 21:56:55 [MainProcess] [INFO] 
+2026-11-19 21:56:55 [MainProcess] [INFO] === Задача 6: Точки в кольце ===
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #1: wrong output expected '12\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #2: wrong output expected '28\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #3: wrong output expected '20\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #4: wrong output expected '40\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #5: wrong output expected '72\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #6: wrong output expected '56\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #7: wrong output expected '68\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #8: wrong output expected '128\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #9: wrong output expected '292\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #10: wrong output expected '172\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #11: wrong output expected '516\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #12: wrong output expected '952\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #13: wrong output expected '1264\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #14: wrong output expected '1576\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #15: wrong output expected '5904\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #16: wrong output expected '9840\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #17: wrong output expected '20140\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #18: wrong output expected '125660\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #19: wrong output expected '502672\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] [FAIL] #20: wrong output expected '2356228\n', got ''
+2026-11-19 21:56:55 [MainProcess] [INFO] Результат: 0/50
+2026-11-19 21:56:55 [MainProcess] [INFO] 
+2026-11-19 21:56:55 [MainProcess] [INFO] ИТОГО: 0/50 баллов
+2026-11-19 21:56:55 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-11-19 21:56:55 [MainProcess] [INFO] Отчёт сохранён в C:\Users\user\PycharmProjects\Contest\orcestrator\logs\report.json
+2026-11-19 21:57:06 [MainProcess] [INFO] Старт: 1 задач, 1 воркеров
+2026-11-19 21:57:06 [MainProcess] [INFO] Параллельная проверка: 1 задач, 1 воркеров
+2026-11-19 21:57:06 [SpawnProcess-1] [INFO] --- Задача 6: начало проверки (tasks\6)
+2026-11-19 21:57:06 [SpawnProcess-1] [INFO] Задача 6: 20 тестов, максимум 50 баллов, лимиты: 1.0s / 256 МБ
+2026-11-19 21:57:06 [SpawnProcess-1] [DEBUG] Задача 6: код решения — 50 символов, 5 строк
+2026-11-19 21:57:06 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #1: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #2: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #3: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #4: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #5: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #6: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #7: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #8: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #9: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #10: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #11: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #12: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #13: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #14: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #15: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #16: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #17: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #18: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #19: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Тест #20: rc=0, time=4.9ms, mem=25.8MB
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #1 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #2 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #3 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #4 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #5 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #6 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #7 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #8 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #9 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #10 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #11 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #12 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #13 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #14 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #15 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #16 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #17 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #18 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #19 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: тест #20 FAIL (wrong output)
+2026-11-19 21:57:07 [SpawnProcess-1] [INFO] Задача 6: итог 0/50 (partial)
+2026-11-19 21:57:07 [MainProcess] [INFO] 
+2026-11-19 21:57:07 [MainProcess] [INFO] === Задача 6: Точки в кольце ===
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #1: wrong output expected '12\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #2: wrong output expected '28\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #3: wrong output expected '20\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #4: wrong output expected '40\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #5: wrong output expected '72\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #6: wrong output expected '56\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #7: wrong output expected '68\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #8: wrong output expected '128\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #9: wrong output expected '292\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #10: wrong output expected '172\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #11: wrong output expected '516\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #12: wrong output expected '952\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #13: wrong output expected '1264\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #14: wrong output expected '1576\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #15: wrong output expected '5904\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #16: wrong output expected '9840\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #17: wrong output expected '20140\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #18: wrong output expected '125660\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #19: wrong output expected '502672\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] [FAIL] #20: wrong output expected '2356228\n', got ''
+2026-11-19 21:57:07 [MainProcess] [INFO] Результат: 0/50
+2026-11-19 21:57:07 [MainProcess] [INFO] 
+2026-11-19 21:57:07 [MainProcess] [INFO] ИТОГО: 0/50 баллов
+2026-11-19 21:57:07 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-11-19 21:57:07 [MainProcess] [INFO] Отчёт сохранён в C:\Users\user\PycharmProjects\Contest\orcestrator\logs\report.json
+2026-11-19 21:57:18 [MainProcess] [INFO] Старт: 1 задач, 1 воркеров
+2026-11-19 21:57:18 [MainProcess] [INFO] Параллельная проверка: 1 задач, 1 воркеров
+2026-11-19 21:57:18 [SpawnProcess-1] [INFO] --- Задача 6: начало проверки (tasks\6)
+2026-11-19 21:57:18 [SpawnProcess-1] [INFO] Задача 6: 20 тестов, максимум 50 баллов, лимиты: 1.0s / 256 МБ
+2026-11-19 21:57:18 [SpawnProcess-1] [DEBUG] Задача 6: код решения — 50 символов, 5 строк
+2026-11-19 21:57:19 [SpawnProcess-1] [WARNING] isolated=True не поддерживается на Windows, откат на последовательный прогон
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #1: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #2: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #3: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #4: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #5: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #6: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #7: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #8: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #9: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #10: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #11: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #12: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #13: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #14: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #15: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #16: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #17: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #18: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #19: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Тест #20: rc=0, time=5.5ms, mem=26.0MB
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #1 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #2 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #3 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #4 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #5 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #6 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #7 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #8 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #9 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #10 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #11 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #12 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #13 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #14 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #15 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #16 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #17 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #18 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #19 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: тест #20 FAIL (wrong output)
+2026-11-19 21:57:19 [SpawnProcess-1] [INFO] Задача 6: итог 0/50 (partial)
+2026-11-19 21:57:19 [MainProcess] [INFO] 
+2026-11-19 21:57:19 [MainProcess] [INFO] === Задача 6: Точки в кольце ===
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #1: wrong output expected '12\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #2: wrong output expected '28\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #3: wrong output expected '20\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #4: wrong output expected '40\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #5: wrong output expected '72\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #6: wrong output expected '56\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #7: wrong output expected '68\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #8: wrong output expected '128\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #9: wrong output expected '292\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #10: wrong output expected '172\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #11: wrong output expected '516\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #12: wrong output expected '952\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #13: wrong output expected '1264\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #14: wrong output expected '1576\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #15: wrong output expected '5904\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #16: wrong output expected '9840\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #17: wrong output expected '20140\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #18: wrong output expected '125660\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #19: wrong output expected '502672\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] [FAIL] #20: wrong output expected '2356228\n', got ''
+2026-11-19 21:57:19 [MainProcess] [INFO] Результат: 0/50
+2026-11-19 21:57:19 [MainProcess] [INFO] 
+2026-11-19 21:57:19 [MainProcess] [INFO] ИТОГО: 0/50 баллов
+2026-11-19 21:57:19 [MainProcess] [INFO] Задач решено полностью: 0/1
+2026-11-19 21:57:19 [MainProcess] [INFO] Отчёт сохранён в C:\Users\user\PycharmProjects\Contest\orcestrator\logs\report.json

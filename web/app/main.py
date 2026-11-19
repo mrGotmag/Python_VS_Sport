@@ -69,6 +69,12 @@ def ensure_team_columns():
                 print("[MIGRATE] teams.max_size added")
             except Exception as e:
                 print(f"[MIGRATE] max_size: {e}")
+        if "end_phase_index" not in cols:
+            try:
+                conn.execute(text("ALTER TABLE teams ADD COLUMN end_phase_index INTEGER"))
+                print("[MIGRATE] teams.end_phase_index added")
+            except Exception as e:
+                print(f"[MIGRATE] end_phase_index: {e}")
         conn.commit()
 
 ensure_team_columns()
@@ -399,6 +405,7 @@ async def login(request: Request):
 async def get_me(request: Request):
     with Session(engine) as db:
         team = get_current_team(request, db)
+        participant = get_current_participant(request, db)
         gs = db.query(GlobalSettings).first()
         phases = db.query(Phase).order_by(Phase.order_index).all()
 
@@ -419,6 +426,7 @@ async def get_me(request: Request):
                     "team": {
                         "name": team.name,
                         "is_paused": False,
+                        "participant_name": participant.name if participant else team.name,
                         "finished_at": None,
                         "finished_by_phases": False,
                         "total_time_seconds": 0,
@@ -441,6 +449,7 @@ async def get_me(request: Request):
                 return {
                     "team": {
                         "name": team.name,
+                        "participant_name": participant.name if participant else team.name,
                         "is_paused": False,
                         "finished_at": None,
                         "finished_by_phases": False,
@@ -484,6 +493,8 @@ async def get_me(request: Request):
                     if time_left == 0:
                         # Определяем лимит: если у команды есть свой лимит (админ менял), берем его. Иначе - глобальный.
                         current_limit = team.phase_limit if team.phase_limit > 0 else settings.max_phases_per_team
+                        end_limit = team.end_phase_index + 1 if team.end_phase_index is not None else len(phases)
+                        effective_limit = min(current_limit, end_limit)
 
                         if team.current_phase_index < len(phases) - 1 and (
                                 team.current_phase_index + 1) < current_limit:
@@ -527,6 +538,7 @@ async def get_me(request: Request):
         return {
             "team": {
                 "name": team.name,
+                "participant_name": participant.name if participant else team.name,
                 "is_paused": team.is_paused,
                 "finished_at": team.finished_at.isoformat() if team.finished_at else None,
                 "finished_by_phases": is_finished_by_phases,
@@ -984,6 +996,7 @@ async def admin_stats(request: Request):
                 "started_at": t.started_at.isoformat() if t.started_at else None,
                 "scheduled_start_at": dt_to_iso_utc(t.scheduled_start_at),
                 "current_phase_index": t.current_phase_index,
+                "end_phase_index": t.end_phase_index,
                 "phase_limit": t.phase_limit if t.phase_limit > 0 else settings.max_phases_per_team,
                 "phase_name": phase_name, "phase_time_left": time_left, "total_time": total_time,
                 "team_size": db.query(Participant).filter(Participant.team_id == t.id).count(),
@@ -1670,6 +1683,9 @@ async def staff_change_direction(phase_id: int, request: Request):
 
         phase.sport_direction = new_dir
         db.commit()
+
+        await manager.broadcast("sport_direction_changed")
+
         return {"status": "ok"}
 
 
@@ -1694,10 +1710,24 @@ async def admin_team_settings(team_id: int, request: Request):
             phases = db.query(Phase).order_by(Phase.order_index).all()
             if 0 <= idx < len(phases):
                 team.current_phase_index = idx
-                if team.started_at:  # перезапуск с этой фазы
+                if team.started_at:
                     team.phase_started_at = utc_now()
                     team.finished_at = None
-                    team.phase_limit = idx + settings.max_phases_per_team
+                    # Учитываем end_phase_index
+                    end_idx = team.end_phase_index if team.end_phase_index is not None else len(phases) - 1
+                    team.phase_limit = end_idx + 1
+
+        # ОБРАБОТКА end_phase_index
+        if "end_phase_index" in data:
+            end_idx = data["end_phase_index"]
+            if end_idx is not None:
+                team.end_phase_index = int(end_idx)
+                # Пересчитываем phase_limit
+                if team.started_at:
+                    team.phase_limit = team.end_phase_index + 1
+            else:
+                team.end_phase_index = None
+                team.phase_limit = 0  # Сбрасываем лимит
 
         if "scheduled_start_at" in data:
             val = data["scheduled_start_at"]
@@ -1718,7 +1748,9 @@ async def admin_team_settings(team_id: int, request: Request):
             team.finished_at = None
             team.is_paused = False
             team.scheduled_start_at = None
-            team.phase_limit = team.current_phase_index + settings.max_phases_per_team
+            phases = db.query(Phase).order_by(Phase.order_index).all()
+            end_idx = team.end_phase_index if team.end_phase_index is not None else len(phases) - 1
+            team.phase_limit = end_idx + 1
 
         db.commit()
         await manager.broadcast("timer_changed")

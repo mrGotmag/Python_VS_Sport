@@ -1,106 +1,543 @@
 {% extends "base.html" %}
 {% block title %}Результаты // Python vs Спорт{% endblock %}
 
+{% block head %}
+<style>
+    /* ====== ОБЩИЕ АНИМАЦИИ ====== */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes glowPulse {
+        0%, 100% { box-shadow: 0 0 20px rgba(0,255,156,.2), inset 0 0 20px rgba(0,255,156,.05); }
+        50% { box-shadow: 0 0 40px rgba(0,255,156,.4), inset 0 0 30px rgba(0,255,156,.1); }
+    }
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+
+    /* ====== LAYOUT ====== */
+    .results-wrap {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        position: relative;
+        z-index: 3;
+        animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ====== ЗАГОЛОВОК ====== */
+    .results-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+    .results-header .h-sub {
+        font-size: 12px;
+        letter-spacing: 4px;
+        color: var(--muted);
+        margin-bottom: 8px;
+    }
+    .results-header .h-title {
+        font-family: 'Russo One', sans-serif;
+        font-size: 36px;
+        background: linear-gradient(90deg, #fff 0%, var(--accent) 50%, var(--accent-2) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        text-shadow: 0 0 40px rgba(0,255,156,.3);
+        margin: 0;
+        letter-spacing: 2px;
+    }
+
+    /* ====== ЛИЧНЫЙ РЕЗУЛЬТАТ ====== */
+    .personal-card {
+        position: relative;
+        background: linear-gradient(135deg, rgba(20,28,40,.9), rgba(10,15,20,.95));
+        border: 1px solid rgba(0,255,156,.3);
+        border-radius: 20px;
+        padding: 28px;
+        margin-bottom: 32px;
+        backdrop-filter: blur(20px);
+        animation: glowPulse 4s ease-in-out infinite;
+        overflow: hidden;
+    }
+    .personal-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 2px;
+        background: linear-gradient(90deg, transparent, var(--accent), var(--accent-2), transparent);
+        background-size: 200% 100%;
+        animation: shimmer 3s linear infinite;
+    }
+    .personal-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+    .personal-card-header .icon {
+        font-size: 28px;
+        filter: drop-shadow(0 0 10px var(--accent));
+    }
+    .personal-card-header .title {
+        font-family: 'Russo One', sans-serif;
+        font-size: 18px;
+        color: var(--text);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+    }
+    .personal-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        text-align: center;
+    }
+    .p-stat {
+        padding: 16px;
+        background: rgba(5,7,10,.6);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        transition: .3s;
+    }
+    .p-stat:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    }
+    .p-stat .label {
+        font-size: 10px;
+        letter-spacing: 2px;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+    .p-stat .value {
+        font-family: 'Russo One', sans-serif;
+        font-size: 32px;
+        color: var(--text);
+    }
+    .p-stat .value.rank { color: var(--accent); text-shadow: 0 0 15px rgba(0,255,156,.5); }
+    .p-stat .value.code { color: var(--accent-2); text-shadow: 0 0 15px rgba(0,229,255,.5); }
+    .p-stat .value.sport { color: var(--violet); text-shadow: 0 0 15px rgba(179,136,255,.5); }
+    .p-stat .value.total { color: var(--amber); text-shadow: 0 0 15px rgba(255,179,71,.5); }
+
+    /* ====== ТАБЛИЦА ЛИДЕРОВ ====== */
+    .leaderboard-panel {
+        background: linear-gradient(135deg, rgba(20,28,40,.85), rgba(10,15,20,.9));
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+    .lb-header {
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--line);
+        background: linear-gradient(90deg, rgba(0,255,156,.06), transparent);
+    }
+    .lb-header .tag {
+        font-size: 11px;
+        letter-spacing: 3px;
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+    }
+    .lb-header .tag::before {
+        content: "";
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 10px var(--accent);
+    }
+
+    .lb-table-wrap {
+        overflow-x: auto;
+    }
+    .lb-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+    .lb-table thead th {
+        text-align: left;
+        padding: 14px 20px;
+        font-size: 10px;
+        letter-spacing: 2px;
+        color: var(--muted);
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--line-2);
+        background: rgba(0,0,0,.2);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    .lb-table tbody tr {
+        transition: .25s;
+        border-bottom: 1px solid var(--line);
+    }
+    .lb-table tbody tr:hover {
+        background: rgba(0,255,156,.04);
+    }
+    .lb-table tbody tr.is-me {
+        background: rgba(0,255,156,.08);
+        border-left: 3px solid var(--accent);
+    }
+    .lb-table tbody td {
+        padding: 16px 20px;
+        vertical-align: middle;
+    }
+
+    /* Медали */
+    .medal {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        font-family: 'Russo One', sans-serif;
+        font-size: 16px;
+        font-weight: 400;
+    }
+    .medal.gold {
+        background: linear-gradient(135deg, rgba(255,215,0,.2), rgba(255,179,71,.1));
+        border: 1px solid #ffd700;
+        color: #ffd700;
+        box-shadow: 0 0 15px rgba(255,215,0,.4), inset 0 0 10px rgba(255,215,0,.2);
+        text-shadow: 0 0 8px rgba(255,215,0,.6);
+    }
+    .medal.silver {
+        background: linear-gradient(135deg, rgba(192,192,192,.2), rgba(169,169,169,.1));
+        border: 1px solid #c0c0c0;
+        color: #e0e0e0;
+        box-shadow: 0 0 15px rgba(192,192,192,.3), inset 0 0 10px rgba(192,192,192,.15);
+    }
+    .medal.bronze {
+        background: linear-gradient(135deg, rgba(205,127,50,.2), rgba(184,115,51,.1));
+        border: 1px solid #cd7f32;
+        color: #cd7f32;
+        box-shadow: 0 0 15px rgba(205,127,50,.3), inset 0 0 10px rgba(205,127,50,.15);
+    }
+    .medal.regular {
+        background: rgba(255,255,255,.03);
+        border: 1px solid var(--line-2);
+        color: var(--muted);
+    }
+
+    /* Данные в таблице */
+    .participant-name {
+        font-weight: 600;
+        color: var(--text);
+        font-size: 14px;
+    }
+    .participant-team {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 2px;
+        letter-spacing: 1px;
+    }
+    .score-val {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 14px;
+    }
+    .score-val.code { color: var(--accent-2); }
+    .score-val.sport { color: var(--violet); }
+    .score-val.total {
+        color: var(--amber);
+        font-size: 16px;
+        text-shadow: 0 0 10px rgba(255,179,71,.4);
+    }
+    .you-badge {
+        display: inline-block;
+        font-size: 9px;
+        letter-spacing: 2px;
+        color: var(--bg-0);
+        background: var(--accent);
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-left: 8px;
+        font-weight: 700;
+        vertical-align: middle;
+        box-shadow: 0 0 8px var(--accent);
+    }
+
+    /* ====== ДЕЙСТВИЯ ====== */
+    .results-actions {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-top: 32px;
+        flex-wrap: wrap;
+    }
+    .btn-result {
+        padding: 14px 32px;
+        font-size: 12px;
+        letter-spacing: 3px;
+        border-radius: 10px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .3s;
+        font-family: inherit;
+        text-transform: uppercase;
+        border: 1px solid;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+    .btn-result.primary {
+        background: linear-gradient(135deg, var(--accent), #00d98a);
+        border-color: var(--accent);
+        color: var(--bg-0);
+        box-shadow: 0 8px 24px rgba(0,255,156,.3);
+    }
+    .btn-result.primary:hover {
+        box-shadow: 0 12px 32px rgba(0,255,156,.5);
+        transform: translateY(-2px);
+    }
+    .btn-result.ghost {
+        background: transparent;
+        border-color: var(--line-2);
+        color: var(--text);
+    }
+    .btn-result.ghost:hover {
+        border-color: var(--danger);
+        color: var(--danger);
+        background: rgba(255,59,107,.05);
+    }
+
+    /* ====== ПУСТОЕ СОСТОЯНИЕ ====== */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--muted);
+    }
+    .empty-state .icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: .3;
+    }
+
+    /* ====== АДАПТИВ ====== */
+    @media (max-width: 768px) {
+        .results-wrap { padding: 16px; }
+        .results-header .h-title { font-size: 28px; }
+        .personal-stats { grid-template-columns: repeat(2, 1fr); }
+        .p-stat .value { font-size: 24px; }
+        .lb-table thead { display: none; }
+        .lb-table tbody tr {
+            display: block;
+            padding: 16px;
+            margin-bottom: 12px;
+            background: rgba(5,7,10,.5);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+        }
+        .lb-table tbody tr.is-me {
+            border-left: none;
+            border: 1px solid var(--accent);
+            box-shadow: 0 0 15px rgba(0,255,156,.15);
+        }
+        .lb-table tbody td {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px dashed var(--line);
+        }
+        .lb-table tbody td:last-child { border-bottom: none; }
+        .lb-table tbody td::before {
+            content: attr(data-label);
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--muted);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="w-full max-w-4xl mx-auto space-y-6 fade-in">
-
-    <!-- Заголовок -->
-    <div class="text-center border-b border-line pb-6">
-        <div class="text-[10px] text-neon tracking-[0.4em] mb-2">// CONTEST_FINISHED</div>
-        <h1 class="font-display text-3xl font-bold text-neon glow-text">ОЛИМПИАДА ЗАВЕРШЕНА</h1>
-        <p class="text-sm text-slate-400 mt-2">Таблица лидеров по итогам всех фаз</p>
+<div class="results-wrap">
+    <div class="results-header">
+        <div class="h-sub"> CONTEST_FINISHED · FINAL_STANDINGS</div>
+        <h1 class="h-title glitch" data-text="ОЛИМПИАДА ЗАВЕРШЕНА">ОЛИМПИАДА ЗАВЕРШЕНА</h1>
     </div>
 
-    <!-- Место команды -->
-    <div id="my-place-box" class="hidden border border-neon bg-neon/5 rounded-xl p-6 text-center fade-in">
-        <div class="text-[10px] text-neon tracking-[0.3em] mb-1">// ВАШ РЕЗУЛЬТАТ</div>
-        <div class="text-slate-300 text-sm mb-2" id="my-team-name"></div>
-        <div class="text-5xl font-display font-bold text-neon glow-text" id="my-place-number">—</div>
-        <div class="text-xs text-slate-500 mt-1" id="my-place-total"></div>
-    </div>
-
-    <!-- Таблица -->
-    <div class="bg-panel border border-line rounded-xl overflow-hidden">
-        <div class="max-h-[60vh] overflow-y-auto">
-            <table class="w-full text-left text-sm">
-                <thead class="sticky top-0 bg-ink border-b border-line z-10">
-                    <tr class="text-slate-500 text-xs uppercase tracking-widest">
-                        <th class="p-3 w-14">#</th>
-                        <th class="p-3">Участник</th>
-                        <th class="p-3 text-right">Код</th>
-                        <th class="p-3 text-right">Спорт</th>
-                        <th class="p-3 text-right">Итог</th>
-                    </tr>
-                </thead>
-                <tbody id="leaderboard-body">
-                    <tr><td colspan="3" class="p-8 text-center text-slate-500 animate-pulse">Загрузка...</td></tr>
-                </tbody>
-            </table>
+    <!-- ЛИЧНЫЙ РЕЗУЛЬТАТ -->
+    <div class="personal-card" id="my-place-box" style="display: none;">
+        <div class="personal-card-header">
+            <span class="icon">🏆</span>
+            <span class="title" id="my-team-name">ВАШ РЕЗУЛЬТАТ</span>
+        </div>
+        <div class="personal-stats">
+            <div class="p-stat">
+                <div class="label"># МЕСТО</div>
+                <div class="value rank" id="my-place-number">—</div>
+            </div>
+            <div class="p-stat">
+                <div class="label">КОД</div>
+                <div class="value code" id="my-place-code">—</div>
+            </div>
+            <div class="p-stat">
+                <div class="label">СПОРТ</div>
+                <div class="value sport" id="my-place-sport">—</div>
+            </div>
+            <div class="p-stat">
+                <div class="label">ИТОГ</div>
+                <div class="value total" id="my-place-total">—</div>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 16px; font-size: 11px; color: var(--muted); letter-spacing: 2px;" id="my-place-sub">
+            из <span id="my-place-count">0</span> участников
         </div>
     </div>
 
-    <!-- Кнопки -->
-    <div class="flex justify-center gap-4 pt-2">
-        <a href="/team" class="text-xs text-slate-400 hover:text-cyan tracking-widest transition">&gt; В кабинет</a>
-        <a href="/logout" class="text-xs text-magenta hover:text-white tracking-widest transition">[ ВЫЙТИ ]</a>
+    <!-- ТАБЛИЦА ЛИДЕРОВ -->
+    <div class="leaderboard-panel">
+        <div class="lb-header">
+            <div class="tag">LEADERBOARD · ALL PHASES</div>
+            <span class="badge ok">FINAL</span>
+        </div>
+        <div class="lb-table-wrap">
+            <table class="lb-table" id="lb-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">#</th>
+                        <th>УЧАСТНИК</th>
+                        <th>КОД</th>
+                        <th>СПОРТ</th>
+                        <th style="text-align: right;">ИТОГ</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <!-- Данные загружаются через JS -->
+                </tbody>
+            </table>
+            <div class="empty-state" id="lb-empty">
+                <div class="icon">⟳</div>
+                <div>Загрузка результатов...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ДЕЙСТВИЯ -->
+    <div class="results-actions">
+        <a href="/team" class="btn-result ghost">
+            <span>←</span> В КАБИНЕТ
+        </a>
+        <a href="/logout" class="btn-result primary">
+            <span>⏻</span> ВЫЙТИ ИЗ СИСТЕМЫ
+        </a>
     </div>
 </div>
 
 <script>
     function escapeHTML(str) {
         if (!str) return '';
-        return str.replace(/[&<>'"]/g,
-            tag => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                "'": '&#39;',
-                '"': '&quot;'
-            }[tag] || tag)
-        );
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
     }
+
     async function loadLeaderboard() {
         const tbody = document.getElementById('leaderboard-body');
+        const empty = document.getElementById('lb-empty');
+        const table = document.getElementById('lb-table');
+
         try {
             const res = await fetch('/api/team/leaderboard');
-            if (res.status === 401) return window.location.href = '/';
+            if (res.status === 401) {
+                window.location.href = '/';
+                return;
+            }
             if (!res.ok) throw new Error('Ошибка загрузки');
+
             const data = await res.json();
 
+            // ====== БЛОК "ВАШ РЕЗУЛЬТАТ" ======
             if (data.my_place) {
                 const box = document.getElementById('my-place-box');
-                box.classList.remove('hidden');
-                const myName = data.teams.find(t => t.is_me)?.name || '';
-                document.getElementById('my-team-name').textContent = myName;
+                box.style.display = 'block';
+
+                const myTeam = data.teams.find(t => t.is_me) || {};
+                document.getElementById('my-team-name').textContent = myTeam.name || 'ВАШ РЕЗУЛЬТАТ';
                 document.getElementById('my-place-number').textContent = data.my_place;
-                document.getElementById('my-place-total').textContent = `из ${data.teams.length} участников (по сумме мест)`;
+                document.getElementById('my-place-code').textContent = myTeam.code_score ?? '—';
+                document.getElementById('my-place-sport').textContent = myTeam.place_sport ?? '—';
+                document.getElementById('my-place-total').textContent = myTeam.final_place ?? '—';
+                document.getElementById('my-place-count').textContent = data.teams.length;
             }
 
-            tbody.innerHTML = data.teams.map(t => {
-                const rowClass = t.is_me ? 'bg-neon/10 border-l-2 border-neon' : 'hover:bg-ink';
-                const medal = t.place === 1 ? '🥇' : t.place === 2 ? '🥈' : t.place === 3 ? '🥉' : '';
+            // ====== ТАБЛИЦА ======
+            if (!data.teams || data.teams.length === 0) {
+                empty.style.display = 'block';
+                table.style.display = 'none';
+                return;
+            }
+
+            empty.style.display = 'none';
+            table.style.display = 'table';
+
+            tbody.innerHTML = data.teams.map((t, index) => {
+                const isMe = t.is_me;
+                let medalClass = 'regular';
+                let medalContent = t.place;
+
+                if (t.place === 1) { medalClass = 'gold'; medalContent = '🥇'; }
+                else if (t.place === 2) { medalClass = 'silver'; medalContent = '🥈'; }
+                else if (t.place === 3) { medalClass = 'bronze'; medalContent = '🥉'; }
+
+                // Задержка анимации для эффекта "лесенки"
+                const delay = Math.min(index * 50, 500);
 
                 return `
-                <tr class="border-b border-line/50 ${rowClass} transition">
-                    <td class="p-3 text-neon font-bold">${t.place} ${medal}</td>
-                    <td class="p-3">
-                        <div class="font-bold text-white">${escapeHTML(t.name)}</div>
-                        <div class="text-[10px] text-slate-500 font-normal">${escapeHTML(t.team_name)}</div>
-                        ${t.is_me ? '<span class="text-[10px] text-warn">← вы</span>' : ''}
-                    </td>
-                    <td class="p-3 text-right text-cyan font-mono font-bold">${t.code_score}</td>
-                    <td class="p-3 text-right text-warn font-mono">
-                        <div>${t.place_sport}</div>
-                        <div class="text-[10px] text-slate-500 font-normal">${t.sport_attempts} поп.</div>
-                    </td>
-                    <td class="p-3 text-right text-neon font-mono font-bold text-lg">${t.final_place}</td>
-                </tr>`;
+                    <tr class="${isMe ? 'is-me' : ''}" style="animation: fadeInUp 0.5s ease-out ${delay}ms backwards;">
+                        <td data-label="Место">
+                            <div class="medal ${medalClass}">${medalContent}</div>
+                        </td>
+                        <td data-label="Участник">
+                            <div class="participant-name">
+                                ${escapeHTML(t.name)}
+                                ${isMe ? '<span class="you-badge">ВЫ</span>' : ''}
+                            </div>
+                            <div class="participant-team">${escapeHTML(t.team_name)}</div>
+                        </td>
+                        <td data-label="Код">
+                            <div class="score-val code">${t.code_score}</div>
+                            <div style="font-size:10px;color:var(--muted);margin-top:2px;">место: ${t.place_python}</div>
+                        </td>
+                        <td data-label="Спорт">
+                            <div class="score-val sport">${t.place_sport}</div>
+                            <div style="font-size:10px;color:var(--muted);margin-top:2px;">${t.sport_attempts} поп.</div>
+                        </td>
+                        <td data-label="Итог" style="text-align: right;">
+                            <div class="score-val total">${t.final_place}</div>
+                        </td>
+                    </tr>
+                `;
             }).join('');
+
         } catch (e) {
-            tbody.innerHTML = '<tr><td colspan="3" class="p-8 text-center text-magenta">Не удалось загрузить таблицу</td></tr>';
+            console.error(e);
+            empty.innerHTML = `
+                <div class="icon">⚠</div>
+                <div>Не удалось загрузить таблицу</div>
+                <button class="btn-result ghost" style="margin-top:16px;" onclick="loadLeaderboard()">ПОВТОРИТЬ</button>
+            `;
+            empty.style.display = 'block';
+            table.style.display = 'none';
         }
     }
+
+    // Загрузка при открытии
     loadLeaderboard();
-    setInterval(loadLeaderboard, 15000);
 </script>
 {% endblock %}

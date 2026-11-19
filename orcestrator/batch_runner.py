@@ -59,12 +59,11 @@ builtins.setrecursionlimit = _real_sys.setrecursionlimit
 builtins.getrecursionlimit = _real_sys.getrecursionlimit
 del _real_sys
 
-_DANGEROUS = ("eval", "exec", "compile", "breakpoint", "globals", "locals", "vars")
-for _name in _DANGEROUS:
-    try:
-        delattr(builtins, _name)
-    except AttributeError:
-        pass
+try:
+    del builtins.eval
+    del builtins.exec
+except AttributeError:
+    pass
 """
 
 _SEQ_RUNNER_TEMPLATE = r'''

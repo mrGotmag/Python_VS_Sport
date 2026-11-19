@@ -3,408 +3,673 @@
 
 {% block head %}
 <style>
-    @keyframes flash-green {
-        0% { background-color: rgba(0, 255, 156, 0.2); border-color: #00ff9c; }
-        100% { background-color: transparent; border-color: #1f2a3a; }
+    /* ====== LAYOUT ====== */
+    .judge-wrap {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 16px;
+        position: relative;
+        z-index: 3;
+        animation: fadeIn 0.6s ease-out;
     }
-    .saved-success {
-        animation: flash-green 1s ease-out;
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
-    .pill-transition {
-        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease;
+    /* ====== ЗАГОЛОВОК ====== */
+    .judge-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .judge-title {
+        font-family: 'Russo One', sans-serif;
+        font-size: 24px;
+        letter-spacing: 2px;
+        background: linear-gradient(90deg, #fff, var(--accent-2));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
     }
 
-    .tabs-container::-webkit-scrollbar {
-        height: 4px;
+    /* ====== ПАНЕЛЬ УПРАВЛЕНИЯ ====== */
+    .control-panel {
+        background: linear-gradient(135deg, rgba(20,28,40,.9), rgba(10,15,20,.95));
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: center;
+        backdrop-filter: blur(10px);
     }
-    .tabs-container::-webkit-scrollbar-track {
-        background: #0a0e14;
-        border-radius: 4px;
+    .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        flex: 1;
+        min-width: 200px;
     }
-    .tabs-container::-webkit-scrollbar-thumb {
-        background: #1f2a3a;
-        border-radius: 4px;
+    .control-label {
+        font-size: 10px;
+        letter-spacing: 2px;
+        color: var(--muted);
+        text-transform: uppercase;
+        font-weight: 600;
     }
-    .tabs-container::-webkit-scrollbar-thumb:hover {
-        background: #00e5ff;
+    .control-select {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        padding: 10px 14px;
+        background: rgba(5,7,10,.8);
+        border: 1px solid var(--line-2);
+        border-radius: 8px;
+        color: var(--text);
+        outline: none;
+        transition: .25s;
+        cursor: pointer;
+    }
+    .control-select:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(0,255,156,.15);
+    }
+
+    /* Переключатель направления */
+    .direction-toggle {
+        display: flex;
+        background: rgba(5,7,10,.8);
+        border: 1px solid var(--line-2);
+        border-radius: 8px;
+        padding: 4px;
+        gap: 4px;
+    }
+    .dir-btn {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 11px;
+        letter-spacing: 1px;
+        color: var(--muted);
+        background: transparent;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: .25s;
+        font-family: inherit;
+        font-weight: 600;
+        text-align: center;
+    }
+    .dir-btn.active {
+        background: rgba(0,255,156,.15);
+        color: var(--accent);
+        box-shadow: 0 0 10px rgba(0,255,156,.2);
+    }
+    .dir-btn.active.less {
+        background: rgba(255,179,71,.15);
+        color: var(--amber);
+        box-shadow: 0 0 10px rgba(255,179,71,.2);
+    }
+
+    /* ====== СПИСОК УЧАСТНИКОВ (СЕТКА КАРТОЧЕК) ====== */
+    .participants-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 16px;
+    }
+    @media (max-width: 400px) {
+        .participants-grid { grid-template-columns: 1fr; }
+    }
+
+    .participant-card {
+        background: linear-gradient(135deg, rgba(20,28,40,.8), rgba(10,15,20,.9));
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 16px;
+        transition: .3s;
+        position: relative;
+        overflow: hidden;
+    }
+    .participant-card:hover {
+        border-color: var(--accent-2);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    }
+    .participant-card.saved {
+        border-color: var(--accent);
+        box-shadow: 0 0 15px rgba(0,255,156,.2);
+    }
+
+    .p-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+    .p-name {
+        font-family: 'Russo One', sans-serif;
+        font-size: 15px;
+        color: var(--text);
+        margin-bottom: 4px;
+    }
+    .p-team {
+        font-size: 11px;
+        color: var(--muted);
+        letter-spacing: 1px;
+    }
+    .p-current-score {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--accent-2);
+        text-shadow: 0 0 10px rgba(0,229,255,.4);
+    }
+    .p-current-score.empty {
+        color: var(--muted);
+        font-size: 14px;
+        text-shadow: none;
+    }
+
+    /* Поле ввода результата */
+    .result-input-wrap {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+    }
+    .result-input {
+        flex: 1;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 16px;
+        font-weight: 700;
+        padding: 10px 14px;
+        background: rgba(5,7,10,.8);
+        border: 1px solid var(--line-2);
+        border-radius: 8px;
+        color: var(--text);
+        outline: none;
+        transition: .25s;
+        text-align: center;
+    }
+    .result-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(0,255,156,.15);
+    }
+    .result-input::-webkit-inner-spin-button,
+    .result-input::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .save-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--accent), #00d98a);
+        border: none;
+        color: var(--bg-0);
+        font-size: 18px;
+        cursor: pointer;
+        transition: .25s;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+    }
+    .save-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(0,255,156,.5);
+    }
+    .save-btn:active {
+        transform: scale(0.95);
+    }
+    .save-btn.saving {
+        background: var(--muted);
+        cursor: not-allowed;
+    }
+
+    /* ====== TOAST УВЕДОМЛЕНИЕ ====== */
+    .judge-toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        padding: 14px 20px;
+        border-radius: 10px;
+        background: rgba(10,15,20,.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        font-size: 12px;
+        letter-spacing: 1px;
+        font-weight: 600;
+        box-shadow: 0 10px 40px rgba(0,0,0,.6), 0 0 20px rgba(0,255,156,.3);
+        z-index: 100;
+        display: none;
+        animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .judge-toast.show { display: flex; align-items: center; gap: 8px; }
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ====== ПУСТОЕ СОСТОЯНИЕ ====== */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--muted);
+        grid-column: 1 / -1;
+    }
+    .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+
+    /* Индикатор "синхронизировано" */
+    .sync-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 10px;
+        letter-spacing: 2px;
+        color: var(--muted);
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: rgba(5,7,10,.6);
+        border: 1px solid var(--line);
+        transition: .3s;
+    }
+    .sync-indicator.syncing {
+        color: var(--amber);
+        border-color: rgba(255,179,71,.3);
+    }
+    .sync-indicator.synced {
+        color: var(--accent);
+        border-color: rgba(0,255,156,.3);
+        background: rgba(0,255,156,.06);
+    }
+    .sync-indicator .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+        box-shadow: 0 0 6px currentColor;
+    }
+    .sync-indicator.syncing .dot {
+        animation: pulse 1s ease-in-out infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: .3; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="w-full max-w-5xl mx-auto fade-in p-2 md:p-4 pb-20">
-
-    <div class="flex justify-between items-center border-b border-line pb-2 mb-3">
-        <h1 class="text-lg md:text-xl font-bold text-warn">ПАНЕЛЬ СУДЬИ</h1>
-        <a href="/logout" class="text-magenta hover:text-white text-xs font-bold bg-magenta/10 px-2 py-1 rounded border border-magenta/30">ВЫЙТИ</a>
+<div class="judge-wrap">
+    <div class="judge-header">
+        <div>
+            <div class="h-sub" style="margin-bottom: 4px;">// JUDGE_CONSOLE</div>
+            <div class="judge-title">ПАНЕЛЬ СУДЬИ</div>
+        </div>
+        <a href="/logout" class="btn-sm danger" style="padding: 8px 16px; font-size: 10px;">⏻ ВЫЙТИ</a>
     </div>
 
-    <div class="sticky top-[60px] z-40 bg-panel/95 backdrop-blur-xl border border-line rounded-xl p-3 mb-4 shadow-xl transition-all flex flex-col gap-3">
-
-        <div class="relative w-full">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg class="h-5 w-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            </div>
-            <input type="text" id="search-input" placeholder="Поиск участника по имени или команде..."
-                class="w-full bg-ink border border-line rounded-lg pl-10 pr-10 py-2.5 text-sm text-white focus:border-warn outline-none transition">
-            <button id="btn-clear-search" onclick="clearSearch()" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-white transition">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
+    <!-- Панель управления -->
+    <div class="control-panel">
+        <div class="control-group">
+            <div class="control-label">Спортивная дисциплина</div>
+            <select class="control-select" id="phase-select">
+                <option value="">Загрузка фаз...</option>
+            </select>
         </div>
 
-        <div>
-            <div class="text-[10px] text-slate-500 uppercase tracking-wider mb-1.5 font-bold">Дисциплина:</div>
-            <div id="phase-pills-container" class="tabs-container flex overflow-x-auto gap-2 pb-2 snap-x">
-                <div class="text-slate-500 animate-pulse text-xs py-2">Загрузка...</div>
-            </div>
-        </div>
-
-        <div id="direction-container" class="hidden pt-2 border-t border-line/50">
-            <div class="text-[10px] text-slate-500 uppercase tracking-wider mb-1.5 font-bold">Правило оценки:</div>
-            <div class="relative flex bg-ink border border-line rounded-lg p-1 h-[48px]">
-                <div id="dir-pill" class="pill-transition absolute top-1 bottom-1 w-[calc(50%-4px)] bg-cyan rounded-md shadow-[0_0_15px_rgba(0,229,255,0.4)] z-0" style="left: 4px;"></div>
-                <button id="btn-dir-more" onclick="setDirection('more')" class="relative z-10 flex-1 py-2 rounded-md font-bold text-xs md:text-sm flex items-center justify-center transition-colors duration-300 text-ink">
+        <div class="control-group" style="flex: 0 0 auto;">
+            <div class="control-label">Правило оценки</div>
+            <div class="direction-toggle" id="direction-toggle">
+                <button class="dir-btn active" data-dir="more" onclick="changeDirection('more')">
                     ↑ БОЛЬШЕ = ЛУЧШЕ
                 </button>
-                <button id="btn-dir-less" onclick="setDirection('less')" class="relative z-10 flex-1 py-2 rounded-md font-bold text-xs md:text-sm flex items-center justify-center transition-colors duration-300 text-slate-500 hover:text-white">
+                <button class="dir-btn less" data-dir="less" onclick="changeDirection('less')">
                     ↓ МЕНЬШЕ = ЛУЧШЕ
                 </button>
             </div>
         </div>
-    </div>
 
-    <div id="staff-teams-container" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div class="col-span-full text-center py-8 text-slate-500 bg-panel border border-line rounded-xl text-sm">
-            Выберите дисциплину выше
+        <div class="sync-indicator synced" id="sync-indicator">
+            <span class="dot"></span>
+            <span id="sync-text">АКТУАЛЬНО</span>
         </div>
     </div>
 
-    <div id="no-results-msg" class="hidden col-span-full text-center py-8 text-slate-500 text-sm">
-        Участники не найдены.
+    <!-- Список участников -->
+    <div class="participants-grid" id="participants-grid">
+        <div class="empty-state">
+            <div class="icon">⟳</div>
+            <div>Загрузка данных...</div>
+        </div>
     </div>
 </div>
 
+<!-- Toast уведомление -->
+<div class="judge-toast" id="judge-toast">
+    <span>✓</span>
+    <span id="toast-message">Результат сохранён</span>
+</div>
+
 <script>
-    function escapeHTML(str) {
-        if (str === null || str === undefined) return '';
-        return String(str).replace(/[&<>'"]/g,
-            tag => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                "'": '&#39;',
-                '"': '&quot;'
-            }[tag] || tag)
-        );
-    }
+    let state = {
+        phases: [],
+        participants: [],
+        results: {}, // { participant_id: attempts }
+        currentPhaseId: null,
+        currentDirection: 'more'
+    };
 
-    let sportData = { phases: [], participants: [], results: [] };
-    let currentPhaseId = null;
+    // ====== ИНИЦИАЛИЗАЦИЯ ======
+    async function init() {
+        await loadData();
 
-    // ---------- Поиск ----------
-    document.getElementById('search-input').addEventListener('input', function() {
-        const clearBtn = document.getElementById('btn-clear-search');
-        if (this.value.length > 0) clearBtn.classList.remove('hidden');
-        else clearBtn.classList.add('hidden');
-        filterParticipants();
-    });
-
-    function clearSearch() {
-        const input = document.getElementById('search-input');
-        input.value = '';
-        document.getElementById('btn-clear-search').classList.add('hidden');
-        filterParticipants();
-    }
-
-    function filterParticipants() {
-        const query = document.getElementById('search-input').value.toLowerCase().trim();
-        const cards = document.querySelectorAll('.participant-card');
-        let visibleCount = 0;
-        cards.forEach(card => {
-            const nameEl = card.querySelector('.participant-name');
-            const teamEl = card.querySelector('.participant-team');
-            const searchStr = (
-                (nameEl ? nameEl.textContent : '') + ' ' +
-                (teamEl ? teamEl.textContent : '')
-            ).toLowerCase();
-            if (searchStr.includes(query)) {
-                card.classList.remove('hidden');
-                visibleCount++;
-            } else {
-                card.classList.add('hidden');
-            }
-        });
-        const noResults = document.getElementById('no-results-msg');
-        if (visibleCount === 0 && cards.length > 0) {
-            noResults.classList.remove('hidden');
-        } else {
-            noResults.classList.add('hidden');
+        // Автовыбор первой фазы, если есть
+        if (state.phases.length > 0 && !state.currentPhaseId) {
+            selectPhase(state.phases[0].id);
         }
     }
 
-    // ---------- Проверки занятости ----------
-    function hasActiveInput() {
-        const active = document.activeElement;
-        return !!(active && active.closest('.participant-card'));
-    }
+    // ====== ЗАГРУЗКА ДАННЫХ ======
+    async function loadData() {
+        const syncIndicator = document.getElementById('sync-indicator');
+        const syncText = document.getElementById('sync-text');
 
-    function hasDirtyCards() {
-        return document.querySelectorAll('.participant-card[data-dirty="true"]').length > 0;
-    }
+        syncIndicator?.classList.remove('synced');
+        syncIndicator?.classList.add('syncing');
+        if (syncText) syncText.textContent = 'ОБНОВЛЕНИЕ...';
 
-    // Делегирование: помечаем карточку "грязной" при вводе
-    (function initStaffListeners() {
-        const container = document.getElementById('staff-teams-container');
-        container.addEventListener('input', (e) => {
-            if (e.target.matches('input[type="number"]')) {
-                const card = e.target.closest('.participant-card');
-                if (card) card.dataset.dirty = 'true';
-            }
-        });
-    })();
-
-    // ---------- Загрузка данных ----------
-    async function loadStaffData() {
         try {
-            const res = await fetch('/api/staff/sport_data', { credentials: 'include' });
-            if (res.status === 401 || res.status === 403) return window.location.href = '/';
-            if (!res.ok) {
-                console.error('staff_data: HTTP', res.status);
+            const res = await fetch('/api/staff/sport_data');
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/';
                 return;
             }
-            const newData = await res.json();
-            sportData = newData;
+            const data = await res.json();
 
-            renderPhasePills();
+            state.phases = data.phases || [];
+            state.participants = data.participants || [];
 
-            if (newData.phases.length === 0) {
-                document.getElementById('staff-teams-container').innerHTML =
-                    '<div class="col-span-full text-center py-8 text-slate-500 bg-panel border border-line rounded-xl text-sm">Нет дисциплин</div>';
-                document.getElementById('direction-container').classList.add('hidden');
-                currentPhaseId = null;
-                return;
+            state.results = {};
+            (data.results || []).forEach(r => {
+                state.results[r.participant_id] = r.attempts;
+            });
+
+            renderPhaseSelect();
+            if (state.currentPhaseId) {
+                const phase = state.phases.find(p => p.id === state.currentPhaseId);
+                if (phase) {
+                    state.currentDirection = phase.sport_direction || 'more';
+                    updateDirectionUI();
+                }
+                renderParticipants();
             }
 
-            const phaseStillExists = currentPhaseId &&
-                newData.phases.some(p => p.id === currentPhaseId);
+            syncIndicator?.classList.remove('syncing');
+            syncIndicator?.classList.add('synced');
+            if (syncText) syncText.textContent = 'АКТУАЛЬНО';
+        } catch (err) {
+            console.error(err);
+            syncIndicator?.classList.remove('syncing');
+            if (syncText) syncText.textContent = 'ОШИБКА';
+            document.getElementById('participants-grid').innerHTML = `
+                <div class="empty-state">
+                    <div class="icon">⚠</div>
+                    <div>Ошибка загрузки данных</div>
+                </div>
+            `;
+        }
+    }
 
-            if (phaseStillExists) {
-                // Сохраняем выбор, БЕЗ скролла
-                selectPhase(currentPhaseId, { skipScroll: true });
+    // ====== ОТРИСОВКА СЕЛЕКТА ФАЗ ======
+    function renderPhaseSelect() {
+        const select = document.getElementById('phase-select');
+        select.innerHTML = state.phases.map(p =>
+            `<option value="${p.id}" ${p.id === state.currentPhaseId ? 'selected' : ''}>
+                ${p.sport_name}
+            </option>`
+        ).join('');
+
+        select.onchange = (e) => selectPhase(parseInt(e.target.value));
+    }
+
+    // ====== ВЫБОР ФАЗЫ ======
+    function selectPhase(phaseId) {
+        state.currentPhaseId = phaseId;
+        const phase = state.phases.find(p => p.id === phaseId);
+        if (phase) {
+            state.currentDirection = phase.sport_direction || 'more';
+            updateDirectionUI();
+        }
+        renderParticipants();
+    }
+
+    // ====== ОБНОВЛЕНИЕ UI НАПРАВЛЕНИЯ ======
+    function updateDirectionUI() {
+        document.querySelectorAll('.dir-btn').forEach(btn => {
+            btn.classList.remove('active', 'less');
+            if (btn.dataset.dir === state.currentDirection) {
+                btn.classList.add('active');
+                if (state.currentDirection === 'less') btn.classList.add('less');
+            }
+        });
+    }
+
+    // ====== СМЕНА НАПРАВЛЕНИЯ ======
+    async function changeDirection(newDir) {
+        if (!state.currentPhaseId || newDir === state.currentDirection) return;
+
+        const btn = document.querySelector(`.dir-btn[data-dir="${newDir}"]`);
+        const originalText = btn?.textContent;
+        if (btn) {
+            btn.textContent = '⟳';
+            btn.disabled = true;
+        }
+
+        try {
+            const res = await fetch(`/api/staff/phase/${state.currentPhaseId}/direction`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ direction: newDir })
+            });
+            if (res.ok) {
+                state.currentDirection = newDir;
+
+                // ⭐ КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: обновляем направление в state.phases
+                const phase = state.phases.find(p => p.id === state.currentPhaseId);
+                if (phase) phase.sport_direction = newDir;
+
+                updateDirectionUI();
+                showToast('Правило оценки обновлено');
             } else {
-                // Первый запуск или фаза исчезла
-                selectPhase(newData.phases[0].id);
+                throw new Error('Ошибка сервера');
             }
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    function renderPhasePills() {
-        const container = document.getElementById('phase-pills-container');
-        const newHtml = sportData.phases.map(p => `
-            <button id="pill-${p.id}" onclick="selectPhase(${p.id})"
-                class="phase-pill flex-shrink-0 min-w-max px-5 py-2.5 rounded-lg border border-line bg-ink text-slate-400 hover:border-slate-500 hover:text-white font-bold text-sm transition-all duration-300 snap-start">
-                ${escapeHTML(p.sport_name)}
-            </button>
-        `).join('');
-        // Перерисовываем только если что-то изменилось (hover/фокус сохраняются)
-        if (container.innerHTML !== newHtml) {
-            container.innerHTML = newHtml;
-        }
-    }
-
-    function selectPhase(phaseId, { skipScroll = false } = {}) {
-        currentPhaseId = phaseId;
-
-        document.querySelectorAll('.phase-pill').forEach(btn => {
-            btn.className = 'phase-pill flex-shrink-0 min-w-max px-5 py-2.5 rounded-lg border border-line bg-ink text-slate-400 hover:border-slate-500 hover:text-white font-bold text-sm transition-all duration-300 snap-start';
-        });
-
-        const activeBtn = document.getElementById(`pill-${phaseId}`);
-        if (activeBtn) {
-            activeBtn.className = 'phase-pill flex-shrink-0 min-w-max px-5 py-2.5 rounded-lg border border-cyan bg-cyan/10 text-cyan font-bold text-sm shadow-[0_0_15px_rgba(0,229,255,0.2)] transition-all duration-300 snap-start scale-[1.02]';
-            if (!skipScroll) {
-                activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        } catch (err) {
+            console.error(err);
+            showToast('Ошибка обновления правила', true);
+        } finally {
+            if (btn) {
+                btn.textContent = originalText;
+                btn.disabled = false;
             }
         }
-
-        loadStaffTeams();
     }
 
-    function updateDirectionUI(direction) {
-        const pill = document.getElementById('dir-pill');
-        const btnMore = document.getElementById('btn-dir-more');
-        const btnLess = document.getElementById('btn-dir-less');
-
-        if (direction === 'more') {
-            pill.style.left = '4px';
-            btnMore.classList.remove('text-slate-500', 'hover:text-white');
-            btnMore.classList.add('text-ink');
-            btnLess.classList.add('text-slate-500', 'hover:text-white');
-            btnLess.classList.remove('text-ink');
-        } else {
-            pill.style.left = '50%';
-            btnLess.classList.remove('text-slate-500', 'hover:text-white');
-            btnLess.classList.add('text-ink');
-            btnMore.classList.add('text-slate-500', 'hover:text-white');
-            btnMore.classList.remove('text-ink');
-        }
-    }
-
-    function loadStaffTeams() {
-        const container = document.getElementById('staff-teams-container');
-        const dirContainer = document.getElementById('direction-container');
-
-        if (!currentPhaseId) {
-            container.innerHTML = '<div class="col-span-full text-center py-8 text-slate-500 bg-panel border border-line rounded-xl text-sm">Выберите дисциплину</div>';
-            dirContainer.classList.add('hidden');
+    // ====== ОТРИСОВКА УЧАСТНИКОВ ======
+    function renderParticipants() {
+        const grid = document.getElementById('participants-grid');
+        if (state.participants.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <div class="icon">👥</div>
+                    <div>Участники не найдены</div>
+                </div>
+            `;
             return;
         }
 
-        // КЛЮЧЕВОЙ ФИКС: не перерисовывать, если пользователь вводит
-        // или есть несохранённые данные
-        if (hasActiveInput() || hasDirtyCards()) {
-            return;
-        }
-
-        const phase = sportData.phases.find(p => p.id === currentPhaseId);
-        if (!phase) return;
-
-        dirContainer.classList.remove('hidden');
-        updateDirectionUI(phase.sport_direction || 'more');
-
-        const sortedParticipants = [...sportData.participants].sort((a, b) => {
-            if (a.team_name !== b.team_name) return a.team_name.localeCompare(b.team_name);
-            return a.name.localeCompare(b.name);
-        });
-
-        if (sortedParticipants.length === 0) {
-            container.innerHTML = '<div class="col-span-full text-center py-8 text-slate-500">Нет участников</div>';
-            return;
-        }
-
-        container.innerHTML = sortedParticipants.map(p => {
-            const result = sportData.results.find(r =>
-                r.participant_id === p.id && r.phase_id === currentPhaseId
-            );
-            const attempts = result ? result.attempts : '';
+        grid.innerHTML = state.participants.map(p => {
+            const currentAttempts = state.results[p.id] ?? '';
+            const hasScore = currentAttempts !== '';
 
             return `
-                <div id="card-${p.id}" class="participant-card bg-panel border border-line rounded-xl p-3 flex flex-col gap-2 shadow-md transition hover:border-slate-600">
-                    <div class="flex justify-between items-start">
-                        <div class="participant-name font-bold text-base text-white leading-tight">${escapeHTML(p.name)}</div>
-                        <div class="participant-team text-[9px] bg-ink text-cyan border border-line px-1.5 py-0.5 rounded-full whitespace-nowrap ml-2 mt-0.5">${escapeHTML(p.team_name)}</div>
-                    </div>
-
-                    <div class="flex gap-2 mt-1">
-                        <div class="relative w-1/2">
-                            <input type="number" id="staff-input-${p.id}" value="${attempts}" placeholder="0" min="0"
-                                class="w-full bg-ink border-2 border-line rounded-lg px-2 py-2 text-xl text-center font-mono font-bold text-neon focus:border-neon outline-none transition">
+                <div class="participant-card" id="card-${p.id}">
+                    <div class="p-header">
+                        <div>
+                            <div class="p-name">${escapeHTML(p.name)}</div>
+                            <div class="p-team">${escapeHTML(p.team_name)}</div>
                         </div>
-                        <button id="staff-btn-${p.id}" onclick="saveStaffResult(${p.id}, ${currentPhaseId})"
-                            class="w-1/2 bg-warn text-ink font-bold text-xs rounded-lg hover:bg-white transition active:scale-95 shadow-[0_0_10px_rgba(255,184,0,0.3)]">
-                            СОХРАНИТЬ
+                        <div class="p-current-score ${hasScore ? '' : 'empty'}">
+                            ${hasScore ? currentAttempts : '—'}
+                        </div>
+                    </div>
+                    <div class="result-input-wrap">
+                        <input
+                            type="number"
+                            class="result-input"
+                            id="input-${p.id}"
+                            value="${currentAttempts}"
+                            placeholder="0"
+                            min="0"
+                            onkeydown="if(event.key==='Enter') saveResult(${p.id})"
+                        >
+                        <button class="save-btn" id="btn-${p.id}" onclick="saveResult(${p.id})" title="Сохранить">
+                            💾
                         </button>
                     </div>
                 </div>
             `;
         }).join('');
-
-        if (document.getElementById('search-input').value.length > 0) {
-            filterParticipants();
-        }
     }
 
-    async function setDirection(newDir) {
-        if (!currentPhaseId) return;
-        const phase = sportData.phases.find(p => p.id === currentPhaseId);
-        if (!phase) return;
-        if (phase.sport_direction === newDir) return;
-
-        const oldDir = phase.sport_direction;
-        phase.sport_direction = newDir;
-        updateDirectionUI(newDir);
-
-        try {
-            const res = await fetch(`/api/staff/phase/${currentPhaseId}/direction`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ direction: newDir }),
-                credentials: 'include'
-            });
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-        } catch (e) {
-            alert('Ошибка смены правила: ' + e.message);
-            phase.sport_direction = oldDir;
-            updateDirectionUI(oldDir);
-        }
-    }
-
-    async function saveStaffResult(participantId, phaseId) {
-        const input = document.getElementById(`staff-input-${participantId}`);
+    // ====== СОХРАНЕНИЕ РЕЗУЛЬТАТА ======
+    async function saveResult(participantId) {
+        const input = document.getElementById(`input-${participantId}`);
+        const btn = document.getElementById(`btn-${participantId}`);
         const card = document.getElementById(`card-${participantId}`);
-        const btn = document.getElementById(`staff-btn-${participantId}`);
-        if (!input || !card || !btn) return;
+        const attemptsStr = input.value.trim();
 
-        // Валидация: целое, 0..1_000_000
-        const raw = parseInt(input.value, 10);
-        if (Number.isNaN(raw) || raw < 0 || raw > 1_000_000) {
-            alert('Некорректное значение: введите целое число от 0 до 1000000');
+        if (attemptsStr === '') {
             input.focus();
             return;
         }
 
-        const originalText = btn.textContent;
-        const originalClass = btn.className;
-        btn.disabled = true;
-        btn.textContent = '...';
+        const attempts = parseInt(attemptsStr);
+        if (isNaN(attempts) || attempts < 0) {
+            showToast('Введите корректное число', true);
+            return;
+        }
+
+        // UI состояние загрузки
+        btn.classList.add('saving');
+        btn.innerHTML = '<span class="loading"></span>'; // Можно добавить CSS спиннер
 
         try {
             const res = await fetch('/api/staff/sport_result', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ participant_id: participantId, phase_id: phaseId, attempts: raw }),
-                credentials: 'include'
+                body: JSON.stringify({
+                    participant_id: participantId,
+                    phase_id: state.currentPhaseId,
+                    attempts: attempts
+                })
             });
 
             if (res.ok) {
-                card.classList.add('saved-success');
-                btn.textContent = '✔ ОК';
-                btn.className = 'w-1/2 bg-neon text-ink font-bold text-xs rounded-lg transition';
+                // Успех
+                state.results[participantId] = attempts;
 
-                // Снимаем флаг "грязный" — разрешаем автообновление
-                card.dataset.dirty = 'false';
+                // Обновляем отображение текущего результата в карточке
+                const scoreDisplay = card.querySelector('.p-current-score');
+                scoreDisplay.textContent = attempts;
+                scoreDisplay.classList.remove('empty');
 
-                const existing = sportData.results.find(r =>
-                    r.participant_id === participantId && r.phase_id === phaseId
-                );
-                if (existing) existing.attempts = raw;
-                else sportData.results.push({participant_id: participantId, phase_id: phaseId, attempts: raw});
+                // Визуальный фидбек
+                card.classList.add('saved');
+                setTimeout(() => card.classList.remove('saved'), 1500);
 
-                setTimeout(() => {
-                    card.classList.remove('saved-success');
-                    btn.textContent = originalText;
-                    btn.className = originalClass;
-                    btn.disabled = false;
-                }, 1500);
+                showToast(`Результат ${pName(participantId)} сохранён`);
             } else {
-                alert('Ошибка сохранения (HTTP ' + res.status + ')');
-                btn.textContent = originalText;
-                btn.className = originalClass;
-                btn.disabled = false;
+                throw new Error('Ошибка сервера');
             }
-        } catch (e) {
-            alert('Ошибка сети');
-            btn.textContent = originalText;
-            btn.className = originalClass;
-            btn.disabled = false;
+        } catch (err) {
+            console.error(err);
+            showToast('Ошибка сохранения', true);
+        } finally {
+            btn.classList.remove('saving');
+            btn.innerHTML = '💾';
         }
     }
 
-    // Первичная загрузка + периодическое обновление
-    loadStaffData();
-    setInterval(loadStaffData, 15000);
+    // ====== УТИЛИТЫ ======
+    function pName(id) {
+        const p = state.participants.find(x => x.id === id);
+        return p ? p.name : 'Участник';
+    }
+
+    function escapeHTML(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    let toastTimeout;
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('judge-toast');
+        const msgEl = document.getElementById('toast-message');
+
+        msgEl.textContent = msg;
+        toast.style.borderColor = isError ? 'var(--danger)' : 'var(--accent)';
+        toast.style.color = isError ? 'var(--danger)' : 'var(--accent)';
+        toast.style.boxShadow = isError
+            ? '0 10px 40px rgba(0,0,0,.6), 0 0 20px rgba(255,59,107,.3)'
+            : '0 10px 40px rgba(0,0,0,.6), 0 0 20px rgba(0,255,156,.3)';
+
+        toast.classList.add('show');
+
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    // Запуск
+    init();
+
+    // ====== WEBSOCKET ДЛЯ LIVE-ОБНОВЛЕНИЙ ======
+    function connectWS() {
+        const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const ws = new WebSocket(`${protocol}//${location.host}/ws`);
+
+        ws.onmessage = async (event) => {
+            const msg = event.data;
+            // При изменении рейтинга или направления — перечитываем данные
+            if (msg === 'update_rating' || msg === 'sport_direction_changed') {
+                await loadData();
+                // Восстанавливаем выбранную фазу
+                if (state.currentPhaseId) {
+                    const phase = state.phases.find(p => p.id === state.currentPhaseId);
+                    if (phase) {
+                        state.currentDirection = phase.sport_direction || 'more';
+                        updateDirectionUI();
+                    }
+                }
+                showToast('Данные обновлены');
+            }
+        };
+
+        ws.onclose = () => setTimeout(connectWS, 3000);
+        ws.onerror = (err) => console.error('WS error:', err);
+    }
+    connectWS();
+
+    // Автообновление каждые 30 секунд (fallback)
+    setInterval(loadData, 30000);
 </script>
 {% endblock %}

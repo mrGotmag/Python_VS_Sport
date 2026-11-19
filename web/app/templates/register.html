@@ -1,126 +1,766 @@
 {% extends "base.html" %}
 {% block title %}Регистрация // Python vs Спорт{% endblock %}
 
+{% block head %}
+<style>
+    .reg-wrap{
+        max-width:1100px;margin:0 auto;padding:20px;
+        position:relative;z-index:3;
+        display:flex;flex-direction:column;justify-content:center;
+        min-height:calc(100vh - 140px);
+    }
+    .reg-grid{
+        display:grid;grid-template-columns:1fr 420px;
+        gap:20px;align-items:stretch;
+    }
+    @media (max-width: 980px){
+        .reg-grid{grid-template-columns:1fr}
+        .terminal-panel{display:none}
+    }
+
+    .form-panel{
+        position:relative;
+        background:linear-gradient(135deg,rgba(20,28,40,.85) 0%,rgba(10,15,20,.92) 50%,rgba(15,22,32,.85) 100%);
+        backdrop-filter:blur(20px) saturate(180%);
+        border:1px solid rgba(0,255,156,.15);border-radius:20px;overflow:hidden;
+        box-shadow:0 30px 80px -20px rgba(0,0,0,.8),0 0 60px -10px rgba(0,255,156,.15);
+    }
+    .form-panel::before{
+        content:"";position:absolute;inset:0;
+        background-image:linear-gradient(rgba(0,255,156,.03) 1px,transparent 1px),
+            linear-gradient(90deg,rgba(0,255,156,.03) 1px,transparent 1px);
+        background-size:30px 30px;
+        mask-image:radial-gradient(ellipse at center,black 20%,transparent 70%);
+        -webkit-mask-image:radial-gradient(ellipse at center,black 20%,transparent 70%);
+        pointer-events:none;
+    }
+    .form-panel > *{position:relative;z-index:1}
+
+    .corner{position:absolute;width:24px;height:24px;z-index:3;pointer-events:none}
+    .corner::before,.corner::after{
+        content:"";position:absolute;
+        background:linear-gradient(90deg,var(--accent),var(--accent-2));
+        box-shadow:0 0 10px var(--accent);
+    }
+    .corner.tl{top:10px;left:10px}
+    .corner.tl::before{top:0;left:0;width:24px;height:2px}
+    .corner.tl::after{top:0;left:0;width:2px;height:24px}
+    .corner.tr{top:10px;right:10px}
+    .corner.tr::before{top:0;right:0;width:24px;height:2px}
+    .corner.tr::after{top:0;right:0;width:2px;height:24px}
+    .corner.bl{bottom:10px;left:10px}
+    .corner.bl::before{bottom:0;left:0;width:24px;height:2px}
+    .corner.bl::after{bottom:0;left:0;width:2px;height:24px}
+    .corner.br{bottom:10px;right:10px}
+    .corner.br::before{bottom:0;right:0;width:24px;height:2px}
+    .corner.br::after{bottom:0;right:0;width:2px;height:24px}
+
+    .panel-head{
+        padding:14px 20px;display:flex;align-items:center;justify-content:space-between;
+        border-bottom:1px solid rgba(0,255,156,.12);
+        background:linear-gradient(90deg,rgba(0,255,156,.08) 0%,rgba(0,229,255,.04) 50%,transparent 100%);
+    }
+    .panel-head .tag{
+        font-size:10px;letter-spacing:3px;color:var(--accent);
+        display:flex;align-items:center;gap:8px;font-weight:600;
+    }
+    .panel-head .tag::before{
+        content:"";width:7px;height:7px;border-radius:50%;
+        background:var(--accent);
+        box-shadow:0 0 10px var(--accent),0 0 16px var(--accent);
+        animation:pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot{
+        0%,100%{opacity:1;transform:scale(1)}
+        50%{opacity:.5;transform:scale(.8)}
+    }
+
+    .stepper{display:flex;align-items:center;gap:10px;font-size:10px;letter-spacing:2px;color:var(--muted)}
+    .step-dot{
+        width:22px;height:22px;border-radius:50%;
+        display:grid;place-items:center;
+        border:1px solid var(--line-2);
+        background:rgba(5,7,10,.6);
+        font-weight:700;font-size:10px;transition:.3s;
+    }
+    .step-dot.active{
+        background:var(--accent);color:var(--bg-0);
+        border-color:var(--accent);box-shadow:0 0 12px var(--accent);
+    }
+    .step-dot.done{
+        background:rgba(0,255,156,.15);color:var(--accent);border-color:var(--accent);
+    }
+    .step-line{width:20px;height:1px;background:var(--line-2)}
+
+    .panel-body{padding:28px 28px 24px}
+
+    .user-icon{
+        width:70px;height:70px;margin:0 auto 18px;border-radius:50%;
+        background:radial-gradient(circle at 30% 30%,rgba(0,229,255,.3),rgba(0,255,156,.15) 50%,rgba(5,7,10,.95) 100%);
+        border:2px solid rgba(0,229,255,.4);
+        display:grid;place-items:center;
+        box-shadow:inset 0 0 25px rgba(0,229,255,.2),0 0 30px rgba(0,229,255,.3);
+        position:relative;animation:pulse-user 3s ease-in-out infinite;
+    }
+    @keyframes pulse-user{
+        0%,100%{box-shadow:inset 0 0 25px rgba(0,229,255,.2),0 0 30px rgba(0,229,255,.3)}
+        50%{box-shadow:inset 0 0 35px rgba(0,229,255,.35),0 0 45px rgba(0,229,255,.5)}
+    }
+    .user-icon::before{
+        content:"";width:22px;height:22px;border-radius:50%;
+        background:var(--accent-2);box-shadow:0 0 12px var(--accent-2);
+        position:absolute;top:16px;
+    }
+    .user-icon::after{
+        content:"";width:38px;height:20px;border-radius:20px 20px 0 0;
+        background:var(--accent-2);box-shadow:0 0 12px var(--accent-2);
+        position:absolute;bottom:10px;
+    }
+
+    .reg-input{
+        font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:500;
+        padding:16px 18px;
+        background:repeating-linear-gradient(0deg,rgba(0,255,156,.02) 0px,rgba(0,255,156,.02) 1px,
+            transparent 1px,transparent 32px),rgba(5,7,10,.85);
+        border:2px solid rgba(42,58,79,.8);border-radius:12px;
+        color:var(--text);outline:none;transition:.25s;width:100%;letter-spacing:.5px;
+        box-shadow:inset 0 2px 8px rgba(0,0,0,.3);
+    }
+    .reg-input::placeholder{color:var(--muted);font-style:italic}
+    .reg-input:focus{
+        border-color:var(--accent);
+        box-shadow:0 0 0 3px rgba(0,255,156,.12),0 0 30px rgba(0,255,156,.2),inset 0 2px 8px rgba(0,0,0,.3);
+        background:rgba(5,7,10,.95);
+    }
+    .reg-input.error{
+        border-color:var(--danger);
+        box-shadow:0 0 0 3px rgba(255,59,107,.15),0 0 30px rgba(255,59,107,.2);
+    }
+    .reg-label{
+        font-size:9px;letter-spacing:3px;color:var(--muted);
+        text-transform:uppercase;display:flex;align-items:center;gap:6px;
+        margin-bottom:10px;font-weight:600;
+    }
+    .reg-label::before{content:"//";color:var(--accent);font-weight:700}
+
+    .reg-btn{
+        padding:14px 32px;font-size:12px;letter-spacing:3px;
+        background:linear-gradient(135deg,var(--accent) 0%,#00d98a 50%,var(--accent-2) 100%);
+        border:none;color:var(--bg-0);font-weight:800;
+        position:relative;overflow:hidden;
+        box-shadow:0 8px 24px -5px rgba(0,255,156,.5),0 0 50px -10px rgba(0,255,156,.4);
+        transition:.3s;
+    }
+    .reg-btn::before{
+        content:"";position:absolute;top:0;left:-100%;width:100%;height:100%;
+        background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);transition:.6s;
+    }
+    .reg-btn:hover::before{left:100%}
+    .reg-btn:hover{
+        transform:translateY(-2px);
+        box-shadow:0 12px 32px -5px rgba(0,255,156,.7),0 0 60px -10px rgba(0,255,156,.6);
+    }
+    .reg-btn:disabled{opacity:.6;cursor:not-allowed;transform:none !important}
+
+    .server-error{
+        padding:12px 16px;border-radius:10px;
+        background:rgba(255,59,107,.08);border:1px solid rgba(255,59,107,.3);
+        border-left:3px solid var(--danger);color:var(--danger);
+        font-size:11px;letter-spacing:.5px;margin-bottom:16px;
+        display:flex;align-items:center;gap:10px;
+    }
+    .server-error::before{content:"⚠";font-size:16px;text-shadow:0 0 8px var(--danger)}
+
+    .term-line{
+        font-size:11px;color:var(--muted);letter-spacing:.5px;
+        margin-top:8px;font-family:'JetBrains Mono',monospace;
+    }
+    .term-line .prompt{color:var(--accent);margin-right:5px;text-shadow:0 0 6px var(--accent)}
+    .term-line .cursor{
+        display:inline-block;width:6px;height:11px;background:var(--accent);
+        vertical-align:middle;margin-left:2px;
+        animation:blink 1s steps(2) infinite;box-shadow:0 0 6px var(--accent);
+    }
+    @keyframes blink{50%{opacity:0}}
+
+    .login-link{
+        color:var(--accent);text-decoration:none;
+        border-bottom:1px dashed var(--accent);transition:.2s;padding-bottom:1px;
+    }
+    .login-link:hover{text-shadow:0 0 10px var(--accent);border-bottom-style:solid}
+
+    .deco-line{
+        height:1px;
+        background:linear-gradient(90deg,transparent,var(--accent-2) 20%,
+            var(--accent) 50%,var(--accent-2) 80%,transparent);
+        margin:18px 0;opacity:.4;position:relative;
+    }
+    .deco-line::before{
+        content:"◆";position:absolute;left:50%;top:50%;
+        transform:translate(-50%,-50%);color:var(--accent);font-size:8px;
+        background:var(--bg-1);padding:0 8px;text-shadow:0 0 6px var(--accent);
+    }
+
+    /* ====== ТЕРМИНАЛ ====== */
+    .terminal-panel{
+        position:relative;
+        background:linear-gradient(180deg,rgba(5,7,10,.95),rgba(10,15,20,.95));
+        border:1px solid rgba(0,229,255,.2);border-radius:20px;overflow:hidden;
+        box-shadow:0 30px 80px -20px rgba(0,0,0,.8),0 0 60px -10px rgba(0,229,255,.15);
+        display:flex;flex-direction:column;
+    }
+    .terminal-panel::before{
+        content:"";position:absolute;inset:0;
+        background:repeating-linear-gradient(0deg,rgba(0,229,255,.02) 0px,rgba(0,229,255,.02) 1px,
+            transparent 1px,transparent 3px);
+        pointer-events:none;animation:scan-terminal 8s linear infinite;
+    }
+    @keyframes scan-terminal{0%{background-position:0 0}100%{background-position:0 100px}}
+    .terminal-panel > *{position:relative;z-index:1}
+
+    .terminal-head{
+        padding:12px 16px;
+        background:linear-gradient(90deg,rgba(0,229,255,.1),transparent);
+        border-bottom:1px solid rgba(0,229,255,.15);
+        display:flex;align-items:center;gap:10px;
+    }
+    .terminal-dots{display:flex;gap:6px}
+    .terminal-dots span{width:10px;height:10px;border-radius:50%}
+    .terminal-dots span:nth-child(1){background:#ff5f56;box-shadow:0 0 6px #ff5f56}
+    .terminal-dots span:nth-child(2){background:#ffbd2e;box-shadow:0 0 6px #ffbd2e}
+    .terminal-dots span:nth-child(3){background:#27c93f;box-shadow:0 0 6px #27c93f}
+    .terminal-title{font-size:10px;letter-spacing:3px;color:var(--accent-2);font-weight:600;margin-left:auto}
+
+    .terminal-body{
+        padding:20px;flex:1;
+        font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.7;
+        color:var(--accent-2);overflow:hidden;
+    }
+    .terminal-line{margin-bottom:6px;opacity:0;animation:type-line .4s forwards}
+    .terminal-line .prompt{color:var(--accent);margin-right:6px}
+    .terminal-line .comment{color:var(--muted)}
+    .terminal-line .ok{color:var(--accent)}
+    .terminal-line .warn{color:var(--amber)}
+    .terminal-line .cyan{color:var(--accent-2)}
+    @keyframes type-line{from{opacity:0;transform:translateX(-5px)}to{opacity:1;transform:translateX(0)}}
+
+    .terminal-status{
+        padding:10px 16px;border-top:1px solid rgba(0,229,255,.15);
+        background:rgba(0,229,255,.04);
+        display:flex;justify-content:space-between;align-items:center;
+        font-size:10px;letter-spacing:2px;color:var(--muted);
+    }
+    .terminal-status .live-dot{
+        display:inline-block;width:6px;height:6px;border-radius:50%;
+        background:var(--accent);box-shadow:0 0 8px var(--accent);
+        margin-right:6px;animation:pulse-dot 1.5s ease-in-out infinite;
+    }
+
+    /* ====== ЭКРАН УСПЕХА ====== */
+    .success-panel{
+        position:relative;
+        background:linear-gradient(135deg,rgba(20,28,40,.85) 0%,rgba(10,15,20,.92) 50%,rgba(15,22,32,.85) 100%);
+        backdrop-filter:blur(20px) saturate(180%);
+        border:1px solid rgba(0,255,156,.25);border-radius:20px;overflow:hidden;
+        box-shadow:0 30px 80px -20px rgba(0,0,0,.8),0 0 80px -10px rgba(0,255,156,.3);
+        grid-column:1 / -1;
+    }
+    .success-panel::before{
+        content:"";position:absolute;inset:0;
+        background:radial-gradient(600px 200px at 20% 0%,rgba(0,255,156,.15),transparent 60%),
+            radial-gradient(500px 200px at 80% 100%,rgba(0,229,255,.12),transparent 60%);
+        pointer-events:none;
+    }
+    .success-panel > *{position:relative;z-index:1}
+
+    .success-icon{
+        width:70px;height:70px;border-radius:50%;
+        background:radial-gradient(circle,rgba(0,255,156,.25),transparent 70%),rgba(0,255,156,.1);
+        border:2px solid var(--accent);display:grid;place-items:center;
+        margin:0 auto 18px;position:relative;
+        box-shadow:0 0 40px rgba(0,255,156,.5),inset 0 0 25px rgba(0,255,156,.2);
+    }
+    .success-icon::before{
+        content:"✓";font-size:36px;color:var(--accent);
+        text-shadow:0 0 12px var(--accent);font-weight:900;
+    }
+    .success-icon::after{
+        content:"";position:absolute;inset:-8px;border:1px solid rgba(0,255,156,.3);
+        border-radius:50%;animation:ripple 2s ease-out infinite;
+    }
+    @keyframes ripple{0%{transform:scale(.9);opacity:1}100%{transform:scale(1.4);opacity:0}}
+
+    /* Спиннер для авто-входа */
+    .auto-login-spinner{
+        width:70px;height:70px;margin:0 auto 18px;
+        border-radius:50%;
+        border:3px solid rgba(0,229,255,.15);
+        border-top-color:var(--accent-2);
+        border-right-color:var(--accent);
+        animation:spin 1s linear infinite;
+        box-shadow:0 0 30px rgba(0,229,255,.3);
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .code-display{
+        position:relative;padding:24px 20px;border-radius:14px;
+        background:radial-gradient(500px 150px at 0% 0%,rgba(0,255,156,.15),transparent 60%),
+            radial-gradient(400px 150px at 100% 100%,rgba(0,229,255,.12),transparent 60%),
+            rgba(5,7,10,.85);
+        border:1px solid rgba(0,255,156,.3);
+        text-align:center;overflow:hidden;cursor:pointer;transition:.25s;
+        max-width:500px;margin:0 auto;
+    }
+    .code-display::before{
+        content:"";position:absolute;inset:0;
+        background-image:linear-gradient(rgba(0,255,156,.04) 1px,transparent 1px),
+            linear-gradient(90deg,rgba(0,255,156,.04) 1px,transparent 1px);
+        background-size:20px 20px;opacity:.5;pointer-events:none;
+    }
+    .code-display:hover{
+        border-color:var(--accent);
+        box-shadow:0 0 30px rgba(0,255,156,.3);
+        transform:translateY(-2px);
+    }
+    .code-display .code-label{font-size:10px;letter-spacing:4px;color:var(--muted);position:relative}
+    .code-display .code-value{
+        font-family:'JetBrains Mono',monospace;font-weight:700;
+        font-size:32px;letter-spacing:5px;margin-top:12px;
+        background:linear-gradient(90deg,#fff 0%,var(--accent) 50%,var(--accent-2) 100%);
+        -webkit-background-clip:text;background-clip:text;color:transparent;
+        text-shadow:0 0 30px rgba(0,255,156,.4);position:relative;
+        word-break:break-all;
+    }
+    .code-display .code-hint{font-size:11px;color:var(--muted);margin-top:12px;letter-spacing:2px;position:relative}
+    .code-display .code-hint.ok{color:var(--accent)}
+
+    .team-info{
+        padding:12px 16px;border-radius:10px;
+        background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.2);
+        font-size:11px;color:var(--accent-2);margin:16px auto;max-width:500px;
+        display:flex;justify-content:space-between;align-items:center;
+    }
+
+    .warn-box{
+        display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-radius:10px;
+        background:rgba(255,179,71,.06);border:1px solid rgba(255,179,71,.25);
+        border-left:3px solid var(--amber);
+        font-size:11px;color:var(--amber);letter-spacing:.5px;line-height:1.6;
+        max-width:500px;margin:16px auto 0;
+    }
+    .warn-box::before{content:"⚠";font-size:14px;flex-shrink:0;text-shadow:0 0 8px var(--amber)}
+
+    .fade-in{animation:fadeIn .6s ease-out}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+
+    @media (max-height: 900px){
+        .reg-wrap{min-height:calc(100vh - 120px);padding:16px}
+        .panel-body{padding:22px 24px 20px}
+        .user-icon{width:60px;height:60px;margin-bottom:14px}
+        .user-icon::before{width:18px;height:18px;top:14px}
+        .user-icon::after{width:32px;height:17px;bottom:8px}
+    }
+    @media (max-height: 768px){
+        .panel-body{padding:18px 20px 16px}
+        .user-icon{width:50px;height:50px;margin-bottom:12px}
+        .user-icon::before{width:16px;height:16px;top:12px}
+        .user-icon::after{width:28px;height:15px;bottom:7px}
+        .h-title{font-size:24px !important}
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="w-full max-w-md fade-in mx-auto mt-10" x-data="registerApp()">
-    <div class="border border-line bg-panel rounded-xl shadow-2xl p-8">
+<div class="reg-wrap">
+    <div class="h-sub" style="margin-bottom:8px">// NEW_USER · REGISTRATION_PROTOCOL</div>
+    <h1 class="h-title glitch" data-text="РЕГИСТРАЦИЯ УЧАСТНИКА" style="margin-bottom:8px">РЕГИСТРАЦИЯ УЧАСТНИКА</h1>
+    <div class="term-line" style="margin-top:0">
+        <span class="prompt">&gt;</span> создание учётной записи в системе<span class="cursor"></span>
+    </div>
 
-        <!-- ФОРМА -->
-        <div x-show="!success" x-transition>
-            <div class="text-[10px] text-neon tracking-[0.4em] mb-2 text-center">// REGISTRATION</div>
-            <h2 class="font-display text-2xl font-bold mb-6 text-center">РЕГИСТРАЦИЯ</h2>
+    <div class="reg-grid" style="margin-top:16px" id="reg-grid">
+        <!-- ====== ЛЕВАЯ ПАНЕЛЬ: ФОРМА ====== -->
+        <div class="form-panel fade-in" id="form-panel">
+            <div class="corner tl"></div>
+            <div class="corner tr"></div>
+            <div class="corner bl"></div>
+            <div class="corner br"></div>
 
-            <form @submit.prevent="submit" class="space-y-4">
-                <div>
-                    <label class="block text-[10px] text-slate-500 tracking-[0.2em] mb-1.5">// ВАШЕ ИМЯ</label>
-                    <input type="text" x-model="name" required placeholder="Иванов Иван" class="w-full bg-ink border border-line rounded px-3 py-3 text-sm text-white focus:border-neon outline-none">
+            <div class="panel-head">
+                <div class="tag">USER_DATA · STEP 01</div>
+                <div class="stepper">
+                    <div class="step-dot active">1</div>
+                    <div class="step-line"></div>
+                    <div class="step-dot">2</div>
+                    <div class="step-line"></div>
+                    <div class="step-dot">3</div>
                 </div>
-                <div>
-                    <label class="block text-[10px] text-slate-500 tracking-[0.2em] mb-1.5">// EMAIL</label>
-                    <input type="email" x-model="email" required placeholder="ivan@example.com" class="w-full bg-ink border border-line rounded px-3 py-3 text-sm text-white focus:border-neon outline-none">
+            </div>
+
+            <div class="panel-body">
+                <div class="user-icon"></div>
+
+                <div id="reg-error" class="server-error" style="display:none"></div>
+
+                <form id="reg-form" onsubmit="return submitReg(event)">
+                    <div class="field">
+                        <label class="reg-label">Ваше имя</label>
+                        <input class="reg-input" name="name" id="reg-name" required
+                            placeholder="Иван Петров" autocomplete="name" autofocus>
+                    </div>
+
+                    <div class="deco-line"></div>
+
+                    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+                        <button class="btn reg-btn" type="submit" id="reg-submit">
+                            <span id="reg-btn-icon">▶</span>
+                            <span id="reg-btn-text">ЗАРЕГИСТРИРОВАТЬСЯ</span>
+                        </button>
+                        <span id="reg-status" class="term-line" style="margin:0"></span>
+                    </div>
+                </form>
+
+                <div class="deco-line"></div>
+
+                <div class="term-line">
+                    Уже есть код?
+                    <a href="/" class="login-link">Войти в систему →</a>
                 </div>
-
-                <div x-show="error" class="text-magenta text-xs text-center" x-text="error"></div>
-
-                <button type="submit" :disabled="loading" class="w-full bg-neon text-ink font-bold py-3 rounded hover:bg-white transition mt-4">
-                    <span x-show="!loading">ЗАРЕГИСТРИРОВАТЬСЯ</span>
-                    <span x-show="loading">ОТПРАВКА...</span>
-                </button>
-            </form>
-
-            <div class="mt-6 text-center border-t border-line pt-4 text-xs text-slate-500">
-                Уже есть код? <a href="/" class="text-cyan hover:text-neon">Войти в систему</a>
             </div>
         </div>
 
-        <!-- УСПЕХ -->
-        <div x-show="success" x-transition class="text-center">
-            <div class="text-[10px] text-neon tracking-[0.4em] mb-2">// REGISTRATION_OK</div>
-            <h2 class="text-xl font-bold mb-2 text-white">ВЫ В КОМАНДЕ</h2>
-            <p class="text-sm text-slate-400 mb-6" x-text="'«' + teamName + '» (' + teamSize + '/' + teamMax + ')'"></p>
+        <!-- ====== ПРАВАЯ ПАНЕЛЬ: ТЕРМИНАЛ ====== -->
+        <div class="terminal-panel fade-in">
+            <div class="terminal-head">
+                <div class="terminal-dots">
+                    <span></span><span></span><span></span>
+                </div>
+                <div class="terminal-title">REG_TERMINAL</div>
+            </div>
 
-            <div class="text-[10px] text-slate-500 tracking-[0.2em] mb-2">// ВАШ КОД ДЛЯ ВХОДА</div>
+            <div class="terminal-body" id="terminal-body"></div>
 
-            <!-- Блок с кодом -->
-            <div @click="copyCode()" class="cursor-pointer group relative border border-cyan bg-cyan/10 rounded-lg p-4 mb-4 hover:bg-cyan/20 transition">
-                <div class="text-3xl font-mono font-bold text-cyan tracking-widest" x-text="code"></div>
-                <div class="text-[10px] text-cyan/60 mt-2 group-hover:text-cyan transition">Нажмите, чтобы скопировать</div>
+            <div class="terminal-status">
+                <div><span class="live-dot"></span>ONLINE</div>
+                <div id="terminal-time">00:00:00</div>
+            </div>
+        </div>
+    </div>
 
-                <!-- Тост -->
-                <div x-show="copied" x-transition class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-neon text-ink text-xs font-bold px-3 py-1 rounded shadow-neon">
-                    СКОПИРОВАНО!
+    <!-- ====== ЭКРАН АВТО-ВХОДА (промежуточный) ====== -->
+    <div class="success-panel fade-in" id="auto-login-panel" style="display:none">
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+
+        <div class="panel-head">
+            <div class="tag">AUTO_LOGIN · STEP 03</div>
+            <div class="stepper">
+                <div class="step-dot done">✓</div>
+                <div class="step-line"></div>
+                <div class="step-dot done">✓</div>
+                <div class="step-line"></div>
+                <div class="step-dot active">3</div>
+            </div>
+        </div>
+
+        <div class="panel-body" style="text-align:center">
+            <div class="auto-login-spinner"></div>
+
+            <div class="h-title" style="font-size:22px">АВТОМАТИЧЕСКИЙ ВХОД</div>
+            <div class="term-line" style="margin-top:6px">
+                <span class="prompt">&gt;</span> <span id="auto-login-status">аутентификация в системе...</span>
+            </div>
+
+            <div class="team-info" id="team-info" style="display:none">
+                <div>
+                    <div style="font-size:9px;letter-spacing:2px;color:var(--muted)">КОМАНДА</div>
+                    <div id="team-name" style="margin-top:3px;font-weight:600">—</div>
+                </div>
+                <div style="text-align:right">
+                    <div style="font-size:9px;letter-spacing:2px;color:var(--muted)">СОСТАВ</div>
+                    <div id="team-size" style="margin-top:3px;font-weight:600;color:var(--accent)">—</div>
                 </div>
             </div>
 
-            <button @click="autoLogin()" class="w-full bg-neon text-ink font-bold py-3 rounded hover:bg-white transition mt-2">
-                ВОЙТИ С ЭТИМ ПАРОЛЕМ &gt;&gt;
-            </button>
-            <div class="text-[10px] text-warn mt-4">// сохраните код, второй раз он не покажется</div>
+            <div class="term-line" style="margin-top:16px">
+                <span class="prompt">&gt;</span> ваш код: <span id="reg-code-preview" class="accent" style="letter-spacing:3px">— — — —</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== ЭКРАН УСПЕХА (fallback, если авто-вход не сработал) ====== -->
+    <div class="success-panel fade-in" id="success-panel" style="display:none">
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+
+        <div class="panel-head">
+            <div class="tag">REGISTRATION_OK · MANUAL_LOGIN</div>
+            <div class="stepper">
+                <div class="step-dot done">✓</div>
+                <div class="step-line"></div>
+                <div class="step-dot done">✓</div>
+                <div class="step-line"></div>
+                <div class="step-dot active">3</div>
+            </div>
+        </div>
+
+        <div class="panel-body" style="text-align:center">
+            <div class="success-icon"></div>
+
+            <div class="h-title" style="font-size:22px">ВЫ В КОМАНДЕ</div>
+            <div class="term-line" style="margin-top:6px">
+                <span class="prompt">&gt;</span> ваш персональный код для входа
+            </div>
+
+            <div class="code-display" onclick="copyCode()" id="code-box">
+                <div class="code-label">// ВАШ КОД ДЛЯ ВХОДА</div>
+                <div class="code-value" id="reg-code">— — — —</div>
+                <div class="code-hint" id="copy-hint">нажмите, чтобы скопировать</div>
+            </div>
+
+            <div style="margin-top:20px">
+                <a class="btn" href="/" id="manual-login-btn" style="padding:12px 28px">
+                    ВОЙТИ С ЭТИМ КОДОМ &nbsp;→
+                </a>
+                <button class="btn ghost" onclick="retryAutoLogin()" id="retry-btn"
+                    style="padding:12px 28px;margin-left:10px;display:none">
+                    ⟳ ПОПРОБОВАТЬ СНОВА
+                </button>
+            </div>
+
+            <div class="warn-box">
+                <div>
+                    <b>ВНИМАНИЕ:</b> сохраните код — второй раз он не покажется.
+                    Используйте его для входа в личный кабинет.
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-function registerApp() {
-    return {
-        name: '', email: '', loading: false, error: '', success: false, code: '', copied: false, teamName: '', teamSize: 0, teamMax: 5,
+    // ====== ТЕРМИНАЛ ======
+    (function(){
+        const body = document.getElementById('terminal-body');
+        const lines = [
+            {t:'<span class="prompt">$</span> init registration_protocol', d:0},
+            {t:'<span class="comment">// загрузка модулей...</span>', d:400},
+            {t:'<span class="ok">[OK]</span> crypto_module loaded', d:900},
+            {t:'<span class="ok">[OK]</span> user_database connected', d:1300},
+            {t:'<span class="ok">[OK]</span> team_allocator ready', d:1700},
+            {t:'', d:2000},
+            {t:'<span class="warn">[INFO]</span> email auto-generated', d:2200},
+            {t:'<span class="comment">// для совместимости с системой</span>', d:2600},
+            {t:'', d:2900},
+            {t:'<span class="prompt">$</span> awaiting user input...', d:3200},
+        ];
 
-        async submit() {
-            this.loading = true; this.error = '';
-            try {
-                const res = await fetch('/api/public/register', {
-                    method: 'POST',
-                    body: new URLSearchParams({ name: this.name, email: this.email })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    this.code = data.login_code;
-                    this.teamName = data.team_name;
-                    this.teamSize = data.team_size;
-                    this.teamMax = data.team_max;
-                    this.success = true;
-                } else {
-                    this.error = data.detail || 'Ошибка';
-                }
-            } catch (e) { this.error = 'Сервер недоступен'; }
-            finally { this.loading = false; }
-        },
+        lines.forEach(l => {
+            setTimeout(() => {
+                const div = document.createElement('div');
+                div.className = 'terminal-line';
+                div.innerHTML = l.t || '&nbsp;';
+                body.appendChild(div);
+            }, l.d);
+        });
 
-        async copyCode() {
-            try {
-                // Пытаемся использовать современный API
-                if (navigator.clipboard && window.isSecureContext) {
-                    await navigator.clipboard.writeText(this.code);
-                } else {
-                    // Резервный метод для локальной сети (без HTTPS)
-                    const textArea = document.createElement("textarea");
-                    textArea.value = this.code;
-                    textArea.style.position = "absolute";
-                    textArea.style.left = "-999999px";
-                    document.body.prepend(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    textArea.remove();
-                }
-                this.copied = true;
-                setTimeout(() => this.copied = false, 2000);
-            } catch (e) {
-                alert('Ваш код: ' + this.code);
+        const start = Date.now();
+        setInterval(() => {
+            const s = Math.floor((Date.now() - start) / 1000);
+            const h = String(Math.floor(s / 3600)).padStart(2, '0');
+            const m = String(Math.floor(s / 60) % 60).padStart(2, '0');
+            const sec = String(s % 60).padStart(2, '0');
+            document.getElementById('terminal-time').textContent = `${h}:${m}:${sec}`;
+        }, 1000);
+    })();
+
+    // ====== ОТПРАВКА ФОРМЫ ======
+    async function submitReg(e){
+        e.preventDefault();
+
+        const form = document.getElementById('reg-form');
+        const btn = document.getElementById('reg-submit');
+        const btnIcon = document.getElementById('reg-btn-icon');
+        const btnText = document.getElementById('reg-btn-text');
+        const status = document.getElementById('reg-status');
+        const errorBox = document.getElementById('reg-error');
+        const termBody = document.getElementById('terminal-body');
+
+        errorBox.style.display = 'none';
+        document.querySelectorAll('.reg-input').forEach(i => i.classList.remove('error'));
+
+        btn.disabled = true;
+        btnIcon.textContent = '⟳';
+        btnText.textContent = 'ОТПРАВКА...';
+        status.innerHTML = '<span class="prompt">&gt;</span> отправка...';
+
+        termBody.appendChild(Object.assign(document.createElement('div'), {
+            className: 'terminal-line',
+            innerHTML: '<span class="prompt">$</span> submit --user'
+        }));
+        setTimeout(() => {
+            termBody.appendChild(Object.assign(document.createElement('div'), {
+                className: 'terminal-line',
+                innerHTML: '<span class="comment">// обработка запроса...</span>'
+            }));
+        }, 300);
+
+        try{
+            const formData = new FormData(form);
+            const fakeEmail = `user_${Math.random().toString(36).slice(2,10)}@mivlgu.local`;
+            formData.append('email', fakeEmail);
+
+            const res = await fetch('/api/public/register', {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            });
+
+            if(!res.ok){
+                let msg = 'ошибка регистрации';
+                try{
+                    const err = await res.json();
+                    msg = err.detail || msg;
+                } catch(_){}
+                throw new Error(msg);
             }
-        },
 
-        async autoLogin() {
-            await this.copyCode(); // копируем перед входом
-            try {
-                const res = await fetch('/api/login', {
-                    method: 'POST',
-                    body: new URLSearchParams({ password: this.code })
-                });
-                if (res.ok) window.location.href = '/team';
-                else alert('Ошибка входа. Скопируйте код и войдите вручную.');
-            } catch(e) { alert('Сеть недоступна'); }
+            const data = await res.json();
+
+            termBody.appendChild(Object.assign(document.createElement('div'), {
+                className: 'terminal-line',
+                innerHTML: '<span class="ok">[OK]</span> user registered'
+            }));
+            termBody.appendChild(Object.assign(document.createElement('div'), {
+                className: 'terminal-line',
+                innerHTML: `<span class="ok">[OK]</span> code: ${data.login_code}`
+            }));
+
+            // Сохраняем код для возможного retry
+            window._lastLoginCode = data.login_code;
+
+            // ====== АВТО-ВХОД ======
+            await performAutoLogin(data);
+
+        } catch(err){
+            console.error(err);
+            errorBox.textContent = err.message || 'ошибка сети';
+            errorBox.style.display = 'flex';
+            btn.disabled = false;
+            btnIcon.textContent = '▶';
+            btnText.textContent = 'ЗАРЕГИСТРИРОВАТЬСЯ';
+            status.textContent = '';
+
+            termBody.appendChild(Object.assign(document.createElement('div'), {
+                className: 'terminal-line',
+                innerHTML: `<span style="color:var(--danger)">[FAIL]</span> ${err.message}`
+            }));
+        }
+
+        return false;
+    }
+
+    // ====== АВТО-ВХОД В СИСТЕМУ ======
+    async function performAutoLogin(data){
+        const termBody = document.getElementById('terminal-body');
+
+        termBody.appendChild(Object.assign(document.createElement('div'), {
+            className: 'terminal-line',
+            innerHTML: '<span class="cyan">[AUTO]</span> initiating login...'
+        }));
+
+        // Показываем экран авто-входа
+        document.getElementById('reg-grid').style.display = 'none';
+        document.getElementById('auto-login-panel').style.display = 'block';
+        document.getElementById('reg-code-preview').textContent = data.login_code;
+
+        if(data.team_name){
+            document.getElementById('team-name').textContent = data.team_name;
+            document.getElementById('team-size').textContent =
+                `${data.team_size || '?'} / ${data.team_max || '?'}`;
+            document.getElementById('team-info').style.display = 'flex';
+        }
+
+        try{
+            // Отправляем код как password (как требует бэкенд)
+            const loginForm = new FormData();
+            loginForm.append('password', data.login_code);
+
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                body: loginForm,
+                credentials: 'same-origin'
+            });
+
+            if(res.ok){
+                const loginData = await res.json().catch(() => ({}));
+
+                termBody.appendChild(Object.assign(document.createElement('div'), {
+                    className: 'terminal-line',
+                    innerHTML: '<span class="ok">[OK]</span> authentication success'
+                }));
+                termBody.appendChild(Object.assign(document.createElement('div'), {
+                    className: 'terminal-line',
+                    innerHTML: `<span class="ok">[OK]</span> redirect → /team`
+                }));
+
+                document.getElementById('auto-login-status').innerHTML =
+                    '<span style="color:var(--accent)">доступ разрешён ✓ · перенаправление...</span>';
+
+                setTimeout(() => {
+                    window.location.href = '/team';
+                }, 800);
+            } else {
+                throw new Error('login_failed');
+            }
+        } catch(err){
+            console.error('Auto-login failed:', err);
+
+            termBody.appendChild(Object.assign(document.createElement('div'), {
+                className: 'terminal-line',
+                innerHTML: '<span style="color:var(--danger)">[FAIL]</span> auto-login failed'
+            }));
+            termBody.appendChild(Object.assign(document.createElement('div'), {
+                className: 'terminal-line',
+                innerHTML: '<span class="warn">[FALLBACK]</span> manual login required'
+            }));
+
+            // Показываем fallback-экран с кодом и кнопкой ручного входа
+            document.getElementById('auto-login-panel').style.display = 'none';
+            document.getElementById('success-panel').style.display = 'block';
+            document.getElementById('reg-code').textContent = data.login_code;
+            document.getElementById('retry-btn').style.display = 'inline-flex';
         }
     }
-}
+
+    // ====== RETRY АВТО-ВХОДА ======
+    function retryAutoLogin(){
+        if(!window._lastLoginCode){
+            alert('Код не найден. Пожалуйста, войдите вручную.');
+            return;
+        }
+        document.getElementById('success-panel').style.display = 'none';
+        document.getElementById('auto-login-panel').style.display = 'block';
+        document.getElementById('auto-login-status').textContent = 'повторная попытка...';
+        performAutoLogin({login_code: window._lastLoginCode});
+    }
+
+    function copyCode(){
+        const code = document.getElementById('reg-code').textContent.trim();
+        if(!code || code.startsWith('—')) return;
+        navigator.clipboard.writeText(code).then(() => {
+            const hint = document.getElementById('copy-hint');
+            hint.textContent = '✓ СКОПИРОВАНО!';
+            hint.classList.add('ok');
+            setTimeout(() => {
+                hint.textContent = 'нажмите, чтобы скопировать';
+                hint.classList.remove('ok');
+            }, 1800);
+        });
+    }
 </script>
 {% endblock %}
